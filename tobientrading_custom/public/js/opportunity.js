@@ -3,24 +3,26 @@
 
 frappe.ui.form.on("Opportunity", {
      refresh: function(frm) {
-        render_activities_and_comments(cur_frm);
+        render_activities_and_comments(frm);
     },
 })
 
 function render_activities_and_comments(frm) {
-		console.log("render_activities_and_comments")
-		frappe.call({
-			method: "erpnext.crm.utils.get_activities",
-			args: {
-				ref_doctype: frm.doc.doctype,
-				ref_docname: frm.doc.name
-			},
-			callback: (r) => {
-				if (!r.exc) {
-					
-					console.log("r")
-					//~ cur_frm.set_df_property('custom_all_activities_html','options', activities_html);
-				}
+    frappe.call({
+        method: "public.py.opportunity.get_activities_and_comments",
+        args: {
+            ref_doctype: frm.doc.doctype,
+            ref_docname: frm.doc.name
+        },
+        callback: (r) => {
+			if (!r.exc) {
+				var activities_html = frappe.render_template('activities_and_comments_template', {
+					activities: r.message.activities,
+				});
+				
+				$(frm.fields_dict['custom_all_activities_html'].wrapper).html(activities_html)
 			}
-		});
+        }
+    });
 }
+

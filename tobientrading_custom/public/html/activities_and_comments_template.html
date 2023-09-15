@@ -1,0 +1,137 @@
+<div class="open-activities">
+	<div class="section-body">
+		<div class="open-activities pr-1">
+			<div class="open-section-head">
+				<span class="ml-2">{{ __("Activities and Comments") }}</span>
+			</div>
+			{% if (activities.length) { %}
+				{% for(var i=0, l=activities.length; i<l; i++) { %}
+					{% if (!activities[i].event_category) { %}
+						<div class="single-activity">
+							<div class="text-muted ml-1 " >
+								{% if(activities[i].creation) { %}
+									{%= frappe.datetime.global_date_format(activities[i].creation) %}<br>
+								{% } %}
+								{% if(activities[i].employee_name) { %}
+									{%= activities[i].employee_name %}
+								{% } %}
+							</div>
+							
+							<div class="flex justify-between mb-2">
+								<div class="row label-area font-md ml-1">
+									<span class="mr-2">
+										<svg class="icon icon-sm">
+											<use href="#icon-small-message"></use>
+										</svg>
+									</span>
+									<div title="{{ __('Comment') }}">
+										{%= activities[i].content %}
+									</div>
+								</div>
+							</div>
+							
+						</div>
+					
+					{% } else { %}
+						{% let icon_set = {"Sent/Received Email": "mail", "Call": "call", "Meeting": "share-people"}; %}
+						<div class="single-activity">
+							<div class="text-muted ml-1">
+								{%= frappe.datetime.global_date_format(activities[i].starts_on) %}
+
+								{% if (activities[i].ends_on) { %}
+									{% if (frappe.datetime.obj_to_user(activities[i].starts_on) != frappe.datetime.obj_to_user(activities[i].ends_on)) %}
+										-
+										{%= frappe.datetime.global_date_format(frappe.datetime.obj_to_user(activities[i].ends_on)) %}
+										{%= frappe.datetime.get_time(activities[i].ends_on) %}
+									{% } else if (activities[i].ends_on) { %}
+										-
+										{%= frappe.datetime.get_time(activities[i].ends_on) %}
+									{% } %}
+								{% } %}
+
+							</div>
+							<div class="flex justify-between mb-2">
+								<div class="row label-area font-md ml-1 title">
+									<span class="mr-2">
+										<svg class="icon icon-sm">
+											<use href="#icon-{{ icon_set[activities[i].event_category] || 'calendar' }}"></use>
+										</svg>
+									</span>
+									<a href="/app/event/{{ activities[i].name }}" title="{{ __('Open Event') }}">
+										{%= activities[i].subject %}
+									</a>
+								</div>
+							</div>
+							
+						</div>
+					{% } %}
+				{% } %}
+            {% } else { %}
+            <div class="single-activity no-activity text-muted">
+                {{ __("No Activities") }}
+            </div>
+		    {% } %}
+		</div>
+	</div>
+</div>
+
+
+<style>
+.open-activities {
+	min-height: 50px;
+	padding-left: 0px;
+	padding-bottom: 15px !important;
+}
+
+.open-activities .new-btn {
+	text-align: right;
+}
+
+.single-activity {
+	display:flex;
+	min-height: 50px;
+	border: 1px solid var(--border-color);
+	padding: 10px;
+	border-bottom: 0;
+	padding-right: 0;
+}
+
+.single-activity:last-child {
+	border-bottom: 1px solid var(--border-color);
+}
+
+.single-activity:hover .completion-checkbox{
+	display: block;
+}
+
+.open-activities {
+	width: 100%;
+}
+
+.open-activities:first-child {
+	border-right: 0;
+}
+
+.text-muted {
+	width: 20%;
+	text-align: right;
+	margin-right: 7px;
+}
+
+.open-section-head {
+	background-color: var(--bg-color);
+	min-height: 30px;
+	border-bottom: 1px solid var(--border-color);
+	padding: 10px;
+	font-weight: bold;
+}
+
+.no-activity {
+    text-align: center;
+    padding-top: 30px;
+}
+
+.form-footer {
+	background-color: var(--bg-color);
+}
+</style>
