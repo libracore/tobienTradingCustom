@@ -16,7 +16,9 @@ app_license = "MIT"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/tobientrading_custom/css/tobientrading_custom.css"
-# app_include_js = "/assets/tobientrading_custom/js/tobientradingtemplates.js"
+app_include_js = [
+    "/assets/tobientrading_custom/js/tobien_common.js"
+]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/tobientrading_custom/css/tobientrading_custom.css"
@@ -26,7 +28,20 @@ app_license = "MIT"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {"Opportunity" : "public/js/opportunity.js"}
+doctype_js = {
+    "Opportunity" : "public/js/opportunity.js",
+    "Sales Invoice": "public/js/sales_invoice.js",
+    "Delivery Note": "public/js/delivery_note.js",
+    "Sales Order": "public/js/sales_order.js",
+    "Quotation": "public/js/quotation.js",
+    "Payment Reminder": "public/js/payment_reminder.js",
+    "Material Request": "public/js/material_request.js",
+    "Request for Quotation": "public/js/request_for_quotation.js",
+    "Supplier Quotation": "public/js/supplier_quotation.js",
+    "Purchase Order": "public/js/purchase_order.js",
+    "Purchase Receipt": "public/js/purchase_receipt.js",
+    "Purchase Invoice": "public/js/purchase_invoice.js"
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
