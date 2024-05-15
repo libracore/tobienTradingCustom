@@ -1,0 +1,70 @@
+{
+ "actions": [],
+ "creation": "2024-05-15 10:11:18.528294",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "parameter",
+  "limit",
+  "value",
+  "value_po",
+  "unit",
+  "method"
+ ],
+ "fields": [
+  {
+   "fieldname": "parameter",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Parameter",
+   "options": "Physical and Chemical Parameter",
+   "reqd": 1
+  },
+  {
+   "fieldname": "limit",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Limit",
+   "options": "\n\u2264\n\u2265\n&lt;\n&gt;\nabout\ntarget"
+  },
+  {
+   "fieldname": "value",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Value"
+  },
+  {
+   "fieldname": "value_po",
+   "fieldtype": "Data",
+   "label": "Value PO"
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Unit",
+   "options": "UOM"
+  },
+  {
+   "fieldname": "method",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Method",
+   "options": "Method Parameter"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-05-15 10:11:18.528294",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Technical Data Sheet Physical and Chemical Parameter",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

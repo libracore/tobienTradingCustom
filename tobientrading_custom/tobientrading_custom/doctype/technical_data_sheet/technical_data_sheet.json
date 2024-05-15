@@ -135,13 +135,13 @@
    "fieldname": "certificates",
    "fieldtype": "Table",
    "label": "Certificates",
-   "options": "TDS Certificate Table"
+   "options": "Technical Data Sheet TDS Certificate"
   },
   {
    "fieldname": "msds_table",
    "fieldtype": "Table",
    "label": "MSDS Table",
-   "options": "MSDS Table"
+   "options": "Technical Data Sheet MSDS"
   },
   {
    "fetch_from": "product_no.customs_tariff_number",
@@ -164,7 +164,7 @@
    "fieldtype": "Table",
    "hidden": 1,
    "label": "Customs Tariffs",
-   "options": "Customs Tariff Table"
+   "options": "Technical Data Sheet Customs Tariff"
   },
   {
    "fieldname": "sensoric_parameters_section",
@@ -176,7 +176,7 @@
    "fieldname": "sensoric_parameters",
    "fieldtype": "Table",
    "label": "Sensoric Parameters",
-   "options": "Sensoric Parameter Table"
+   "options": "Technical Data Sheet Sensoric Parameter"
   },
   {
    "fieldname": "physical_and_chemical_parameters_section",
@@ -187,7 +187,7 @@
    "fieldname": "table_26",
    "fieldtype": "Table",
    "label": "Physical and Chemical Parameters",
-   "options": "Physical and Chemical Parameter Table"
+   "options": "Technical Data Sheet Physical and Chemical Parameter"
   },
   {
    "fieldname": "additional_information",
@@ -204,7 +204,7 @@
    "fieldname": "table_29",
    "fieldtype": "Table",
    "label": "Nutritional Information",
-   "options": "Nutritional Information Table"
+   "options": "Technical Data Sheet Nutritional Information"
   },
   {
    "default": "All figures are subject to the usual fluctuations in natural products.",
@@ -221,7 +221,7 @@
    "fieldname": "table_32",
    "fieldtype": "Table",
    "label": "Microbiological Properties",
-   "options": "Microbiologiacal Propertie Table"
+   "options": "Technical Data Sheet Microbiologiacal Properties"
   },
   {
    "fieldname": "microfigures",
@@ -238,7 +238,7 @@
    "fieldname": "table_41",
    "fieldtype": "Table",
    "label": "Allergenes",
-   "options": "Allergene Table"
+   "options": "Technical Data Sheet Allergene"
   },
   {
    "default": "The allergen list only states if the mentioned allergen is as an ingredient in the product or not (according to EU No. 1169/2011, Annex 2)",
@@ -255,13 +255,13 @@
    "fieldname": "table_36",
    "fieldtype": "Table",
    "label": "Packaging and Storage",
-   "options": "Packaging and Storage Table"
+   "options": "Technical Data Sheet Packaging and Storage"
   },
   {
    "fieldname": "table_30",
    "fieldtype": "Table",
    "label": "Additional Packaging and Storage",
-   "options": "Packaging and Storage Table II"
+   "options": "Technical Data Sheet Additional Packaging and Storage"
   },
   {
    "fieldname": "dietary_information_section",
@@ -272,7 +272,7 @@
    "fieldname": "dietary_information",
    "fieldtype": "Table",
    "label": "Dietary Information",
-   "options": "Dietary Information Table"
+   "options": "Technical Data Sheet Dietary Information"
   },
   {
    "fieldname": "heavy_metals_section",
@@ -283,7 +283,7 @@
    "fieldname": "table_59",
    "fieldtype": "Table",
    "label": "Heavy Metals",
-   "options": "Heavy Metal Table"
+   "options": "Technical Data Sheet Heavy Metal"
   },
   {
    "fieldname": "foreign_body_management_section",
@@ -294,7 +294,7 @@
    "fieldname": "foreing_body",
    "fieldtype": "Table",
    "label": "Foreign Body Management",
-   "options": "Foreign Body Table"
+   "options": "Technical Data Sheet Foreign Body"
   },
   {
    "fieldname": "additional_information_section",
@@ -344,7 +344,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-03 17:23:07.351549",
+ "modified": "2024-05-15 10:15:09.556650",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Technical Data Sheet",
