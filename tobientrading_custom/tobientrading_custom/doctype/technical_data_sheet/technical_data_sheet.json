@@ -1,0 +1,395 @@
+{
+ "actions": [],
+ "autoname": "format:{product_no}",
+ "creation": "2020-05-22 16:12:56.714980",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "amended_from",
+  "general_information_section",
+  "product_name",
+  "product_no",
+  "country_of_origin",
+  "origins",
+  "botanical_origin",
+  "ingredients",
+  "processing_production",
+  "conformity",
+  "cas_no",
+  "inci",
+  "certificates",
+  "msds_table",
+  "customs_tariffs_number",
+  "customs_tariffs_number_switzerland",
+  "customs_tariffs",
+  "sensoric_parameters_section",
+  "sensoric_parameters",
+  "physical_and_chemical_parameters_section",
+  "table_26",
+  "additional_information",
+  "nutritional_information_section",
+  "table_29",
+  "nutrition_disclaimer",
+  "microbiological_properties_section",
+  "table_32",
+  "microfigures",
+  "allergenes_section",
+  "table_41",
+  "allergenes_disclaimer",
+  "packaging_and_storage_section",
+  "table_36",
+  "table_30",
+  "dietary_information_section",
+  "dietary_information",
+  "heavy_metals_section",
+  "table_59",
+  "foreign_body_management_section",
+  "foreing_body",
+  "additional_information_section",
+  "table_56",
+  "factors",
+  "disclaimer",
+  "disclaimer_purchase",
+  "refresh",
+  "letter_head"
+ ],
+ "fields": [
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Technical Data Sheet",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "general_information_section",
+   "fieldtype": "Section Break",
+   "label": "General Information"
+  },
+  {
+   "fetch_from": "product_no.item_name",
+   "fieldname": "product_name",
+   "fieldtype": "Data",
+   "label": "Product name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "product_no",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Product No.",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "product_no.country_of_origin",
+   "fieldname": "country_of_origin",
+   "fieldtype": "Data",
+   "label": "Country of Origin"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "origins",
+   "fieldtype": "Table MultiSelect",
+   "label": "Origins",
+   "options": "Origins"
+  },
+  {
+   "fieldname": "botanical_origin",
+   "fieldtype": "Data",
+   "label": "Botanical Origin"
+  },
+  {
+   "fieldname": "ingredients",
+   "fieldtype": "Data",
+   "label": "Ingredients"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "processing_production",
+   "fieldtype": "Data",
+   "label": "Processing / Production"
+  },
+  {
+   "fieldname": "conformity",
+   "fieldtype": "Select",
+   "label": "Conformity",
+   "options": "Food Grade\nCosmetic Grade\nFood & Cosmetic Grade\nFood Grade (Not intended for direct consumption)"
+  },
+  {
+   "fieldname": "cas_no",
+   "fieldtype": "Data",
+   "label": "CAS No."
+  },
+  {
+   "fieldname": "inci",
+   "fieldtype": "Data",
+   "label": "INCI"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "certificates",
+   "fieldtype": "Table",
+   "label": "Certificates",
+   "options": "TDS Certificate Table"
+  },
+  {
+   "fieldname": "msds_table",
+   "fieldtype": "Table",
+   "label": "MSDS Table",
+   "options": "MSDS Table"
+  },
+  {
+   "fetch_from": "product_no.customs_tariff_number",
+   "fieldname": "customs_tariffs_number",
+   "fieldtype": "Link",
+   "label": "Customs Tariffs Number",
+   "options": "Customs Tariff Number",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "product_no.customs_tariff_number_switzerland",
+   "fieldname": "customs_tariffs_number_switzerland",
+   "fieldtype": "Link",
+   "label": "Customs Tariffs Number Switzerland",
+   "options": "Customs Tariff Number Switzerland",
+   "read_only": 1
+  },
+  {
+   "fieldname": "customs_tariffs",
+   "fieldtype": "Table",
+   "hidden": 1,
+   "label": "Customs Tariffs",
+   "options": "Customs Tariff Table"
+  },
+  {
+   "fieldname": "sensoric_parameters_section",
+   "fieldtype": "Section Break",
+   "label": "Sensoric Parameters"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "sensoric_parameters",
+   "fieldtype": "Table",
+   "label": "Sensoric Parameters",
+   "options": "Sensoric Parameter Table"
+  },
+  {
+   "fieldname": "physical_and_chemical_parameters_section",
+   "fieldtype": "Section Break",
+   "label": "Physical and Chemical Parameters"
+  },
+  {
+   "fieldname": "table_26",
+   "fieldtype": "Table",
+   "label": "Physical and Chemical Parameters",
+   "options": "Physical and Chemical Parameter Table"
+  },
+  {
+   "fieldname": "additional_information",
+   "fieldtype": "Small Text",
+   "label": "Additional Information"
+  },
+  {
+   "description": "per 100g",
+   "fieldname": "nutritional_information_section",
+   "fieldtype": "Section Break",
+   "label": "Nutrition Information"
+  },
+  {
+   "fieldname": "table_29",
+   "fieldtype": "Table",
+   "label": "Nutritional Information",
+   "options": "Nutritional Information Table"
+  },
+  {
+   "default": "All figures are subject to the usual fluctuations in natural products.",
+   "fieldname": "nutrition_disclaimer",
+   "fieldtype": "Data",
+   "label": "Nutrition disclaimer"
+  },
+  {
+   "fieldname": "microbiological_properties_section",
+   "fieldtype": "Section Break",
+   "label": "Microbiological Properties"
+  },
+  {
+   "fieldname": "table_32",
+   "fieldtype": "Table",
+   "label": "Microbiological Properties",
+   "options": "Microbiologiacal Propertie Table"
+  },
+  {
+   "fieldname": "microfigures",
+   "fieldtype": "Select",
+   "label": "Microfigures",
+   "options": "\nNot heat treated - Therefore no microfigures can be guaranteed\nAccording DGHM Values\nCaution: A microbiological safe article, especially of Salmonella, can only be achieved by germ reduction."
+  },
+  {
+   "fieldname": "allergenes_section",
+   "fieldtype": "Section Break",
+   "label": "Allergenes"
+  },
+  {
+   "fieldname": "table_41",
+   "fieldtype": "Table",
+   "label": "Allergenes",
+   "options": "Allergene Table"
+  },
+  {
+   "default": "The allergen list only states if the mentioned allergen is as an ingredient in the product or not (according to EU No. 1169/2011, Annex 2)",
+   "fieldname": "allergenes_disclaimer",
+   "fieldtype": "Data",
+   "label": "Allergenes disclaimer"
+  },
+  {
+   "fieldname": "packaging_and_storage_section",
+   "fieldtype": "Section Break",
+   "label": "Packing and Storage"
+  },
+  {
+   "fieldname": "table_36",
+   "fieldtype": "Table",
+   "label": "Packaging and Storage",
+   "options": "Packaging and Storage Table"
+  },
+  {
+   "fieldname": "table_30",
+   "fieldtype": "Table",
+   "label": "Additional Packaging and Storage",
+   "options": "Packaging and Storage Table II"
+  },
+  {
+   "fieldname": "dietary_information_section",
+   "fieldtype": "Section Break",
+   "label": "Dietary"
+  },
+  {
+   "fieldname": "dietary_information",
+   "fieldtype": "Table",
+   "label": "Dietary Information",
+   "options": "Dietary Information Table"
+  },
+  {
+   "fieldname": "heavy_metals_section",
+   "fieldtype": "Section Break",
+   "label": "Heavy Metals"
+  },
+  {
+   "fieldname": "table_59",
+   "fieldtype": "Table",
+   "label": "Heavy Metals",
+   "options": "Heavy Metal Table"
+  },
+  {
+   "fieldname": "foreign_body_management_section",
+   "fieldtype": "Section Break",
+   "label": "Foreign Body Management"
+  },
+  {
+   "fieldname": "foreing_body",
+   "fieldtype": "Table",
+   "label": "Foreign Body Management",
+   "options": "Foreign Body Table"
+  },
+  {
+   "fieldname": "additional_information_section",
+   "fieldtype": "Section Break",
+   "label": "Additional Information"
+  },
+  {
+   "fieldname": "table_56",
+   "fieldtype": "Table",
+   "label": "Additional Information",
+   "options": "Technical Data Sheet Additional Information"
+  },
+  {
+   "default": "For analyses and measurement results, the drying and processing factors and, if applicable, the measurement uncertainties must always be taken into account. ",
+   "fieldname": "factors",
+   "fieldtype": "Small Text",
+   "label": "Factors"
+  },
+  {
+   "default": "The information given above is based on and to the best of our current knowledge. The customer and/or user is self-responsible for the use of this information and the use, storage and disposition of the product. This responsibility includes compliance with food and other regulations and laws as well as liability for personal injury and property damage. Kindly consider that due to the nature of the product the values mentioned above may vary for each batch.",
+   "fieldname": "disclaimer",
+   "fieldtype": "Small Text",
+   "label": "Disclaimer"
+  },
+  {
+   "default": "The information and parameters given above are agreed on. The supplier guarantees that the supplied product is according those parameters. As well as the EU and Swiss food legislation.",
+   "fieldname": "disclaimer_purchase",
+   "fieldtype": "Small Text",
+   "label": "Disclaimer Purchase"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "refresh",
+   "fieldtype": "Check",
+   "label": "refresh"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "letter_head",
+   "fieldtype": "Link",
+   "label": "Letter Head",
+   "options": "Letter Head",
+   "print_hide": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-05-03 17:23:07.351549",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Technical Data Sheet",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Quality Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
