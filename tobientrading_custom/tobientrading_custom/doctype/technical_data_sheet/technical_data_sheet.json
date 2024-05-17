@@ -96,7 +96,7 @@
    "fieldname": "origins",
    "fieldtype": "Table MultiSelect",
    "label": "Origins",
-   "options": "Origins"
+   "options": "Origin"
   },
   {
    "fieldname": "botanical_origin",
@@ -344,7 +344,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-15 10:15:09.556650",
+ "modified": "2024-05-17 15:59:00.710237",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Technical Data Sheet",
