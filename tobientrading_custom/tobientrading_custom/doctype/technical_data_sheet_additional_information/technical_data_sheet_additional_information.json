@@ -1,0 +1,42 @@
+{
+ "actions": [],
+ "creation": "2024-05-03 17:18:38.182071",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "additional_information",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "additional_information",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Additional Information",
+   "options": "Additional Information",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "additional_information.description",
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Description",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-05-03 17:20:11.232359",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Technical Data Sheet Additional Information",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

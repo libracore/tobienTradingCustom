@@ -1,0 +1,40 @@
+{
+ "actions": [],
+ "creation": "2024-05-15 10:13:11.176823",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "eu_customs_tariff",
+  "ch_customs_tariff"
+ ],
+ "fields": [
+  {
+   "fieldname": "eu_customs_tariff",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "EU Customs Tariff",
+   "options": "Customs Tariff Number"
+  },
+  {
+   "fieldname": "ch_customs_tariff",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "CH Customs Tariff",
+   "options": "Customs Tariff Number Switzerland"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-05-15 10:13:11.176823",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Technical Data Sheet Customs Tariff",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

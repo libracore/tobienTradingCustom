@@ -4,11 +4,11 @@ from . import __version__ as app_version
 
 app_name = "tobientrading_custom"
 app_title = "Tobientrading Custom"
-app_publisher = "vanessa bualat"
+app_publisher = "libracore AG"
 app_description = "Tobien Trading Customizations"
 app_icon = "octicon octicon-file-directory"
 app_color = "grey"
-app_email = "vanessa.bualat01@gmail.com"
+app_email = "info@libracore.com"
 app_license = "MIT"
 
 # Includes in <head>
@@ -40,7 +40,8 @@ doctype_js = {
     "Supplier Quotation": "public/js/supplier_quotation.js",
     "Purchase Order": "public/js/purchase_order.js",
     "Purchase Receipt": "public/js/purchase_receipt.js",
-    "Purchase Invoice": "public/js/purchase_invoice.js"
+    "Purchase Invoice": "public/js/purchase_invoice.js",
+    "Item": "public/js/item.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}

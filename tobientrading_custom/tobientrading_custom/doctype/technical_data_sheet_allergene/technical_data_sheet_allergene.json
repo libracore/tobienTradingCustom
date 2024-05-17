@@ -1,0 +1,65 @@
+{
+ "actions": [],
+ "creation": "2024-05-15 09:44:07.078008",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "allergen",
+  "contains",
+  "cross_contamination",
+  "allergen_in_factory",
+  "allergen_used_in_same_production_line"
+ ],
+ "fields": [
+  {
+   "fieldname": "contains",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Contains",
+   "options": "\nNo\nIngredient"
+  },
+  {
+   "fieldname": "cross_contamination",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Cross Contamination",
+   "options": "\nNo\nPossible"
+  },
+  {
+   "fieldname": "allergen_in_factory",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Allergen in Factory",
+   "options": "\nNo\nYes"
+  },
+  {
+   "fieldname": "allergen_used_in_same_production_line",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Allergen used in same production line",
+   "options": "\nNo\nYes"
+  },
+    {
+   "fieldname": "allergen",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Allergen",
+   "options": "Allergen",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-05-15 09:44:07.078008",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Technical Data Sheet Allergene",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

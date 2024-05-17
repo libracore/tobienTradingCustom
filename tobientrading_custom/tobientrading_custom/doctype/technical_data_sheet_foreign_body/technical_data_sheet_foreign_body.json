@@ -1,0 +1,56 @@
+{
+ "actions": [],
+ "creation": "2024-05-15 09:00:38.297109",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "forgein_body",
+  "in_place",
+  "value",
+  "unit"
+ ],
+ "fields": [
+  {
+   "fieldname": "forgein_body",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Foreign Body",
+   "options": "Foreign Body",
+   "reqd": 1
+  },
+  {
+   "fieldname": "in_place",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "In Place",
+   "options": "\nNo\nYes"
+  },
+  {
+   "fieldname": "value",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Value"
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Unit",
+   "options": "UOM"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-05-15 09:27:21.972526",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Technical Data Sheet Foreign Body",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

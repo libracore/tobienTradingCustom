@@ -1,0 +1,54 @@
+{
+ "actions": [],
+ "creation": "2024-05-15 09:39:11.016991",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "packaging_type",
+  "packaging_confirmation",
+  "shelf_life_in_days_after_production",
+  "shelf_life_guaranteed_with_delivery"
+ ],
+ "fields": [
+  {
+   "fieldname": "packaging_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Packaging Type",
+   "options": "Packaging Type"
+  },
+  {
+   "default": "All packaging materials are according EU 1935/2004 and 10/2011",
+   "fieldname": "packaging_confirmation",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Packaging confirmation"
+  },
+  {
+   "fieldname": "shelf_life_in_days_after_production",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Shelf Life in Days after production"
+  },
+  {
+   "fieldname": "shelf_life_guaranteed_with_delivery",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Shelf Life in Days guaranteed with delivery"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-05-15 09:39:51.485917",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Technical Data Sheet Additional Packaging and Storage",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

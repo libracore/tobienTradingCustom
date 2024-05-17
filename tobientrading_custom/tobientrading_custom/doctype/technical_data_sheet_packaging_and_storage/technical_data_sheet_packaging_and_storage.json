@@ -1,0 +1,56 @@
+{
+ "actions": [],
+ "creation": "2024-05-15 09:38:19.417502",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "parameter",
+  "limit",
+  "vaule",
+  "unit"
+ ],
+ "fields": [
+  {
+   "fieldname": "parameter",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Parameter",
+   "options": "Packaging and Storage",
+   "reqd": 1
+  },
+  {
+   "fieldname": "limit",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Limit",
+   "options": "\n<\n>\n\u2264\n\u2265\nafter production"
+  },
+  {
+   "fieldname": "vaule",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Vaule"
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Unit",
+   "options": "UOM"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-05-15 09:38:19.417502",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Technical Data Sheet Packaging and Storage",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

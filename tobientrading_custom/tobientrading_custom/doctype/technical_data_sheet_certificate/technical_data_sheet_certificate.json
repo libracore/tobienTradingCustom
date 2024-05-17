@@ -1,0 +1,40 @@
+{
+ "actions": [],
+ "creation": "2024-05-15 10:15:04.183231",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "type",
+  "certified"
+ ],
+ "fields": [
+  {
+   "fieldname": "type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "Certificate Type"
+  },
+  {
+   "fieldname": "certified",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Certified",
+   "options": "No\nYes\nYes - CH-BIO-006\nconform to requirements"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-05-15 10:15:04.183231",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Technical Data Sheet Certificate",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
