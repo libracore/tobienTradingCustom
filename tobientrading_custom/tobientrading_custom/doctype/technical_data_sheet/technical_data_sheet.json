@@ -135,7 +135,7 @@
    "fieldname": "certificates",
    "fieldtype": "Table",
    "label": "Certificates",
-   "options": "Technical Data Sheet TDS Certificate"
+   "options": "Technical Data Sheet Certificate"
   },
   {
    "fieldname": "msds_table",
@@ -344,7 +344,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-17 21:23:12.039553",
+ "modified": "2024-05-17 21:27:04.199837",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Technical Data Sheet",
