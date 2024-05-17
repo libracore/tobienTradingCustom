@@ -22,3 +22,32 @@ def apply_origins_to_variants(template_item_code, origins):
         
     return
     
+@frappe.whitelist()
+def attach_tds_pdfs(sales_order):
+    so_doc = frappe.get_doc("Sales Order", sales_order)
+    
+    # get technical data sheets
+    for i in so_doc.items:
+        tds = frappe.get_value("Item", i.item_code, "technical_data_sheet")
+        if tds:
+            # find all files attached to this tds
+            pdfs = frappe.get_all("File", 
+                filters={
+                    'attached_to_doctype': 'Technical Data Sheet',
+                    'attached_to_name': tds
+                },
+                fields=['name']
+            )
+            for pdf in pdfs:
+                so_pdf = frappe.get_doc(
+                    frappe.get_doc("File", pdf['name']).as_dict()
+                )
+                so_pdf.update({
+                    'attached_to_doctype': 'Sales Order',
+                    'attached_to_name': sales_order
+                })
+                so_pdf.insert()
+                
+            frappe.db.commit()
+            
+    return
