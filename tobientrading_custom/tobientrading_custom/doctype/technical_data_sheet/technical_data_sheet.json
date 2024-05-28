@@ -70,7 +70,7 @@
    "label": "General Information"
   },
   {
-   "fetch_from": "product_no.item_name",
+   "fetch_from": "item_code.item_name",
    "fieldname": "product_name",
    "fieldtype": "Data",
    "label": "Product name",
@@ -345,7 +345,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-28 13:17:25.066835",
+ "modified": "2024-05-28 17:22:16.898755",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Technical Data Sheet",
