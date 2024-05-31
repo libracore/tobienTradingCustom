@@ -12,5 +12,17 @@ frappe.ui.form.on('Sales Order', {
     },
     company: function(frm) {
         prepare_naming_series(frm);  // common function
+    },
+    on_submit: function(frm) {
+        attach_tds_pdfs(frm);
     }
 });
+
+function attach_tds_pdfs(frm) {
+    frappe.call({
+        'method': 'tobientrading_custom.tobientrading_custom.utils.attach_tds_pdfs',
+        'args': {
+            'sales_order': frm.doc.name
+        }
+    });
+}
