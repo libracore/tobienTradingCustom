@@ -5,7 +5,7 @@
 
 def get_data():
     return {
-        'fieldname': 'item',
+        'fieldname': 'coa',
         'transactions': [
             {
                 'label': 'Certificate of Analysis Results',
