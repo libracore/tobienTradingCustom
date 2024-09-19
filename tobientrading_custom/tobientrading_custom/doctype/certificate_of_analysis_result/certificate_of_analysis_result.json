@@ -6,13 +6,19 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "parameter",
+  "coa",
+  "date_coa",
+  "column_break_zfemy",
   "test_type",
+  "method",
+  "result_section",
   "result",
   "unit",
+  "column_break_swuwb",
   "guide_value",
   "limit_value",
-  "max_level",
-  "data_fcudb"
+  "max_level"
  ],
  "fields": [
   {
@@ -51,13 +57,50 @@
    "label": "Max. level"
   },
   {
-   "fieldname": "data_fcudb",
-   "fieldtype": "Data"
+   "fieldname": "coa",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "COA",
+   "options": "Certificate of Analysis",
+   "reqd": 1
+  },
+  {
+   "fieldname": "parameter",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Parameter",
+   "options": "Measurement Parameter",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_zfemy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "method",
+   "fieldtype": "Data",
+   "label": "Method"
+  },
+  {
+   "fieldname": "result_section",
+   "fieldtype": "Section Break",
+   "label": "Result"
+  },
+  {
+   "fieldname": "column_break_swuwb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "coa.date_coa",
+   "fieldname": "date_coa",
+   "fieldtype": "Date",
+   "label": "Date COA",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-19 10:37:21.185957",
+ "modified": "2024-09-19 16:30:27.315630",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis Result",

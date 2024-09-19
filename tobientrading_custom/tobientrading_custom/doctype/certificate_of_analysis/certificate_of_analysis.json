@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "COA.#####",
+ "autoname": "format:COA-{######}-{item}",
  "creation": "2024-05-31 09:35:52.361860",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -9,30 +9,20 @@
  "field_order": [
   "item",
   "item_name",
+  "item_group",
   "batch_tt",
   "sample_lot_tt",
-  "parameter",
-  "column_break_dz1s9",
-  "date_coa",
-  "batch_producer",
-  "lab_analysis",
-  "measurement_section",
-  "result_column",
-  "qualifier",
-  "result",
-  "unit",
-  "legal_limit_column",
-  "legal_qualifier",
-  "legal_limit",
-  "legal_unit",
-  "column_break_2qdjo",
-  "method",
-  "processing_factor",
-  "measurement_uncertainty",
-  "column_break_2m502",
-  "eu_legislation",
   "batch_volume",
-  "item_group",
+  "batch_producer",
+  "column_break_dz1s9",
+  "lab_analysis",
+  "begin_of_analysis",
+  "end_of_analysis",
+  "date_coa",
+  "laboratory",
+  "laboratory_name",
+  "column_break_2m502",
+  "results",
   "status_section",
   "status_batch",
   "status_verkauf",
@@ -76,65 +66,9 @@
   {
    "fieldname": "lab_analysis",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Lab Analysis",
    "reqd": 1
-  },
-  {
-   "fieldname": "parameter",
-   "fieldtype": "Data",
-   "label": "Parameter",
-   "options": "\n",
-   "reqd": 1
-  },
-  {
-   "fieldname": "qualifier",
-   "fieldtype": "Data",
-   "label": "Qualifier"
-  },
-  {
-   "fieldname": "result",
-   "fieldtype": "Data",
-   "label": "Result"
-  },
-  {
-   "fieldname": "unit",
-   "fieldtype": "Data",
-   "label": "Unit "
-  },
-  {
-   "fieldname": "legal_limit_column",
-   "fieldtype": "Column Break",
-   "label": "Legal Limit"
-  },
-  {
-   "fieldname": "legal_qualifier",
-   "fieldtype": "Data",
-   "label": "Qualifier"
-  },
-  {
-   "fieldname": "legal_limit",
-   "fieldtype": "Data",
-   "label": "Legal Limit"
-  },
-  {
-   "fieldname": "legal_unit",
-   "fieldtype": "Data",
-   "label": "Unit"
-  },
-  {
-   "fieldname": "processing_factor",
-   "fieldtype": "Data",
-   "label": "Processing Factor"
-  },
-  {
-   "fieldname": "measurement_uncertainty",
-   "fieldtype": "Data",
-   "label": "Measurement Uncertainty"
-  },
-  {
-   "fieldname": "eu_legislation",
-   "fieldtype": "Data",
-   "label": "EU Legislation"
   },
   {
    "fieldname": "batch_volume",
@@ -142,15 +76,11 @@
    "label": "Batch Volume"
   },
   {
+   "fetch_from": "item.item_group",
    "fieldname": "item_group",
-   "fieldtype": "Select",
-   "label": "Item Group",
-   "options": "\nExtraktionsr\u00fcckst\u00e4nde"
-  },
-  {
-   "fieldname": "method",
    "fieldtype": "Data",
-   "label": "Method"
+   "label": "Item Group",
+   "read_only": 1
   },
   {
    "fieldname": "status_batch",
@@ -161,16 +91,6 @@
    "fieldname": "status_verkauf",
    "fieldtype": "Data",
    "label": "Status Verkauf"
-  },
-  {
-   "fieldname": "measurement_section",
-   "fieldtype": "Section Break",
-   "label": "Measurements"
-  },
-  {
-   "fieldname": "result_column",
-   "fieldtype": "Column Break",
-   "label": "Result"
   },
   {
    "fieldname": "status_section",
@@ -197,24 +117,50 @@
    "label": "Massnahmen"
   },
   {
-   "fieldname": "column_break_2qdjo",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "column_break_2m502",
-   "fieldtype": "Column Break"
+   "fieldtype": "Section Break",
+   "label": "Results"
   },
   {
    "fetch_from": "item.item_name",
    "fieldname": "item_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Item name",
    "read_only": 1
+  },
+  {
+   "fieldname": "begin_of_analysis",
+   "fieldtype": "Date",
+   "label": "Begin of Analysis"
+  },
+  {
+   "fieldname": "end_of_analysis",
+   "fieldtype": "Date",
+   "label": "End of Analysis"
+  },
+  {
+   "fieldname": "laboratory",
+   "fieldtype": "Link",
+   "label": "Laboratory",
+   "options": "Supplier"
+  },
+  {
+   "fetch_from": "laboratory.supplier_name",
+   "fieldname": "laboratory_name",
+   "fieldtype": "Data",
+   "label": "Laboratory Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "results",
+   "fieldtype": "HTML",
+   "label": "Results"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-19 10:38:31.970108",
+ "modified": "2024-09-19 16:22:47.416519",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis",
