@@ -60,8 +60,9 @@
   },
   {
    "fieldname": "batch_producer",
-   "fieldtype": "Data",
-   "label": "Batch Producer"
+   "fieldtype": "Select",
+   "label": "Batch Producer",
+   "options": "\nby sender"
   },
   {
    "fieldname": "lab_analysis",
@@ -155,12 +156,13 @@
   {
    "fieldname": "results",
    "fieldtype": "HTML",
-   "label": "Results"
+   "label": "Results",
+   "options": "<table id=\"results-table\" style=\"width: 100%; border: 1;\">\n<tbody><tr><td><strong>Parameter</strong></td><td><strong>Result</strong></td><td><strong>Unit</strong></td></tr></tbody></table>"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-19 16:22:47.416519",
+ "modified": "2024-09-19 17:20:22.522732",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis",

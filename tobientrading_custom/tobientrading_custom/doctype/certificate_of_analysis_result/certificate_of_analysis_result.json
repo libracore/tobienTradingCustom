@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "COAR.######",
  "creation": "2024-09-19 10:37:21.185957",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -100,7 +101,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-19 16:30:27.315630",
+ "modified": "2024-09-19 16:34:23.929589",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis Result",
