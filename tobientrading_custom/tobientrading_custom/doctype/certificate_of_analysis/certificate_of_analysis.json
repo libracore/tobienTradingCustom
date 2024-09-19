@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:COA-{######}-{item}",
+ "autoname": "field:lab_analysis",
  "creation": "2024-05-31 09:35:52.361860",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -22,13 +22,7 @@
   "laboratory",
   "laboratory_name",
   "column_break_2m502",
-  "results",
-  "status_section",
-  "status_batch",
-  "status_verkauf",
-  "column_break_woesm",
-  "massnahmen",
-  "druck"
+  "results"
  ],
  "fields": [
   {
@@ -69,7 +63,8 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Lab Analysis",
-   "reqd": 1
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fieldname": "batch_volume",
@@ -84,38 +79,8 @@
    "read_only": 1
   },
   {
-   "fieldname": "status_batch",
-   "fieldtype": "Data",
-   "label": "Status Batch"
-  },
-  {
-   "fieldname": "status_verkauf",
-   "fieldtype": "Data",
-   "label": "Status Verkauf"
-  },
-  {
-   "fieldname": "status_section",
-   "fieldtype": "Section Break",
-   "label": "Status"
-  },
-  {
-   "fieldname": "column_break_woesm",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "druck",
-   "fieldtype": "Select",
-   "label": "Druck",
-   "options": "\nJa\nNein"
-  },
-  {
    "fieldname": "column_break_dz1s9",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "massnahmen",
-   "fieldtype": "Data",
-   "label": "Massnahmen"
   },
   {
    "fieldname": "column_break_2m502",
@@ -162,7 +127,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-19 17:20:22.522732",
+ "modified": "2024-09-19 17:38:25.582499",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis",
