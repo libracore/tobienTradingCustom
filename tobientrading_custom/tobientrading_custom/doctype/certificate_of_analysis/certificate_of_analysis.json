@@ -1,12 +1,14 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "COA.#####",
  "creation": "2024-05-31 09:35:52.361860",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "item",
+  "item_name",
   "batch_tt",
   "sample_lot_tt",
   "parameter",
@@ -50,6 +52,7 @@
   {
    "fieldname": "date_coa",
    "fieldtype": "Date",
+   "in_list_view": 1,
    "label": "Date CoA",
    "reqd": 1
   },
@@ -57,8 +60,7 @@
    "fieldname": "batch_tt",
    "fieldtype": "Link",
    "label": "Batch TT",
-   "options": "Batch",
-   "reqd": 1
+   "options": "Batch"
   },
   {
    "fieldname": "sample_lot_tt",
@@ -201,11 +203,18 @@
   {
    "fieldname": "column_break_2m502",
    "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "item.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item name",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-05-31 11:29:49.078170",
+ "modified": "2024-09-19 10:38:31.970108",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis",
