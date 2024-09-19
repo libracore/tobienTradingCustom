@@ -1,0 +1,81 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-09-19 10:37:21.185957",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "test_type",
+  "result",
+  "unit",
+  "guide_value",
+  "limit_value",
+  "max_level",
+  "data_fcudb"
+ ],
+ "fields": [
+  {
+   "fieldname": "test_type",
+   "fieldtype": "Select",
+   "label": "Test Type",
+   "options": "\nMicrobiological Test\nChemical/physical Test\nPesticides and related substances"
+  },
+  {
+   "fieldname": "result",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Result",
+   "reqd": 1
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Unit",
+   "reqd": 1
+  },
+  {
+   "fieldname": "guide_value",
+   "fieldtype": "Data",
+   "label": "Guide value"
+  },
+  {
+   "fieldname": "limit_value",
+   "fieldtype": "Data",
+   "label": "Limit value"
+  },
+  {
+   "fieldname": "max_level",
+   "fieldtype": "Data",
+   "label": "Max. level"
+  },
+  {
+   "fieldname": "data_fcudb",
+   "fieldtype": "Data"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-09-19 10:37:21.185957",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Certificate of Analysis Result",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

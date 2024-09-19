@@ -3,12 +3,12 @@
 
 frappe.ui.form.on('Certificate of Analysis', {
 	refresh: function(frm) {
-		frm.add_custom_button(__("GBA PDF"), function(){
+		frm.add_custom_button("GBA PDF", function(){
 			import_from_pdf("GBA");
-		}, __("Import from"));
-		frm.add_custom_button(__("GBA Excel"), function(){
+		}, "Import from");
+		frm.add_custom_button("GBA Excel", function(){
 			import_from_excel("GBA");
-		}, __("Import from"));
+		}, "Import from");
 	}
 });
 
