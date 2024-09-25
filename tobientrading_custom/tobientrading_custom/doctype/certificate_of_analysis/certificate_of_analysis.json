@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:lab_analysis",
+ "autoname": "field:certificate_of_analysis",
  "creation": "2024-05-31 09:35:52.361860",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -15,7 +15,7 @@
   "batch_volume",
   "batch_producer",
   "column_break_dz1s9",
-  "lab_analysis",
+  "certificate_of_analysis",
   "begin_of_analysis",
   "end_of_analysis",
   "date_coa",
@@ -29,6 +29,7 @@
    "fieldname": "item",
    "fieldtype": "Link",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Item",
    "options": "Item",
    "reqd": 1
@@ -57,14 +58,6 @@
    "fieldtype": "Select",
    "label": "Batch Producer",
    "options": "\nby sender"
-  },
-  {
-   "fieldname": "lab_analysis",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Lab Analysis",
-   "reqd": 1,
-   "unique": 1
   },
   {
    "fieldname": "batch_volume",
@@ -108,6 +101,7 @@
   {
    "fieldname": "laboratory",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Laboratory",
    "options": "Supplier"
   },
@@ -121,13 +115,20 @@
   {
    "fieldname": "results",
    "fieldtype": "HTML",
-   "label": "Results",
-   "options": "<table id=\"results-table\" style=\"width: 100%; border: 1;\">\n<tbody><tr><td><strong>Parameter</strong></td><td><strong>Result</strong></td><td><strong>Unit</strong></td></tr></tbody></table>"
+   "label": "Results"
+  },
+  {
+   "fieldname": "certificate_of_analysis",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Certificate of Analysis",
+   "reqd": 1,
+   "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-19 17:38:25.582499",
+ "modified": "2024-09-25 11:33:26.852167",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis",
@@ -147,5 +148,6 @@
   }
  ],
  "sort_field": "modified",
- "sort_order": "DESC"
+ "sort_order": "DESC",
+ "title_field": "item_name"
 }
