@@ -1,0 +1,33 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2024-09-25 13:00:35.795647",
+ "disable_prepared_report": 1,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "letter_head": "Standard",
+ "modified": "2024-09-25 13:08:14.626381",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Analysedatenbank",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Certificate of Analysis Result",
+ "report_name": "Analysedatenbank",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Auditor"
+  },
+  {
+   "role": "Accounts User"
+  }
+ ]
+}
