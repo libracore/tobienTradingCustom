@@ -23,7 +23,6 @@ function import_from_excel(type){
 }
 
 function populate_results_table(fm){
-    var tableBody = document.getElementById("results-table").getElementsByTagName('tbody')[0];
 	frappe.call({
 		'method': "tobientrading_custom.tobientrading_custom.doctype.certificate_of_analysis.certificate_of_analysis.get_results",
 		'args': {
@@ -31,25 +30,7 @@ function populate_results_table(fm){
 		},
 		'callback': function(response){
 			if (response.message) {
-				console.log(response.message);
-				var results=response.message;
-				for (var i=0; i < results.length; i++) {
-					var newRow = document.createElement("tr");
-
-					var parameterCell = document.createElement("td");
-					parameterCell.textContent = results[i].parameter;
-					newRow.appendChild(parameterCell);
-
-					var resultCell = document.createElement("td");
-					resultCell.textContent = results[i].result;
-					newRow.appendChild(resultCell);
-
-					var unitCell = document.createElement("td");
-					unitCell.textContent = results[i].unit;
-					newRow.appendChild(unitCell);
-
-					tableBody.appendChild(newRow);
-				}
+				cur_frm.set_df_property('results','options', response.message);
 			}
 		}
 	})

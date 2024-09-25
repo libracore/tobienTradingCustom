@@ -11,12 +11,16 @@ class CertificateofAnalysis(Document):
 @frappe.whitelist()
 def get_results(coa):
 	query="""
-		SELECT `coar`.`parameter`, 
+		SELECT `coar`.`test_type`,
+			`coar`.`parameter`, 
 			`coar`.`result`,
-			`coar`.`unit`
+			`coar`.`unit`,
+			`coar`.`name`
 		FROM `tabCertificate of Analysis Result` AS `coar`
 		WHERE `coar`.`coa` = '{coa}'
+		ORDER BY `coar`.`test_type`, `coar`.`parameter` ASC
 		""".format(coa=coa)
 
 	results = frappe.db.sql(query, as_dict=True)
-	return results
+	results_html = frappe.render_template("tobientrading_custom/templates/includes/coa_results.html", {"results": results})
+	return results_html
