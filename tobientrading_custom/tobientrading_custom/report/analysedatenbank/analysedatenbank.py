@@ -36,7 +36,7 @@ def get_columns():
 def get_data(filters):
 	query = """
 		SELECT 
-			`tabCertificate of Analysis`.`item_name` as `item`,
+			`tabCertificate of Analysis`.`item_name` AS `item`,
 			`tabCertificate of Analysis`.`date_coa`,
 			`tabCertificate of Analysis`.`batch_tt`,
 			`tabCertificate of Analysis`.`sample_lot_tt`,
@@ -50,14 +50,17 @@ def get_data(filters):
 			"" AS `processing_factor`,
 			"" AS `measurement_uncertainty`,
 			"" AS `eu_legislation`,
-			`tabCertificate of Analysis`.`batch_volume`,t
+			`tabCertificate of Analysis`.`batch_volume`,
 			`tabCertificate of Analysis`.`item_group`,
 			`tabCertificate of Analysis Result`.`test_type`,
 			`tabCertificate of Analysis Result`.`method`
 		FROM `tabCertificate of Analysis`
-		LEFT JOIN `tabCertificate of Analysis Result` ON `tabCertificate of Analysis`.`name` = `tabCertificate of Analysis Result`.`coa`
+		LEFT JOIN `tabCertificate of Analysis Result` 
+			ON `tabCertificate of Analysis`.`name` = `tabCertificate of Analysis Result`.`coa`
 		WHERE `tabCertificate of Analysis Result`.`parameter` IS NOT NULL
-		ORDER BY `tabCertificate of Analysis`.`item`, `tabCertificate of Analysis`.`date_coa`, `tabCertificate of Analysis Result`.`parameter` ASC
+		ORDER BY `tabCertificate of Analysis`.`item_name`, 
+				`tabCertificate of Analysis`.`date_coa`, 
+				`tabCertificate of Analysis Result`.`parameter` ASC
 	"""
 	data = frappe.db.sql(query, as_dict=True)
 	return data
