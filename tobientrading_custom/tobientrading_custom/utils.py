@@ -26,8 +26,12 @@ def apply_origins_to_variants(template_item_code, origins):
 def attach_tds_pdfs(sales_order):
     so_doc = frappe.get_doc("Sales Order", sales_order)
     
+    crawled_items = []
     # get technical data sheets
     for i in so_doc.items:
+        if i.item_code in crawled_items:        # prevent attaching multiple TDS for the same item
+            continue
+        crawled_items.append(i.item_code)
         tds = frappe.get_value("Item", i.item_code, "technical_data_sheet")
         if tds:
             # find all files attached to this tds
