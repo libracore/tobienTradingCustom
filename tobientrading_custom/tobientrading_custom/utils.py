@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, libracore and contributors
+# Copyright (c) 2023-2024, libracore and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -51,3 +51,23 @@ def attach_tds_pdfs(sales_order):
             frappe.db.commit()
             
     return
+
+@frappe.whitelist()
+def get_emergency_contact(dt, dn):
+    contacts = frappe.db.sql("""
+        SELECT 
+            `tabContact`.`name`, 
+            `tabContact`.`first_name`, 
+            `tabContact`.`last_name`,
+            `tabContact`.`phone` 
+        FROM `tabContact` 
+        LEFT JOIN `tabDynamic Link` ON 
+            `tabDynamic Link`.`parent` = `tabContact`.`name` 
+            AND `tabDynamic Link`.`parenttype` = "Contact" 
+            AND `tabDynamic Link`.`link_doctype` = "{dt}"
+        WHERE `tabDynamic Link`.`link_name` = "{dn}"
+            AND `tabContact`.`is_emergency_contact` = 1
+        ;
+    """.format(dt=dt, dn=dn), as_dict=True)
+    
+    return contacts
