@@ -34,6 +34,14 @@ def get_columns():
 	return columns
 
 def get_data(filters):
+	conditions = ""
+	if filters.get("item"):
+		conditions += " AND `tabCertificate of Analysis`.`item_name` = '{0}'".format(filters.get("item"))
+	if filters.get("parameter"):
+		conditions += " AND `tabCertificate of Analysis Result`.`parameter` = '{0}'".format(filters.get("parameter"))
+	if filters.get("batch_tt"):
+		conditions += " AND `tabCertificate of Analysis`.`batch_tt` = '{0}'".format(filters.get("batch_tt"))
+
 	query = """
 		SELECT 
 			`tabCertificate of Analysis`.`item_name` AS `item`,
@@ -58,9 +66,10 @@ def get_data(filters):
 		LEFT JOIN `tabCertificate of Analysis Result` 
 			ON `tabCertificate of Analysis`.`name` = `tabCertificate of Analysis Result`.`coa`
 		WHERE `tabCertificate of Analysis Result`.`parameter` IS NOT NULL
+		{conditions}
 		ORDER BY `tabCertificate of Analysis`.`item_name`, 
 				`tabCertificate of Analysis`.`date_coa`, 
 				`tabCertificate of Analysis Result`.`parameter` ASC
-	"""
+	""".format(conditions=conditions)
 	data = frappe.db.sql(query, as_dict=True)
 	return data
