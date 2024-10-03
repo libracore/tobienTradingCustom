@@ -1,48 +1,36 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
+ "autoname": "field:certificate_of_analysis",
  "creation": "2024-05-31 09:35:52.361860",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "item",
+  "item_name",
+  "item_group",
   "batch_tt",
   "sample_lot_tt",
-  "parameter",
-  "column_break_dz1s9",
-  "date_coa",
-  "batch_producer",
-  "lab_analysis",
-  "measurement_section",
-  "result_column",
-  "qualifier",
-  "result",
-  "unit",
-  "legal_limit_column",
-  "legal_qualifier",
-  "legal_limit",
-  "legal_unit",
-  "column_break_2qdjo",
-  "method",
-  "processing_factor",
-  "measurement_uncertainty",
-  "column_break_2m502",
-  "eu_legislation",
   "batch_volume",
-  "item_group",
-  "status_section",
-  "status_batch",
-  "status_verkauf",
-  "column_break_woesm",
-  "massnahmen",
-  "druck"
+  "batch_producer",
+  "column_break_dz1s9",
+  "certificate_of_analysis",
+  "begin_of_analysis",
+  "end_of_analysis",
+  "date_coa",
+  "laboratory",
+  "laboratory_name",
+  "column_break_2m502",
+  "results"
  ],
  "fields": [
   {
    "fieldname": "item",
    "fieldtype": "Link",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Item",
    "options": "Item",
    "reqd": 1
@@ -50,6 +38,7 @@
   {
    "fieldname": "date_coa",
    "fieldtype": "Date",
+   "in_list_view": 1,
    "label": "Date CoA",
    "reqd": 1
   },
@@ -57,8 +46,7 @@
    "fieldname": "batch_tt",
    "fieldtype": "Link",
    "label": "Batch TT",
-   "options": "Batch",
-   "reqd": 1
+   "options": "Batch"
   },
   {
    "fieldname": "sample_lot_tt",
@@ -68,71 +56,9 @@
   },
   {
    "fieldname": "batch_producer",
-   "fieldtype": "Data",
-   "label": "Batch Producer"
-  },
-  {
-   "fieldname": "lab_analysis",
-   "fieldtype": "Data",
-   "label": "Lab Analysis",
-   "reqd": 1
-  },
-  {
-   "fieldname": "parameter",
-   "fieldtype": "Data",
-   "label": "Parameter",
-   "options": "\n",
-   "reqd": 1
-  },
-  {
-   "fieldname": "qualifier",
-   "fieldtype": "Data",
-   "label": "Qualifier"
-  },
-  {
-   "fieldname": "result",
-   "fieldtype": "Data",
-   "label": "Result"
-  },
-  {
-   "fieldname": "unit",
-   "fieldtype": "Data",
-   "label": "Unit "
-  },
-  {
-   "fieldname": "legal_limit_column",
-   "fieldtype": "Column Break",
-   "label": "Legal Limit"
-  },
-  {
-   "fieldname": "legal_qualifier",
-   "fieldtype": "Data",
-   "label": "Qualifier"
-  },
-  {
-   "fieldname": "legal_limit",
-   "fieldtype": "Data",
-   "label": "Legal Limit"
-  },
-  {
-   "fieldname": "legal_unit",
-   "fieldtype": "Data",
-   "label": "Unit"
-  },
-  {
-   "fieldname": "processing_factor",
-   "fieldtype": "Data",
-   "label": "Processing Factor"
-  },
-  {
-   "fieldname": "measurement_uncertainty",
-   "fieldtype": "Data",
-   "label": "Measurement Uncertainty"
-  },
-  {
-   "fieldname": "eu_legislation",
-   "fieldtype": "Data",
-   "label": "EU Legislation"
+   "fieldtype": "Select",
+   "label": "Batch Producer",
+   "options": "\nby sender"
   },
   {
    "fieldname": "batch_volume",
@@ -140,72 +66,70 @@
    "label": "Batch Volume"
   },
   {
+   "fetch_from": "item.item_group",
    "fieldname": "item_group",
-   "fieldtype": "Select",
+   "fieldtype": "Data",
    "label": "Item Group",
-   "options": "\nExtraktionsr\u00fcckst\u00e4nde"
-  },
-  {
-   "fieldname": "method",
-   "fieldtype": "Data",
-   "label": "Method"
-  },
-  {
-   "fieldname": "status_batch",
-   "fieldtype": "Data",
-   "label": "Status Batch"
-  },
-  {
-   "fieldname": "status_verkauf",
-   "fieldtype": "Data",
-   "label": "Status Verkauf"
-  },
-  {
-   "fieldname": "measurement_section",
-   "fieldtype": "Section Break",
-   "label": "Measurements"
-  },
-  {
-   "fieldname": "result_column",
-   "fieldtype": "Column Break",
-   "label": "Result"
-  },
-  {
-   "fieldname": "status_section",
-   "fieldtype": "Section Break",
-   "label": "Status"
-  },
-  {
-   "fieldname": "column_break_woesm",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "druck",
-   "fieldtype": "Select",
-   "label": "Druck",
-   "options": "\nJa\nNein"
+   "read_only": 1
   },
   {
    "fieldname": "column_break_dz1s9",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "massnahmen",
-   "fieldtype": "Data",
-   "label": "Massnahmen"
-  },
-  {
-   "fieldname": "column_break_2qdjo",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "column_break_2m502",
-   "fieldtype": "Column Break"
+   "fieldtype": "Section Break",
+   "label": "Results"
+  },
+  {
+   "fetch_from": "item.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "begin_of_analysis",
+   "fieldtype": "Date",
+   "label": "Begin of Analysis"
+  },
+  {
+   "fieldname": "end_of_analysis",
+   "fieldtype": "Date",
+   "label": "End of Analysis"
+  },
+  {
+   "fieldname": "laboratory",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Laboratory",
+   "options": "Supplier"
+  },
+  {
+   "fetch_from": "laboratory.supplier_name",
+   "fieldname": "laboratory_name",
+   "fieldtype": "Data",
+   "label": "Laboratory Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "results",
+   "fieldtype": "HTML",
+   "label": "Results"
+  },
+  {
+   "fieldname": "certificate_of_analysis",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Certificate of Analysis",
+   "reqd": 1,
+   "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-05-31 11:29:49.078170",
+ "modified": "2024-09-26 15:51:17.868930",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis",
@@ -225,5 +149,6 @@
   }
  ],
  "sort_field": "modified",
- "sort_order": "DESC"
+ "sort_order": "DESC",
+ "title_field": "item_name"
 }

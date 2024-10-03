@@ -1,0 +1,18 @@
+<table class="table">
+    <tr>
+        <th>Test Type</th>
+        <th>Parameter</th>
+        <th>Result</th>
+        <th>Unit</th>
+        <th>Link</th>
+    </tr>
+    {% for result in results %}
+    <tr>
+        <td>{{ result.test_type }}</td>
+        <td>{{ result.parameter }}</td>
+        <td>{{ result.result }}</td>
+        <td>{{ result.unit }}</td>
+        <td><a href="/app/certificate-of-analysis-result/{{ result.name }}" target="_blank">Open</a></td>
+    </tr>
+    {% endfor %}
+</table>

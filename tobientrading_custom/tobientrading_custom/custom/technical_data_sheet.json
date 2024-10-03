@@ -1,0 +1,32 @@
+{
+ "custom_fields": [],
+ "custom_perms": [],
+ "doctype": "Technical Data Sheet",
+ "property_setters": [
+  {
+   "_assign": null,
+   "_comments": null,
+   "_liked_by": null,
+   "_user_tags": null,
+   "creation": "2024-09-18 09:52:00.107291",
+   "default_value": null,
+   "doc_type": "Technical Data Sheet",
+   "docstatus": 0,
+   "doctype_or_field": "DocType",
+   "field_name": null,
+   "idx": 0,
+   "modified": "2024-09-18 09:52:00.107291",
+   "modified_by": "ft@tobien-trading.com",
+   "name": "Technical Data Sheet-main-default_print_format",
+   "owner": "ft@tobien-trading.com",
+   "parent": null,
+   "parentfield": null,
+   "parenttype": null,
+   "property": "default_print_format",
+   "property_type": "Data",
+   "row_name": null,
+   "value": "Technical Data Sheet - Origins Standard"
+  }
+ ],
+ "sync_on_migrate": 1
+}
