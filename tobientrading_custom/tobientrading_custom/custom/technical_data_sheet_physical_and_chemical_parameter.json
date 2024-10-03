@@ -1,0 +1,32 @@
+{
+ "custom_fields": [],
+ "custom_perms": [],
+ "doctype": "Technical Data Sheet Physical and Chemical Parameter",
+ "property_setters": [
+  {
+   "_assign": null,
+   "_comments": null,
+   "_liked_by": null,
+   "_user_tags": null,
+   "creation": "2024-05-22 08:12:34.091225",
+   "default_value": null,
+   "doc_type": "Technical Data Sheet Physical and Chemical Parameter",
+   "docstatus": 0,
+   "doctype_or_field": "DocField",
+   "field_name": "value_po",
+   "idx": 0,
+   "modified": "2024-05-22 08:12:34.091225",
+   "modified_by": "ft@tobien-trading.com",
+   "name": "Technical Data Sheet Physical and Chemical Parameter-value_po-in_list_view",
+   "owner": "ft@tobien-trading.com",
+   "parent": null,
+   "parentfield": null,
+   "parenttype": null,
+   "property": "in_list_view",
+   "property_type": "Check",
+   "row_name": null,
+   "value": "1"
+  }
+ ],
+ "sync_on_migrate": 1
+}
