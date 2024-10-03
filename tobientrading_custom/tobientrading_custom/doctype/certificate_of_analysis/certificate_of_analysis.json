@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "autoname": "field:certificate_of_analysis",
  "creation": "2024-05-31 09:35:52.361860",
@@ -128,7 +129,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-25 11:33:26.852167",
+ "modified": "2024-09-26 15:51:17.868930",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis",
