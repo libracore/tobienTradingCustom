@@ -53,15 +53,15 @@ function extract_data(contents){
 	var sheet_name_list = workbook.SheetNames[0];
 	var worksheet = workbook.Sheets[sheet_name_list];
 	var data = XLSX.utils.sheet_to_json(worksheet, {header: 1});
-    console.log(data);
 	create_coa_from_excel_data(data);
 }
 
 function create_coa_from_excel_data(data){
+	const jsonData = JSON.stringify(data);
 	frappe.call({
 		'method': "tobientrading_custom.tobientrading_custom.doctype.certificate_of_analysis.certificate_of_analysis.create_coa_from_excel_data",
 		'args': {
-			'data': data
+			'data': jsonData
 		},
 		'callback': function(response){
 			if (response.message) {
