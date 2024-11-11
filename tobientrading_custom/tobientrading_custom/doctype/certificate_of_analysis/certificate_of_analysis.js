@@ -1,11 +1,17 @@
 // Copyright (c) 2024, vanessa bualat and contributors
 // For license information, please see license.txt
-document.addEventListener('DOMContentLoaded', function () {
-	// dynamically load the xlsx library
-	var xlsx = document.createElement('script');
-	xlsx.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js';
-	document.head.appendChild(xlsx);
-});
+
+load_script("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js", function() { console.log("XLSX loaded"); })
+
+function load_script(url, callback) {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = url;
+    script.onload = function() { 
+        callback();
+    }
+    document.getElementsByTagName("head")[0].appendChild(script);
+}
 
 frappe.ui.form.on('Certificate of Analysis', {
 	refresh: function(frm) {
