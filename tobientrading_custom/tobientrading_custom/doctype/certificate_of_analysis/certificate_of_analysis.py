@@ -60,3 +60,5 @@ def create_coa_from_excel_data(data):
 				"max_level": row[10]
 			})
 			coa_result.save()
+			coa.save()
+	return "COA created successfully"
