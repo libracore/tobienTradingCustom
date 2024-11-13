@@ -45,19 +45,19 @@ def create_coa_from_excel_data(data):
                 laboratory = frappe.get_doc("Supplier", "SUP-00096").name
                 if row[5]=="":
                     parts = row[4].split("\r\n")
-                    if len(parts) == 1:
+                    if parts[0].strip().startswith("A"):
+                        item_code = parts[0].split()[0].strip()
+                    elif len(parts) == 1:
                         frappe.log_error("Item code not found in row: {row}".format(row=row), "COA Import")
                         continue
-                    if parts[0].strip().startswith("A"):
-                        item_code = parts[0].split[0].strip()
-                    elif parts[1].strip().startswith("A"):
-                        item_code = parts[1].split[0].strip()
-                    elif len(parts) == 3 and parts[2].strip().startswith("A"):
-                        item_code = parts[2].split[0].strip()
+                    elif len(parts) > 1 and parts[1].strip().startswith("A"):
+                        item_code = parts[1].split()[0].strip()
+                    elif len(parts) > 2 and parts[2].strip().startswith("A"):
+                        item_code = parts[2].split()[0].strip()
                     else:
                         item_code = row[3].split()[0].strip()
                 else:
-                    item_code = row[4].split[0].strip()
+                    item_code = row[5].split()[0].strip()
 
                 item = frappe.get_doc("Item", item_code)
                 
@@ -75,7 +75,7 @@ def create_coa_from_excel_data(data):
             coa.save()
 
             # Create COA result if parameter, result and unit are available
-            if row[7] and row[8] and row[9]:
+            if row[7] and row[8] and row[9] and row[8] != "\xa0":
                 parameter_name = row[7].strip()
                 if "<" in parameter_name or ">" in parameter_name:
                         parameter_name = parameter_name.replace("<", "").replace(">", "")
@@ -102,4 +102,4 @@ def create_coa_from_excel_data(data):
         except Exception as e:
             frappe.log_error("Error while creating COA for row {row} from Excel data: {error}".format(row=row, error=e), "COA Import")
             continue
-    return "COA created successfully"
+    return "COA created. Check logs for potential errors."
