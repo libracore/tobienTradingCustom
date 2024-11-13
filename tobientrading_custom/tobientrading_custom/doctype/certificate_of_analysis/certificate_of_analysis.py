@@ -1,4 +1,4 @@
-# Copyright (c) 2024, Vanessa Bualat and contributors
+# Copyright (c) 2024, libracore AG and contributors
 # For license information, please see license.txt
 
 import frappe
@@ -27,37 +27,31 @@ def get_results(coa):
     return results_html
 
 @frappe.whitelist()
-def create_coa_from_excel_data(data):
-    """
-    Create Certificate of Analysis (COA) from Excel data.
-    
-    Args:
-        data (str): JSON string containing Excel data for the COA.
-    
-    Returns:
-        str: Success message when COA is created.
-    """
-    
-    # Parse the JSON data into a Python list of lists
+def create_coa_from_excel_data(data):    
     data = json.loads(data)
-    
-    # Skip the header row
     data = data[1:]
     
     for row in data:
         begin_of_analysis = datetime.strptime(row[1], '%d.%m.%Y').strftime('%Y-%m-%d')
         end_of_analysis = datetime.strptime(row[2], '%d.%m.%Y').strftime('%Y-%m-%d')
         
-        # Check if a Certificate of Analysis already exists
         coa = frappe.db.exists("Certificate of Analysis", {"certificate_of_analysis": row[0]})
         if coa:
             coa = frappe.get_doc("Certificate of Analysis", coa)
         else:
-            # Create a new Certificate of Analysis if it doesn't exist
             coa = frappe.new_doc("Certificate of Analysis")
             laboratory = frappe.get_doc("Supplier", "SUP-00096").name
-            item_code = row[4].split("\r\n")[1]
-            lot_tt = row[4].split("\r\n")[0]
+            if row[5]=="":
+                if len(row[4].split("\r\n")) == 3:
+                    item_code = row[4].split("\r\n")[2]
+                elif len(row[4].split("\r\n")) == 1:
+                    frappe.throw("Item code is missing for row: {}".format(row))
+                else:
+                    item_code = row[4].split("\r\n")[1]
+                lot_tt = row[4].split("\r\n")[0]
+            else:
+                item_code = row[4]
+                lot_tt = row[5]
             item = frappe.get_doc("Item", item_code)
             
             coa.update({
@@ -71,12 +65,10 @@ def create_coa_from_excel_data(data):
                 "laboratory": "SUP-00096"
             })
         
-        # Save the COA document
         coa.save()
 
-        # Create COA result if specific columns are available
+        # Create COA result if parameter, result and unit are available
         if row[7] and row[8] and row[9]:
-            # Check if the Measurement Parameter already exists
             parameter_name = row[7].strip()
             parameter = frappe.db.exists("Measurement Parameter", parameter_name)
             if parameter:
@@ -96,7 +88,6 @@ def create_coa_from_excel_data(data):
                 "max_level": row[10]
             })
             
-            # Save the COA result and COA document
             coa_result.save()
             coa.save()
     

@@ -1,3 +1,6 @@
+// Copyright (c) 2024, libracore AG and contributors
+// For license information, please see license.txt
+
 load_script("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js", function() { console.log("XLSX loaded"); })
 
 function load_script(url, callback) {
@@ -24,7 +27,6 @@ function import_from_excel(){
 	input.type = 'file';
 	input.accept = '.xls,.xlsx';
 
-	// Add an event listener to listen for when a file is selected
 	input.addEventListener('change', function (event) {
 		var file = event.target.files[0];
 		if (file) {
