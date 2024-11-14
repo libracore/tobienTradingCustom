@@ -23,13 +23,14 @@
   {
    "fieldname": "test_type",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Test Type",
    "options": "Test Type"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-14 11:01:32.619572",
+ "modified": "2024-11-14 11:05:33.135836",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Measurement Parameter",

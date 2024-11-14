@@ -24,10 +24,10 @@
  "fields": [
   {
    "fieldname": "test_type",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "in_standard_filter": 1,
    "label": "Test Type",
-   "options": "\n1 - Microbiological Test\n2 - Chemical/physical Test\n3 - Pesticides and related substances"
+   "options": "Test Type"
   },
   {
    "fieldname": "result",
@@ -104,7 +104,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-26 15:30:45.744225",
+ "modified": "2024-11-14 11:15:33.011588",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis Result",

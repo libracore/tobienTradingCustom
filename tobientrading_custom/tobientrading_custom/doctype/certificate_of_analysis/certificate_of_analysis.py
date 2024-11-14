@@ -98,6 +98,7 @@ def create_coa_from_excel_data(data):
                 coa_result = frappe.new_doc("Certificate of Analysis Result")
                 coa_result.update({
                     "parameter": parameter_name, 
+                    "test_type": parameter.test_type,
                     "coa": coa.name,
                     "coa_date": end_of_analysis,
                     "result": row[8],
