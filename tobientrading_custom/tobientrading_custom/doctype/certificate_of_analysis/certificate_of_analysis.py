@@ -43,23 +43,30 @@ def create_coa_from_excel_data(data):
             else:
                 coa = frappe.new_doc("Certificate of Analysis")
                 laboratory = frappe.get_doc("Supplier", "SUP-00096").name
-                if row[5]=="":
+
+                if row[5] == "":
                     parts = row[4].split("\r\n")
-                    if parts[0].strip().startswith("A"):
-                        item_code = parts[0].split()[0].strip()
-                    elif len(parts) == 1:
-                        frappe.log_error("Item code not found in row: {row}".format(row=row), "COA Import")
-                        continue
-                    elif len(parts) > 1 and parts[1].strip().startswith("A"):
-                        item_code = parts[1].split()[0].strip()
-                    elif len(parts) > 2 and parts[2].strip().startswith("A"):
-                        item_code = parts[2].split()[0].strip()
-                    else:
-                        item_code = row[3].split()[0].strip()
+                    item_code = next((split_and_strip(part) for part in parts if part.strip().startswith("A")), None)
+                    if not item_code:
+                        #try to find item code in row 3
+                        item_code = split_and_strip(row[3])
+                        item = frappe.db.exists("Item", item_code)
+                        if not item:
+                            frappe.log_error("Item code not found in row: {row}".format(row=row), "COA Import: Item code not found")
+                            continue
+
+                    batch = next((split_and_strip(part, 1) for part in parts if part.strip().lower().startswith("lot:")), None)
                 else:
-                    item_code = row[5].split()[0].strip()
+                    item_code = split_and_strip(row[4])
+                    batch = split_and_strip(row[5], 1)
 
                 item = frappe.get_doc("Item", item_code)
+
+                if frappe.db.exists("Batch", batch):
+                    batch_tt = batch
+                else:
+                    batch_tt = ""
+                    frappe.log_error("Batch {batch} not found in row {row}".format(batch=batch, row=row), "COA Import: Batch not found")
                 
                 coa.update({
                     "certificate_of_analysis": row[0],
@@ -69,7 +76,8 @@ def create_coa_from_excel_data(data):
                     "date_coa": end_of_analysis,
                     "begin_of_analysis": begin_of_analysis,
                     "end_of_analysis": end_of_analysis,
-                    "laboratory": "SUP-00096"
+                    "laboratory": "SUP-00096",
+                    "batch_tt": batch_tt
                 })
             
             coa.save()
@@ -103,3 +111,6 @@ def create_coa_from_excel_data(data):
             frappe.log_error("Error while creating COA for row {row} from Excel data: {error}".format(row=row, error=e), "COA Import")
             continue
     return "COA created. Check logs for potential errors."
+
+def split_and_strip(string, idx=0):
+    return string.split()[idx].strip()
