@@ -1,39 +1,28 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:parameter",
- "creation": "2024-09-19 10:26:46.210855",
+ "autoname": "field:test_type",
+ "creation": "2024-11-14 08:03:31.222385",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "parameter",
   "test_type"
  ],
  "fields": [
   {
-   "fieldname": "parameter",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Parameter",
-   "reqd": 1,
-   "unique": 1
-  },
-  {
    "fieldname": "test_type",
-   "fieldtype": "Link",
-   "in_list_view": 1,
+   "fieldtype": "Data",
    "label": "Test Type",
-   "options": "Test Type"
+   "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-14 11:05:33.135836",
+ "modified": "2024-11-14 08:03:31.222385",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
- "name": "Measurement Parameter",
+ "name": "Test Type",
  "owner": "Administrator",
  "permissions": [
   {
