@@ -16,29 +16,21 @@ function load_script(url, callback) {
 frappe.listview_settings['Certificate of Analysis'] = {
     onload: function(listview) {
         listview.page.add_menu_item(__("Import from Excel"), function() {
-            import_file("excel");
-
-        });
-        listview.page.add_menu_item(__("Import from XML"), function() {
-            import_file("xml");
+            import_file();
 
         });
     }
 }
 
-function import_file(type){
+function import_file(){
 	var input = document.createElement("input");
 	input.type = 'file';
-	if (type == "excel") {
-		input.accept = '.xls,.xlsx';
-	} else if (type == "xml") {
-		input.accept = '.xml';
-	}
+	input.accept = '.xls,.xlsx';
 
 	input.addEventListener('change', function (event) {
 		var file = event.target.files[0];
 		if (file) {
-			read_file(file, type);
+			read_file(file);
 		} else {
 			frappe.msgprint("No file selected");
 		}
@@ -46,30 +38,16 @@ function import_file(type){
 	input.click();
 }
 
-function read_file(file, type){
+function read_file(file){
 	var reader = new FileReader();
 	reader.addEventListener('load', function (event) {
 		var contents = event.target.result;
-		if (type == "excel") {
-			extract_data_from_excel(contents);
-		} else if (type == "xml") {
-			extract_data_from_xml(contents);
-		}
+		extract_data_from_excel(contents);
 	});
 	reader.onerror = function (event) {
 		frappe.msgprint("Error reading file");
 	};
-	if (type == "excel") {
-		reader.readAsBinaryString(file);
-	} else if (type == "xml") {
-		reader.readAsText(file);
-	}
-}
-
-function extract_data_from_xml(contents){
-	var parser = new DOMParser();
-	var xmlDoc = parser.parseFromString(contents, "application/xml");
-	create_coa_from_xml_data(xmlDoc);
+	reader.readAsBinaryString(file);
 }
 
 function extract_data_from_excel(contents){
@@ -78,21 +56,6 @@ function extract_data_from_excel(contents){
 	var worksheet = workbook.Sheets[sheet_name_list];
 	var excelData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
 	create_coa_from_excel_data(excelData);
-}
-
-function create_coa_from_xml_data(data){
-	var xmlString = (new XMLSerializer()).serializeToString(data);
-	frappe.call({
-		'method': "tobientrading_custom.tobientrading_custom.doctype.certificate_of_analysis.certificate_of_analysis.create_coa_from_xml_data",
-		'args': {
-			'data': xmlString
-		},
-		'callback': function(response){
-			if (response.message) {
-				frappe.msgprint(response.message);
-			}
-		}
-	})
 }
 
 function create_coa_from_excel_data(data){
