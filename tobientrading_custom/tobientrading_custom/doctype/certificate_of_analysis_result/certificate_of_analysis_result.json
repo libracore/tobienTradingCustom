@@ -10,6 +10,8 @@
   "parameter",
   "coa",
   "date_coa",
+  "item",
+  "batch_tt",
   "column_break_zfemy",
   "test_type",
   "test_type_subcategory",
@@ -107,11 +109,27 @@
    "fieldtype": "Link",
    "label": "Test Type Subcategory",
    "options": "Test Type Subcategory"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "batch_tt",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Batch TT",
+   "options": "Batch"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-05 10:26:27.340215",
+ "modified": "2024-12-05 11:51:30.766085",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis Result",

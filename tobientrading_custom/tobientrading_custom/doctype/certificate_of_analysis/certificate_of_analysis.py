@@ -14,13 +14,15 @@ class CertificateofAnalysis(Document):
 def get_results(coa):
     query = """
         SELECT `coar`.`test_type`,
+               `coar`.`test_type_subcategory`,
                `coar`.`parameter`, 
                `coar`.`result`,
                `coar`.`unit`,
+               `coar`.`limit_value`,
                `coar`.`name`
         FROM `tabCertificate of Analysis Result` AS `coar`
         WHERE `coar`.`coa` = '{coa}'
-        ORDER BY `coar`.`test_type`, `coar`.`parameter` ASC
+        ORDER BY `coar`.`test_type`, `coar`.`test_type_subcategory`, `coar`.`parameter` ASC
     """.format(coa=coa)
 
     results = frappe.db.sql(query, as_dict=True)
@@ -36,6 +38,31 @@ def create_coa_from_excel_data(data):
         try:
             begin_of_analysis = datetime.strptime(row[1], '%d.%m.%Y').strftime('%Y-%m-%d')
             end_of_analysis = datetime.strptime(row[2], '%d.%m.%Y').strftime('%Y-%m-%d')
+
+            # Get item code and batch
+            if row[5] == "":
+                parts = row[4].split("\r\n")
+                item_code = next((split_and_strip(part) for part in parts if part.strip().startswith("A")), None)
+                if not item_code:
+                    # Try to find item code in row 3
+                    item_code = split_and_strip(row[3])
+                    item = frappe.db.exists("Item", item_code)
+                    if not item:
+                        frappe.log_error("Item code not found in row: {row}".format(row=row), "COA Import: Item code not found")
+                        continue
+
+                batch = next((split_and_strip(part, 1) for part in parts if part.strip().lower().startswith("lot:")), None)
+            else:
+                item_code = split_and_strip(row[4])
+                batch = split_and_strip(row[5], 1)
+
+            item = frappe.get_doc("Item", item_code)
+
+            if frappe.db.exists("Batch", batch):
+                batch_tt = batch
+            else:
+                batch_tt = ""
+                frappe.log_error("Batch {batch} not found in row {row}".format(batch=batch, row=row), "COA Import: Batch not found")
             
             # Create COA if not exists
             coa = frappe.db.exists("Certificate of Analysis", {"certificate_of_analysis": row[0]})
@@ -44,30 +71,6 @@ def create_coa_from_excel_data(data):
             else:
                 coa = frappe.new_doc("Certificate of Analysis")
                 laboratory = frappe.get_doc("Supplier", "SUP-00096").name
-
-                if row[5] == "":
-                    parts = row[4].split("\r\n")
-                    item_code = next((split_and_strip(part) for part in parts if part.strip().startswith("A")), None)
-                    if not item_code:
-                        # Try to find item code in row 3
-                        item_code = split_and_strip(row[3])
-                        item = frappe.db.exists("Item", item_code)
-                        if not item:
-                            frappe.log_error("Item code not found in row: {row}".format(row=row), "COA Import: Item code not found")
-                            continue
-
-                    batch = next((split_and_strip(part, 1) for part in parts if part.strip().lower().startswith("lot:")), None)
-                else:
-                    item_code = split_and_strip(row[4])
-                    batch = split_and_strip(row[5], 1)
-
-                item = frappe.get_doc("Item", item_code)
-
-                if frappe.db.exists("Batch", batch):
-                    batch_tt = batch
-                else:
-                    batch_tt = ""
-                    frappe.log_error("Batch {batch} not found in row {row}".format(batch=batch, row=row), "COA Import: Batch not found")
                 
                 coa.update({
                     "certificate_of_analysis": row[0],
@@ -104,8 +107,11 @@ def create_coa_from_excel_data(data):
                     coa_result.update({
                         "parameter": parameter_name, 
                         "test_type": parameter.test_type,
+                        "test_type_subcategory": parameter.subcategory,
                         "coa": coa.name,
                         "coa_date": end_of_analysis,
+                        "item": item_code,
+                        "batch_tt": batch_tt,
                         "result": row[8],
                         "unit": row[9],
                         "max_level": row[10]
