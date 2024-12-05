@@ -86,6 +86,7 @@ def create_coa_from_excel_data(data):
             # Create COA result if parameter, result, and unit are available
             if row[7] and row[8] and row[9] and row[8] != "\xa0":
                 parameter_name = row[7].strip()
+
                 if "<" in parameter_name or ">" in parameter_name:
                     parameter_name = parameter_name.replace("<", "").replace(">", "")
                 parameter = frappe.db.exists("Measurement Parameter", parameter_name)
@@ -95,20 +96,23 @@ def create_coa_from_excel_data(data):
                     parameter = frappe.new_doc("Measurement Parameter")
                     parameter.parameter = parameter_name
                     parameter.save()
-                
-                coa_result = frappe.new_doc("Certificate of Analysis Result")
-                coa_result.update({
-                    "parameter": parameter_name, 
-                    "test_type": parameter.test_type,
-                    "coa": coa.name,
-                    "coa_date": end_of_analysis,
-                    "result": row[8],
-                    "unit": row[9],
-                    "max_level": row[10]
-                })
-                
-                coa_result.save()
-                coa.save()
+
+                coa_result = frappe.db.exists("Certificate of Analysis Result", {"coa": coa.name, "parameter": parameter_name})
+
+                if not coa_result:
+                    coa_result = frappe.new_doc("Certificate of Analysis Result")
+                    coa_result.update({
+                        "parameter": parameter_name, 
+                        "test_type": parameter.test_type,
+                        "coa": coa.name,
+                        "coa_date": end_of_analysis,
+                        "result": row[8],
+                        "unit": row[9],
+                        "max_level": row[10]
+                    })
+                    
+                    coa_result.save()
+                    coa.save()
         except Exception as e:
             frappe.log_error("Error while creating COA for row {row} from Excel data: {error}".format(row=row, error=e), "COA Import")
             continue
