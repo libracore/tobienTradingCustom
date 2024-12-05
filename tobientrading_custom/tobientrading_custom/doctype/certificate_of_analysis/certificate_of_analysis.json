@@ -45,6 +45,7 @@
   {
    "fieldname": "batch_tt",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Batch TT",
    "options": "Batch"
   },
@@ -129,7 +130,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-04 10:12:33.474130",
+ "modified": "2024-12-04 10:25:20.975723",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis",
