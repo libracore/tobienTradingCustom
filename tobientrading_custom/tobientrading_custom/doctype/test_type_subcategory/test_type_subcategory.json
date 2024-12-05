@@ -1,47 +1,38 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:parameter",
- "creation": "2024-09-19 10:26:46.210855",
+ "autoname": "field:subcategory",
+ "creation": "2024-12-05 10:08:43.450083",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "parameter",
-  "test_type",
-  "subcategory"
+  "subcategory",
+  "related_test_type"
  ],
  "fields": [
   {
-   "fieldname": "parameter",
+   "fieldname": "subcategory",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Parameter",
+   "label": "Subcategory",
    "reqd": 1,
    "unique": 1
   },
   {
-   "fieldname": "test_type",
+   "fieldname": "related_test_type",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Test Type",
+   "label": "Related Test Type",
    "options": "Test Type"
-  },
-  {
-   "fieldname": "subcategory",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Subcategory",
-   "options": "Test Type Subcategory"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-05 10:10:49.940257",
+ "modified": "2024-12-05 10:13:26.846422",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
- "name": "Measurement Parameter",
+ "name": "Test Type Subcategory",
  "owner": "Administrator",
  "permissions": [
   {

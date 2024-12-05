@@ -12,6 +12,7 @@
   "date_coa",
   "column_break_zfemy",
   "test_type",
+  "test_type_subcategory",
   "method",
   "result_section",
   "result",
@@ -100,11 +101,17 @@
    "fieldtype": "Date",
    "label": "Date COA",
    "read_only": 1
+  },
+  {
+   "fieldname": "test_type_subcategory",
+   "fieldtype": "Link",
+   "label": "Test Type Subcategory",
+   "options": "Test Type Subcategory"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-04 10:21:29.651193",
+ "modified": "2024-12-05 10:26:27.340215",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis Result",
