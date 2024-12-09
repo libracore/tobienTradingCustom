@@ -59,9 +59,12 @@ def create_coa_from_excel_data(data):
             item = frappe.get_doc("Item", item_code)
 
             if frappe.db.exists("Batch", batch):
-                batch_tt = batch
+                batch_doc = frappe.get_doc("Batch", batch)
+                batch_tt = batch.name
+                batch_supplier = batch_doc.supplier_batch_number
             else:
                 batch_tt = ""
+                batch_supplier = ""
                 frappe.log_error("Batch {batch} not found in row {row}".format(batch=batch, row=row), "COA Import: Batch not found")
             
             # Create COA if not exists
@@ -81,7 +84,8 @@ def create_coa_from_excel_data(data):
                     "begin_of_analysis": begin_of_analysis,
                     "end_of_analysis": end_of_analysis,
                     "laboratory": "SUP-00096",
-                    "batch_tt": batch_tt
+                    "batch_tt": batch_tt,
+                    "batch_supplier": batch_supplier
                 })
             
             coa.save()
