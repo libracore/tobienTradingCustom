@@ -15,6 +15,7 @@
   "sample_lot_tt",
   "batch_volume",
   "batch_producer",
+  "assessment",
   "column_break_dz1s9",
   "certificate_of_analysis",
   "begin_of_analysis",
@@ -57,9 +58,8 @@
   },
   {
    "fieldname": "batch_producer",
-   "fieldtype": "Select",
-   "label": "Batch Producer",
-   "options": "\nby sender"
+   "fieldtype": "Data",
+   "label": "Batch Producer"
   },
   {
    "fieldname": "batch_volume",
@@ -126,11 +126,16 @@
    "label": "Certificate of Analysis",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "fieldname": "assessment",
+   "fieldtype": "Text",
+   "label": "Assessment"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-04 10:25:20.975723",
+ "modified": "2024-12-09 11:17:20.539172",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis",
