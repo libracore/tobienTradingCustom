@@ -60,7 +60,7 @@ def create_coa_from_excel_data(data):
 
             if frappe.db.exists("Batch", batch):
                 batch_doc = frappe.get_doc("Batch", batch)
-                batch_tt = batch.name
+                batch_tt = batch_doc.name
                 batch_supplier = batch_doc.supplier_batch_number
             else:
                 batch_tt = ""
@@ -85,7 +85,7 @@ def create_coa_from_excel_data(data):
                     "end_of_analysis": end_of_analysis,
                     "laboratory": "SUP-00096",
                     "batch_tt": batch_tt,
-                    "batch_supplier": batch_supplier
+                    "batch_producer": batch_supplier
                 })
             
             coa.save()
