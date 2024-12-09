@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "COAR.######",
+ "autoname": "COAR.#########",
  "creation": "2024-09-19 10:37:21.185957",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -10,8 +10,11 @@
   "parameter",
   "coa",
   "date_coa",
+  "item",
+  "batch_tt",
   "column_break_zfemy",
   "test_type",
+  "test_type_subcategory",
   "method",
   "result_section",
   "result",
@@ -100,11 +103,33 @@
    "fieldtype": "Date",
    "label": "Date COA",
    "read_only": 1
+  },
+  {
+   "fieldname": "test_type_subcategory",
+   "fieldtype": "Link",
+   "label": "Test Type Subcategory",
+   "options": "Test Type Subcategory"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "batch_tt",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Batch TT",
+   "options": "Batch"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-14 11:15:33.011588",
+ "modified": "2024-12-05 11:51:30.766085",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis Result",

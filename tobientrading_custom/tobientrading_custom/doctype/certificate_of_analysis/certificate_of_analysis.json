@@ -2,7 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
- "autoname": "field:certificate_of_analysis",
+ "autoname": "CoA.########",
  "creation": "2024-05-31 09:35:52.361860",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -15,6 +15,7 @@
   "sample_lot_tt",
   "batch_volume",
   "batch_producer",
+  "assessment",
   "column_break_dz1s9",
   "certificate_of_analysis",
   "begin_of_analysis",
@@ -45,6 +46,7 @@
   {
    "fieldname": "batch_tt",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Batch TT",
    "options": "Batch"
   },
@@ -56,9 +58,8 @@
   },
   {
    "fieldname": "batch_producer",
-   "fieldtype": "Select",
-   "label": "Batch Producer",
-   "options": "\nby sender"
+   "fieldtype": "Data",
+   "label": "Batch Producer"
   },
   {
    "fieldname": "batch_volume",
@@ -125,11 +126,16 @@
    "label": "Certificate of Analysis",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "fieldname": "assessment",
+   "fieldtype": "Text",
+   "label": "Assessment"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-26 15:51:17.868930",
+ "modified": "2024-12-09 11:17:20.539172",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis",

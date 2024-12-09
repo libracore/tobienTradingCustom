@@ -4,6 +4,9 @@
 frappe.ui.form.on('Certificate of Analysis', {
 	refresh: function(frm) {
 		populate_results_table(frm);
+	},
+	item: function(frm) {
+		filter_batch_for_item(frm);
 	}
 });
 
@@ -19,4 +22,14 @@ function populate_results_table(fm){
 			}
 		}
 	})
+}
+
+function filter_batch_for_item(frm){
+	frm.set_query("batch_tt", function() {
+		return {
+			"filters": {
+				"item": frm.doc.item
+			}
+		};
+	});
 }

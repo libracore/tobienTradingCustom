@@ -97,13 +97,11 @@ doctype_list_js = {
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-#	}
-# }
+doc_events = {
+    "Measurement Parameter": {
+		"on_update": "tobientrading_custom.tobientrading_custom.doctype.certificate_of_analysis_result.certificate_of_analysis_result.update_test_type_and_subcategory"
+    }
+}
 
 # Scheduled Tasks
 # ---------------
