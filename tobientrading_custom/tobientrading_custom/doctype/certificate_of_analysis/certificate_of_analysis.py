@@ -91,7 +91,7 @@ def create_coa_from_excel_data(data):
                 parameter_name = row[7].strip()
 
                 if "<" in parameter_name or ">" in parameter_name:
-                    parameter_name = parameter_name.replace("<", "").replace(">", "")
+                    parameter_name = parameter_name.replace("<", "≤").replace(">", "≥")
                 parameter = frappe.db.exists("Measurement Parameter", parameter_name)
                 if parameter:
                     parameter = frappe.get_doc("Measurement Parameter", parameter_name)
