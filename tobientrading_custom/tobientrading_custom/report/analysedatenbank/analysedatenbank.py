@@ -2,7 +2,9 @@
 # For license information, please see license.txt
 
 import frappe
-
+from frappe.utils import now
+from frappe.utils.pdf import get_pdf
+from datetime import datetime
 
 def execute(filters=None):
 	columns = get_columns()
@@ -73,3 +75,25 @@ def get_data(filters):
 	""".format(conditions=conditions)
 	data = frappe.db.sql(query, as_dict=True)
 	return data
+
+@frappe.whitelist()
+def download_pdf(item, parameter, batch):
+    filters = {'item': item, 'parameter': parameter, 'batch': batch}
+
+    content = frappe.render_template(
+        "tobientrading_custom/tobientrading_custom/report/analysedatenbank/analysedatenbank.html", 
+        {
+            'data': get_data(filters),
+            'filters': filters
+        }
+    )
+
+    pdf = get_pdf(content)
+
+    date = datetime.strptime(now(), "%Y-%m-%d %H:%M:%S.%f").strftime("%Y%m%d")
+
+    frappe.local.response.filename = f"Analysedatenbank_{item}_{parameter}_{batch}_{date}.pdf"
+    frappe.local.response.filecontent = pdf
+    frappe.local.response.type = "download"
+
+    return

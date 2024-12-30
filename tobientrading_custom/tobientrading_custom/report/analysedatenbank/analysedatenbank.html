@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Analysedatenbank
+  </title>
+  <meta content="frappe" name="generator"/>
+  <link href="/assets/css/printview.css" rel="stylesheet" type="text/css"/>
+  <link href="/assets/microsynth/css/microsynth_report.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <div class="print-format-gutter">
+   <div class="print-format">
+    <p id="subject"><strong>{{ _("Analysedatenbank") }}</strong></p>
+    <table id="meta" style="width: 100%; font-size: 14px;">
+        <tr>
+            <td style="width: 23%;"><strong>{{ _("Item") }}</strong></td>
+            <td style="width: 23%;">{{ filters.item }}</td>
+            <td style="width:  8%;"></td>
+            <td style="width: 23%;"><strong>{{ _("Parameter") }}</strong></td>
+            <td style="width: 23%;">{{ filters.parameter }}</td>
+        </tr>
+        <tr>
+            <td><strong>{{ _("Date") }}</strong></td>
+            <td>{{ frappe.format_value(frappe.utils.now(), {'fieldtype': 'Date'}) }}</td>
+            <td></td>
+            <td><strong>{{ _("Batch") }}</strong></td>
+            <td>{{ filters.batch }}</td>
+        </tr>
+    </table>
+    <p><br></p>
+    <table class="table" style="width: 100%; font-size: 12px;">
+        <tr>
+            <th style="padding: 1px !important; width: 10%; text-align: left;">{{ _("Item") }}</th>
+            <th style="padding: 1px !important; width: 10%; text-align: left;">{{ _("Date") }}</th>
+            <th style="padding: 1px !important; width: 10%; text-align: left;">{{ _("Batch") }}</th>
+            <th style="padding: 1px !important; width: 10%; text-align: right;">{{ _("Sample Lot") }}</th>
+            <th style="padding: 1px !important; width: 10%; text-align: right;">{{ _("Batch Producer") }}</th>
+            <th style="padding: 1px !important; width: 10%; text-align: right;">{{ _("Certificate of Analysis") }}</th>
+            <th style="padding: 1px !important; width: 10%; text-align: left;">{{ _("Parameter") }}</th>
+            <th style="padding: 1px !important; width: 10%; text-align: left;">{{ _("Result") }}</th>
+            <th style="padding: 1px !important; width: 5%; text-align: left;">{{ _("Unit") }}</th>
+            <th style="padding: 1px !important; width: 10%; text-align: left;">{{ _("Legal Limit") }}</th>
+            <th style="padding: 1px !important; width: 5%; text-align: left;">{{ _("Legal Limit Unit") }}</th>
+        </tr>
+    {% for d in data %}
+        <tr>
+            <td style="padding: 1px !important; text-align: left">{{ d.item }}</td>
+            <td style="padding: 1px !important; ">{{ d.coa_date }}</td>
+            <td style="padding: 1px !important; ">{{ d.batch_tt }}</td>
+            <td style="padding: 1px !important; text-align: right; ">{{ d.sample_lot_tt }}</td>
+            <td style="padding: 1px !important; text-align: right; ">{{ d.batch_producer }}</td>
+            <td style="padding: 1px !important; ">{{ d.coa }}</td>
+            <td style="padding: 1px !important; ">{{ d.parameter }}</td>
+            <td style="padding: 1px !important; ">{{ d.result }}</td>
+            <td style="padding: 1px !important; ">{{ d.unit }}</td>
+            <td style="padding: 1px !important; ">{{ d.legal_limit }}</td>
+            <td style="padding: 1px !important; ">{{ d.legal_limit_unit }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+    <br>
+
+   </div>
+  </div>
+ </body>
+</html>
