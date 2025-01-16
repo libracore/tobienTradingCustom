@@ -129,5 +129,94 @@ def create_coa_from_excel_data(data):
 
     return "COA created. Check logs for potential errors."
 
+@frappe.whitelist()
+def create_coa_from_xml_data(data):
+    try:
+        soup = BeautifulSoup(data, 'xml')
+
+        for group in soup.find_all('Groep1'):
+            try:
+                certificate_of_analysis = group.find('sample_sample_number').text
+                report_date = group.find('ReportDate').text
+                begin_of_analysis = datetime.strptime(report_date, '%d-%m-%YT%H:%M:%S').strftime('%Y-%m-%d')
+                end_of_analysis = datetime.strptime(report_date, '%d-%m-%YT%H:%M:%S').strftime('%Y-%m-%d')
+                item_code = group.find('Referencenumber').text
+                batch = group.find('BatchNumberSuppliers').text
+
+                if frappe.db.exists("Batch", batch):
+                    batch_doc = frappe.get_doc("Batch", batch)
+                    batch_tt = batch_doc.name
+                    batch_supplier = batch_doc.supplier_batch_number
+                else:
+                    batch_tt = ""
+                    batch_supplier = ""
+                    frappe.log_error("Batch {batch} not found".format(batch=batch), "COA Import: Batch not found")
+
+                for parameter in group.find_all('Parameter'):
+                    try:
+                        # Extract parameter details
+                        parameter_name = parameter.find('component_name').text if parameter.find('component_name') else None
+                        result = parameter.find('result_entry').text if parameter.find('result_entry') else None
+                        unit = parameter.find('units_1_display_string').text if parameter.find('units_1_display_string') else None
+                        max_level = parameter.find('Detectionlimit').text if parameter.find('Detectionlimit') else None
+
+                        # Ensure item exists in the system
+                        item = frappe.get_doc("Item", item_code)
+
+                        # Create or fetch the COA document
+                        coa = frappe.db.exists("Certificate of Analysis", {"certificate_of_analysis": certificate_of_analysis})
+                        if coa:
+                            coa = frappe.get_doc("Certificate of Analysis", coa)
+                        else:
+                            coa = frappe.new_doc("Certificate of Analysis")
+                            coa.update({
+                                "certificate_of_analysis": certificate_of_analysis,
+                                "item": item_code,
+                                "item_name": item.item_name,
+                                "item_group": item.item_group,
+                                "date_coa": end_of_analysis,
+                                "begin_of_analysis": begin_of_analysis,
+                                "end_of_analysis": end_of_analysis,
+                                "laboratory": "SUP-00381",
+                                "batch_tt": batch_tt,
+                            })
+                        coa.save()
+
+                        # Only create a COA result if required values are available
+                        if parameter_name and result and unit:
+                            # Create or fetch the Measurement Parameter
+                            parameter_doc = frappe.db.exists("Measurement Parameter", parameter_name)
+                            if not parameter_doc:
+                                parameter_doc = frappe.new_doc("Measurement Parameter")
+                                parameter_doc.parameter = parameter_name
+                                parameter_doc.save()
+
+                            # Check if the COA result already exists
+                            coa_result = frappe.db.exists("Certificate of Analysis Result", {"coa": coa.name, "parameter": parameter_name})
+                            if not coa_result:
+                                coa_result = frappe.new_doc("Certificate of Analysis Result")
+                                coa_result.update({
+                                    "parameter": parameter_name,
+                                    "coa": coa.name,
+                                    "result": result,
+                                    "unit": unit,
+                                    "max_level": max_level
+                                })
+                                coa_result.save()
+
+                    except Exception as e:
+                        frappe.log_error(f"Error while processing parameter in group {group}: {str(e)}", "COA Import - Parameter Error")
+                        continue 
+
+            except Exception as e:
+                frappe.log_error(f"Error while processing group {group}: {str(e)}", "COA Import - Group Error")
+                continue 
+
+        return "COA created from XML. Check logs for potential errors."
+
+    except Exception as e:
+        frappe.log_error(f"Error parsing XML data: {str(e)}", "COA Import - XML Parsing Error")
+        return "Error parsing XML data."
+
 def split_and_strip(string, idx=0):
     return string.split()[idx].strip()
