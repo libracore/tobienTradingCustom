@@ -57,19 +57,6 @@ function read_excel(file){
 	reader.readAsBinaryString(file);
 }
 
-function read_xml(file){
-	console.log("Reading XML file");
-	var reader = new FileReader();
-	reader.addEventListener('load', function (event) {
-		var contents = event.target.result;
-		create_coa_from_xml_data(contents);
-	});
-	reader.onerror = function (event) {
-		frappe.msgprint("Error reading file");
-	};
-	reader.readAsText(file);
-}
-
 function extract_data_from_excel(contents){
 	console.log("Extracting data from Excel");
 	var workbook = XLSX.read(contents, {type: 'binary'});
@@ -92,6 +79,19 @@ function create_coa_from_excel_data(data){
 			}
 		}
 	})
+}
+
+function read_xml(file){
+	console.log("Reading XML file");
+	var reader = new FileReader();
+	reader.addEventListener('load', function (event) {
+		var contents = event.target.result;
+		create_coa_from_xml_data(contents);
+	});
+	reader.onerror = function (event) {
+		frappe.msgprint("Error reading file");
+	};
+	reader.readAsText(file);
 }
 
 function create_coa_from_xml_data(data){
