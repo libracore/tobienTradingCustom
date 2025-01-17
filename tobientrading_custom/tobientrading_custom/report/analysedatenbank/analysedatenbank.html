@@ -27,7 +27,7 @@
             <td>{{ frappe.format_value(frappe.utils.now(), {'fieldtype': 'Date'}) }}</td>
             <td></td>
             <td><strong>{{ _("Batch") }}</strong></td>
-            <td>{{ filters.batch }}</td>
+            <td>{{ filters.batch_tt }}</td>
         </tr>
     </table>
     <p><br></p>
@@ -40,29 +40,28 @@
             <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Batch Producer") }}</th>
             <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Certificate of Analysis") }}</th>
             <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Parameter") }}</th>
-            <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Result") }}</th>
-            <th style="padding: 3px !important; width: 5%; text-align: left;">{{ _("Unit") }}</th>
-            <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Legal Limit") }}</th>
-            <th style="padding: 3px !important; width: 5%; text-align: left;">{{ _("Legal Limit Unit") }}</th>
+            <th style="padding: 3px !important; width: 10%; text-align: center;">{{ _("Result") }}</th>
+            <th style="padding: 3px !important; width: 5%; text-align: center;">{{ _("Unit") }}</th>
+            <th style="padding: 3px !important; width: 10%; text-align: center;">{{ _("Legal Limit") }}</th>
+            <th style="padding: 3px !important; width: 5%; text-align: center;">{{ _("Legal Limit Unit") }}</th>
         </tr>
     {% for d in data %}
         <tr>
-            <td style="padding: 3px !important; ">{{ d.item }}</td>
-            <td style="padding: 3px !important; ">{{ d.date_coa }}</td>
-            <td style="padding: 3px !important; ">{{ d.batch_tt }}</td>
-            <td style="padding: 3px !important; ">{{ d.sample_lot_tt }}</td>
-            <td style="padding: 3px !important; ">{{ d.batch_producer }}</td>
-            <td style="padding: 3px !important; ">{{ d.coa }}</td>
-            <td style="padding: 3px !important; ">{{ d.parameter }}</td>
-            <td style="padding: 3px !important; ">{{ d.result }}</td>
-            <td style="padding: 3px !important; ">{{ d.unit }}</td>
-            <td style="padding: 3px !important; ">{{ d.legal_limit }}</td>
-            <td style="padding: 3px !important; ">{{ d.legal_limit_unit }}</td>
+            <td style="padding: 3px !important; ">{{ d.item if d.item is not none else '' }}</td>
+            <td style="padding: 3px !important; ">{{ d.date_coa if d.date_coa is not none else '' }}</td>
+            <td style="padding: 3px !important; ">{{ d.batch_tt if d.batch_tt is not none else '' }}</td>
+            <td style="padding: 3px !important; ">{{ d.sample_lot_tt if d.sample_lot_tt is not none else '' }}</td>
+            <td style="padding: 3px !important; ">{{ d.batch_producer if d.batch_producer is not none else '' }}</td>
+            <td style="padding: 3px !important; ">{{ d.coa if d.coa is not none else '' }}</td>
+            <td style="padding: 3px !important; ">{{ d.parameter if d.parameter is not none else '' }}</td>
+            <td style="padding: 3px !important; text-align: center;">{{ d.result if d.result is not none else '' }}</td>
+            <td style="padding: 3px !important; text-align: center;">{{ d.unit if d.unit is not none else '' }}</td>
+            <td style="padding: 3px !important; text-align: center;">{{ d.legal_limit if d.legal_limit is not none else '' }}</td>
+            <td style="padding: 3px !important; text-align: center;">{{ d.legal_limit_unit if d.legal_limit_unit is not none else '' }}</td>
         </tr>
     {% endfor %}
     </table>
     <br>
-
    </div>
   </div>
  </body>

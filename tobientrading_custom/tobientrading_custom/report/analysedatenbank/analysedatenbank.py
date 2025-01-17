@@ -38,7 +38,7 @@ def get_columns():
 def get_data(filters):
 	conditions = ""
 	if filters.get("item"):
-		conditions += " AND `tabCertificate of Analysis`.`item_name` = '{0}'".format(filters.get("item"))
+		conditions += " AND `tabCertificate of Analysis`.`item` = '{0}'".format(filters.get("item"))
 	if filters.get("parameter"):
 		conditions += " AND `tabCertificate of Analysis Result`.`parameter` = '{0}'".format(filters.get("parameter"))
 	if filters.get("batch_tt"):
@@ -73,12 +73,13 @@ def get_data(filters):
 				`tabCertificate of Analysis`.`date_coa`, 
 				`tabCertificate of Analysis Result`.`parameter` ASC
 	""".format(conditions=conditions)
+
 	data = frappe.db.sql(query, as_dict=True)
 	return data
 
 @frappe.whitelist()
 def download_pdf(item, parameter, batch):
-    filters = {'item': item, 'parameter': parameter, 'batch': batch}
+    filters = {'item': item, 'parameter': parameter, 'batch_tt': batch}
 
     content = frappe.render_template(
         "tobientrading_custom/tobientrading_custom/report/analysedatenbank/analysedatenbank.html", 
@@ -88,12 +89,19 @@ def download_pdf(item, parameter, batch):
         }
     )
 
-    pdf = get_pdf(content)
+    date = datetime.strptime(now(), "%Y-%m-%d %H:%M:%S.%f").strftime("%Y-%m-%d")
 
-    date = datetime.strptime(now(), "%Y-%m-%d %H:%M:%S.%f").strftime("%Y%m%d")
+    options = {
+        "orientation": "Landscape",
+        "footer-center": f"Page [page] of [topage]  |  Date: {date}  |  Item: {item}  |  Parameter: {parameter}  |  Batch: {batch}",
+        "footer-font-size": "8",
+    }
+
+    pdf = get_pdf(content, options)
 
     frappe.local.response.filename = f"Analysedatenbank_{item}_{parameter}_{batch}_{date}.pdf"
     frappe.local.response.filecontent = pdf
     frappe.local.response.type = "download"
 
     return
+
