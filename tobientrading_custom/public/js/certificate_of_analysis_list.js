@@ -58,7 +58,6 @@ function read_excel(file){
 }
 
 function extract_data_from_excel(contents){
-	console.log("Extracting data from Excel");
 	var workbook = XLSX.read(contents, {type: 'binary'});
 	var sheet_name_list = workbook.SheetNames[0];
 	var worksheet = workbook.Sheets[sheet_name_list];
@@ -82,7 +81,6 @@ function create_coa_from_excel_data(data){
 }
 
 function read_xml(file){
-	console.log("Reading XML file");
 	var reader = new FileReader();
 	reader.addEventListener('load', function (event) {
 		var contents = event.target.result;
@@ -95,8 +93,6 @@ function read_xml(file){
 }
 
 function create_coa_from_xml_data(data){
-	console.log("Creating COA from XML data");
-	console.log(data);
 	frappe.call({
 		'method': "tobientrading_custom.tobientrading_custom.doctype.certificate_of_analysis.certificate_of_analysis.create_coa_from_xml_data",
 		'args': {
