@@ -32,6 +32,24 @@
   {
    "hidden": 0,
    "is_query_report": 0,
+   "label": "CoA",
+   "link_to": "Certificate of Analyses",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Analysedatenbank",
+   "link_to": "Analysedatenbank",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
    "label": "Sample Lot",
    "onboard": 0,
    "type": "Card Break"
