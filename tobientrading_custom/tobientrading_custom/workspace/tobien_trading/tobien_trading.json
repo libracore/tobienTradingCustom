@@ -33,7 +33,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "CoA",
-   "link_to": "Certificate of Analyses",
+   "link_to": "Certificate of Analysis",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -89,7 +89,7 @@
    "type": "Link"
   }
  ],
- "modified": "2025-01-20 15:25:46.408312",
+ "modified": "2025-01-20 15:28:46.408312",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Tobien Trading",
