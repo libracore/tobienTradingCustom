@@ -38,7 +38,7 @@ def create_coa_from_excel_data(data):
             # get COA details
             begin_of_analysis = format_date(row[1])
             end_of_analysis = format_date(row[2])
-            item_code, batch = parse_item_and_batch(row)
+            item_code, batch = row[4], row[5]
 
             item = frappe.get_doc("Item", item_code)
 
@@ -47,13 +47,13 @@ def create_coa_from_excel_data(data):
             certficate_of_analysis = create_and_fetch_coa(row[0], item_code, item.item_name, item.item_group, end_of_analysis, begin_of_analysis, "SUP-00096", batch_tt, batch_supplier)
 
             # create COA result if parameter, result, and unit are available
-            if row[7] and row[8] and row[9] and row[8] != "\xa0":
-                parameter_name = row[7].strip()
+            if row[8] and row[9] and row[10] and row[9] != "\xa0":
+                parameter_name = row[8].strip()
                 if "<" in parameter_name or ">" in parameter_name:
                     parameter_name = parameter_name.replace("<", "≤").replace(">", "≥")
 
                 parameter = create_or_fetch_parameter(parameter_name)
-                create_coa_result(certficate_of_analysis, parameter, end_of_analysis, item_code, batch_tt, row[8], row[9], row[10])
+                create_coa_result(certficate_of_analysis, parameter, end_of_analysis, item_code, batch_tt, row[9], row[10], row[11])
 
         except Exception as e:
             frappe.log_error("Error while creating COA for row {row} from Excel data: {error}".format(row=row, error=e), "COA Import")
@@ -134,6 +134,8 @@ def parse_item_and_batch(row):
     return item_code, batch
 
 def fetch_batch_details(batch):
+    #remove 'LOT: ' from batch and remove breaklines
+    batch = batch.replace("LOT: ", "").replace("\r\n", "")
     if frappe.db.exists("Batch", batch):
         batch_doc = frappe.get_doc("Batch", batch)
         batch_tt = batch_doc.name
