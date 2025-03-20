@@ -53,7 +53,14 @@ def create_coa_from_excel_data(data):
                     parameter_name = parameter_name.replace("<", "≤").replace(">", "≥")
 
                 parameter = create_or_fetch_parameter(parameter_name)
-                create_coa_result(certficate_of_analysis, parameter, end_of_analysis, item_code, batch_tt, row[9], row[10], row[11])
+                result = row[9]
+                unit = row[10]
+                max_level = safe_get(row, 11)
+                method = safe_get(row, 14)
+                guide_value = safe_get(row, 12)
+                limit_value = safe_get(row, 13)
+                assessment = row[7]
+                create_coa_result(certficate_of_analysis, parameter, end_of_analysis, item_code, batch_tt, result, unit, max_level, method, guide_value, limit_value, assessment)
 
         except Exception as e:
             frappe.log_error("Error while creating COA for row {row} from Excel data: {error}".format(row=row, error=e), "COA Import")
@@ -113,6 +120,12 @@ def split_and_strip(string, idx=0):
 
 def format_date(date):
     return datetime.strptime(date, '%d.%m.%Y').strftime('%Y-%m-%d')
+
+def safe_get(lst, index, default=""):
+    try:
+        return lst[index]
+    except IndexError:
+        return default
 
 # functions to parse coa details
 def parse_item_and_batch(row):
@@ -182,7 +195,7 @@ def create_or_fetch_parameter(parameter_name):
 
     return parameter
 
-def create_coa_result(coa, parameter, end_of_analysis, item_code, batch_tt, result, unit, max_level):
+def create_coa_result(coa, parameter, end_of_analysis, item_code, batch_tt, result, unit, max_level, method=None, guide_value=None, limit_value=None, assessment=None):
     coa_result = frappe.db.exists("Certificate of Analysis Result", {"coa": coa.name, "parameter": parameter.name})
 
     if not coa_result:
@@ -195,9 +208,13 @@ def create_coa_result(coa, parameter, end_of_analysis, item_code, batch_tt, resu
             "coa_date": end_of_analysis,
             "item": item_code,
             "batch_tt": batch_tt,
+            "method": method,
             "result": result,
             "unit": unit,
-            "max_level": max_level
+            "max_level": max_level,
+            "guide_value": guide_value,
+            "limit_value": limit_value,
+            "assessment": assessment
         })
         
         coa_result.save()

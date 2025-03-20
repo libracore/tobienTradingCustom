@@ -22,7 +22,9 @@
   "column_break_swuwb",
   "guide_value",
   "limit_value",
-  "max_level"
+  "max_level",
+  "assessment_section",
+  "assessment"
  ],
  "fields": [
   {
@@ -125,11 +127,21 @@
    "in_standard_filter": 1,
    "label": "Batch TT",
    "options": "Batch"
+  },
+  {
+   "fieldname": "assessment_section",
+   "fieldtype": "Section Break",
+   "label": "Assessment"
+  },
+  {
+   "fieldname": "assessment",
+   "fieldtype": "Long Text",
+   "label": "Assessment"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-05 11:51:30.766085",
+ "modified": "2025-02-27 17:24:30.581219",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis Result",
