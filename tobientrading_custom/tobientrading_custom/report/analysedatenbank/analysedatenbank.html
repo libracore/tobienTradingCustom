@@ -42,8 +42,9 @@
             <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Parameter") }}</th>
             <th style="padding: 3px !important; width: 10%; text-align: center;">{{ _("Result") }}</th>
             <th style="padding: 3px !important; width: 5%; text-align: center;">{{ _("Unit") }}</th>
-            <th style="padding: 3px !important; width: 10%; text-align: center;">{{ _("Legal Limit") }}</th>
-            <th style="padding: 3px !important; width: 5%; text-align: center;">{{ _("Legal Limit Unit") }}</th>
+            <th style="padding: 3px !important; width: 10%; text-align: center;">{{ _("Max Level") }}</th>
+            <th style="padding: 3px !important; width: 10%; text-align: center;">{{ _("Guide Value") }}</th>
+            <th style="padding: 3px !important; width: 10%; text-align: center;">{{ _("Limit Value") }}</th>
         </tr>
     {% for d in data %}
         <tr>
@@ -57,7 +58,8 @@
             <td style="padding: 3px !important; text-align: center;">{{ d.result if d.result is not none else '' }}</td>
             <td style="padding: 3px !important; text-align: center;">{{ d.unit if d.unit is not none else '' }}</td>
             <td style="padding: 3px !important; text-align: center;">{{ d.legal_limit if d.legal_limit is not none else '' }}</td>
-            <td style="padding: 3px !important; text-align: center;">{{ d.legal_limit_unit if d.legal_limit_unit is not none else '' }}</td>
+            <td style="padding: 3px !important; text-align: center;">{{ d.guide_value if d.guide_value is not none else '' }}</td>
+            <td style="padding: 3px !important; text-align: center;">{{ d.limit_value if d.limit_value is not none else '' }}</td>
         </tr>
     {% endfor %}
     </table>
