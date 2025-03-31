@@ -20,9 +20,9 @@
   "result",
   "unit",
   "column_break_swuwb",
+  "max_level",
   "guide_value",
   "limit_value",
-  "max_level",
   "assessment_section",
   "assessment"
  ],
@@ -45,28 +45,29 @@
    "fieldname": "unit",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Unit",
-   "reqd": 1
+   "label": "Unit"
   },
   {
    "fieldname": "guide_value",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Guide value"
   },
   {
    "fieldname": "limit_value",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Limit value"
   },
   {
    "fieldname": "max_level",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Max. level"
   },
   {
    "fieldname": "coa",
    "fieldtype": "Link",
-   "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "COA",
    "options": "Certificate of Analysis",
@@ -141,7 +142,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-27 17:24:30.581219",
+ "modified": "2025-03-31 10:45:18.898969",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis Result",

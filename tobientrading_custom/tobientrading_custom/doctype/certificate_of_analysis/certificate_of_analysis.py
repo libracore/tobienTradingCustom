@@ -47,14 +47,14 @@ def create_coa_from_excel_data(data):
             certficate_of_analysis = create_and_fetch_coa(row[0], item_code, item.item_name, item.item_group, end_of_analysis, begin_of_analysis, "SUP-00096", batch_tt, batch_supplier)
 
             # create COA result if parameter, result, and unit are available
-            if row[8] and row[9] and row[10] and row[9] != "\xa0":
+            if row[8] and row[9] and row[9] != "\xa0":
                 parameter_name = row[8].strip()
                 if "<" in parameter_name or ">" in parameter_name:
                     parameter_name = parameter_name.replace("<", "≤").replace(">", "≥")
 
                 parameter = create_or_fetch_parameter(parameter_name)
                 result = row[9]
-                unit = row[10]
+                unit = safe_get(row, 10)
                 max_level = safe_get(row, 11)
                 method = safe_get(row, 14)
                 guide_value = safe_get(row, 12)
@@ -64,9 +64,8 @@ def create_coa_from_excel_data(data):
 
         except Exception as e:
             frappe.log_error("Error while creating COA for row {row} from Excel data: {error}".format(row=row, error=e), "COA Import")
-            continue
 
-    return "COA created from Excel. Check logs for potential errors."
+        return "COA created from Excel. Check logs for potential errors."
 
 @frappe.whitelist()
 def create_coa_from_xml_data(data):
