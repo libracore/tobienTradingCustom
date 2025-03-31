@@ -18,6 +18,7 @@ function fetch_test_type_and_subcategory(frm){
 			if (response.message) {
 				frm.set_value('test_type', response.message[0].test_type);
 				frm.set_value('test_type_subcategory', response.message[0].subcategory);
+				frm.set_value('test_type_subcategory_name', response.message[0].subcategory_name);
 			}
 		}
 	});

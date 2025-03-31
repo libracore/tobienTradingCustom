@@ -13,7 +13,7 @@
     {% for result in results %}
     <tr>
         <td>{{ result.test_type if result.test_type is not none else '' }}</td>
-        <td>{{ result.test_type_subcategory if result.test_type_subcategory is not none else '' }}</td>
+        <td>{{ result.test_type_subcategory_name if result.test_type_subcategory_name is not none else '' }}</td>
         <td>{{ result.parameter if result.parameter is not none else '' }}</td>
         <td>{{ result.result if result.result is not none else '' }}</td>
         <td>{{ result.unit if result.unit is not none else '' }}</td>

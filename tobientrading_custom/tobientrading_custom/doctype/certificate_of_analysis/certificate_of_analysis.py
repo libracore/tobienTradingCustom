@@ -14,7 +14,7 @@ class CertificateofAnalysis(Document):
 def get_results(coa):
     query = """
         SELECT `coar`.`test_type`,
-               `coar`.`test_type_subcategory`,
+               `coar`.`test_type_subcategory_name`,
                `coar`.`parameter`, 
                `coar`.`result`,
                `coar`.`unit`,
@@ -24,7 +24,7 @@ def get_results(coa):
                `coar`.`name`
         FROM `tabCertificate of Analysis Result` AS `coar`
         WHERE `coar`.`coa` = '{coa}'
-        ORDER BY `coar`.`test_type`, `coar`.`test_type_subcategory`, `coar`.`parameter` ASC
+        ORDER BY `coar`.`test_type`, `coar`.`test_type_subcategory_name`, `coar`.`parameter` ASC
     """.format(coa=coa)
 
     results = frappe.db.sql(query, as_dict=True)
@@ -67,7 +67,7 @@ def create_coa_from_excel_data(data):
         except Exception as e:
             frappe.log_error("Error while creating COA for row {row} from Excel data: {error}".format(row=row, error=e), "COA Import")
 
-        return "COA created from Excel. Check logs for potential errors."
+    return "COA created from Excel. Check logs for potential errors."
 
 @frappe.whitelist()
 def create_coa_from_xml_data(data):
@@ -96,8 +96,8 @@ def create_coa_from_xml_data(data):
 
                         coa = create_and_fetch_coa(certificate_of_analysis, item_code, item.item_name, item.item_group, end_of_analysis, begin_of_analysis, "SUP-00381", batch_tt, batch_supplier)
 
-                        # create COA result if parameter, result, and unit are availabl
-                        if parameter_name and result and unit:
+                        # create COA result if parameter, result, and unit are available
+                        if parameter_name and result:
                             parameter = create_or_fetch_parameter(parameter_name)
                             create_coa_result(coa, parameter, end_of_analysis, item_code, batch_tt, result, unit, max_level)
 
@@ -205,6 +205,7 @@ def create_coa_result(coa, parameter, end_of_analysis, item_code, batch_tt, resu
             "parameter": parameter.name, 
             "test_type": parameter.test_type,
             "test_type_subcategory": parameter.subcategory,
+            "test_type_subcategory_name": parameter.subcategory_name,
             "coa": coa.name,
             "coa_date": end_of_analysis,
             "item": item_code,
