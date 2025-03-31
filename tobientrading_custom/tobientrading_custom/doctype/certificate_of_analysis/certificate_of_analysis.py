@@ -18,6 +18,8 @@ def get_results(coa):
                `coar`.`parameter`, 
                `coar`.`result`,
                `coar`.`unit`,
+               `coar`.`max_level`,
+               `coar`.`guide_value`,
                `coar`.`limit_value`,
                `coar`.`name`
         FROM `tabCertificate of Analysis Result` AS `coar`
