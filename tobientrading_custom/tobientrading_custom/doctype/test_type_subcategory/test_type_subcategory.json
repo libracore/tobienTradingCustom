@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:subcategory",
+ "autoname": "format:{subcategory} | {related_test_type}",
  "creation": "2024-12-05 10:08:43.450083",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -16,20 +16,20 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Subcategory",
-   "reqd": 1,
-   "unique": 1
+   "reqd": 1
   },
   {
    "fieldname": "related_test_type",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Related Test Type",
-   "options": "Test Type"
+   "options": "Test Type",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-05 10:13:26.846422",
+ "modified": "2025-03-31 13:31:22.254374",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Test Type Subcategory",
