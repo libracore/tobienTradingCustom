@@ -9,7 +9,8 @@
  "field_order": [
   "parameter",
   "test_type",
-  "subcategory"
+  "subcategory",
+  "subcategory_name"
  ],
  "fields": [
   {
@@ -34,11 +35,17 @@
    "in_list_view": 1,
    "label": "Subcategory",
    "options": "Test Type Subcategory"
+  },
+  {
+   "fetch_from": "subcategory.subcategory",
+   "fieldname": "subcategory_name",
+   "fieldtype": "Data",
+   "label": "Subcategory Name"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-05 10:10:49.940257",
+ "modified": "2025-03-31 13:10:38.358699",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Measurement Parameter",

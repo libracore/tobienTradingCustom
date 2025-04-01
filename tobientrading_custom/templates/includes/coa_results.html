@@ -5,16 +5,20 @@
         <th>Parameter</th>
         <th>Result</th>
         <th>Unit</th>
+        <th>Max level</th>
+        <th>Guide value</th>
         <th>Limit value</th>
         <th>Link</th>
     </tr>
     {% for result in results %}
     <tr>
         <td>{{ result.test_type if result.test_type is not none else '' }}</td>
-        <td>{{ result.test_type_subcategory if result.test_type_subcategory is not none else '' }}</td>
+        <td>{{ result.test_type_subcategory_name if result.test_type_subcategory_name is not none else '' }}</td>
         <td>{{ result.parameter if result.parameter is not none else '' }}</td>
         <td>{{ result.result if result.result is not none else '' }}</td>
         <td>{{ result.unit if result.unit is not none else '' }}</td>
+        <td>{{ result.max_level if result.max_level is not none else '' }}</td>
+        <td>{{ result.guide_value if result.guide_value is not none else '' }}</td>
         <td>{{ result.limit_value if result.limit_value is not none else '' }}</td>
         <td><a href="/app/certificate-of-analysis-result/{{ result.name }}" target="_blank">Open</a></td>
     </tr>

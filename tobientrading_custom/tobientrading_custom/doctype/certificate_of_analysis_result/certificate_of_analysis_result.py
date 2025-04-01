@@ -10,8 +10,12 @@ class CertificateofAnalysisResult(Document):
 @frappe.whitelist()
 def get_test_type_and_subcategory(parameter):
 	query = """
-		SELECT `test_type`, `subcategory`
+		SELECT 
+       `tabMeasurement Parameter`.`test_type`, 
+       `tabMeasurement Parameter`.`subcategory`, 
+       `tabTest Type Subcategory`.`subcategory` AS `subcategory_name`
 		FROM `tabMeasurement Parameter`
+        LEFT JOIN `tabTest Type Subcategory` ON `tabMeasurement Parameter`.`subcategory` = `tabTest Type Subcategory`.`name`
 		WHERE `parameter` = '{parameter}'
 	""".format(parameter=parameter)
 
