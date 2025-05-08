@@ -14,7 +14,7 @@ class CertificateofAnalysis(Document):
 def get_results(coa):
     query = """
         SELECT `coar`.`test_type`,
-               `coar`.`test_type_subcategory_name`,
+               `mp`.`subcategory_name`,
                `coar`.`parameter`, 
                `coar`.`result`,
                `coar`.`unit`,
@@ -23,8 +23,9 @@ def get_results(coa):
                `coar`.`limit_value`,
                `coar`.`name`
         FROM `tabCertificate of Analysis Result` AS `coar`
+        LEFT JOIN `tabMeasurement Parameter` AS `mp` ON `coar`.`parameter` = `mp`.`name`
         WHERE `coar`.`coa` = '{coa}'
-        ORDER BY `coar`.`test_type`, `coar`.`test_type_subcategory_name`, `coar`.`parameter` ASC
+        ORDER BY `coar`.`test_type`, `mp`.`subcategory_name`, `coar`.`parameter` ASC
     """.format(coa=coa)
 
     results = frappe.db.sql(query, as_dict=True)

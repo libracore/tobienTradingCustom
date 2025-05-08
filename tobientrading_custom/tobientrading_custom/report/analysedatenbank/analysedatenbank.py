@@ -31,6 +31,7 @@ def get_columns():
 		{"label": "Batch Volume", "fieldname": "batch_volume", "fieldtype": "Data", "width": 100},
 		{"label": "Item Group", "fieldname": "item_group", "fieldtype": "Data", "width": 100},
 		{"label": "Test Type", "fieldname": "test_type", "fieldtype": "Data", "width": 100},
+		{"label": "Subcategory", "fieldname": "subcategory_name", "fieldtype": "Data", "width": 100},
 		{"label": "Method", "fieldname": "method", "fieldtype": "Data", "width": 100}
 	]
 
@@ -65,10 +66,13 @@ def get_data(filters):
 			`tabCertificate of Analysis`.`batch_volume`,
 			`tabCertificate of Analysis`.`item_group`,
 			`tabCertificate of Analysis Result`.`test_type`,
+			`tabMeasurement Parameter`.`subcategory_name`,
 			`tabCertificate of Analysis Result`.`method`
 		FROM `tabCertificate of Analysis`
 		LEFT JOIN `tabCertificate of Analysis Result` 
 			ON `tabCertificate of Analysis`.`name` = `tabCertificate of Analysis Result`.`coa`
+		LEFT JOIN `tabMeasurement Parameter`
+			ON `tabCertificate of Analysis Result`.`parameter` = `tabMeasurement Parameter`.`name`
 		WHERE `tabCertificate of Analysis Result`.`parameter` IS NOT NULL
 		{conditions}
 		ORDER BY `tabCertificate of Analysis`.`item_name`, 
