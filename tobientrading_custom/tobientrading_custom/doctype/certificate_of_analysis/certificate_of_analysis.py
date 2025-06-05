@@ -180,7 +180,7 @@ def create_and_fetch_coa(certificate_of_analysis, item_code, item_name, item_gro
             "end_of_analysis": end_of_analysis,
             "laboratory": laboratory,
             "batch_tt": batch_tt,
-            "batch_producer": batch_supplier
+            "supplier_batch_number": batch_supplier #TODO aj 05.06.2025 adjust this to be taken from batch
         })
     coa.save()
     

@@ -34,10 +34,12 @@
     <table class="table" style="width: 100%; font-size: 10px;">
         <tr>
             <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Item") }}</th>
+            <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Item Code") }}</th>
             <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Date") }}</th>
             <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Batch") }}</th>
-            <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Sample Lot") }}</th>
-            <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Batch Producer") }}</th>
+            {% if filters.supplier_batch_number %}
+                <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Supplier Batch Number") }}</th>
+            {% endif %}
             <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Certificate of Analysis") }}</th>
             <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Parameter") }}</th>
             <th style="padding: 3px !important; width: 10%; text-align: center;">{{ _("Result") }}</th>
@@ -52,7 +54,7 @@
             <td style="padding: 3px !important; ">{{ d.date_coa if d.date_coa is not none else '' }}</td>
             <td style="padding: 3px !important; ">{{ d.batch_tt if d.batch_tt is not none else '' }}</td>
             <td style="padding: 3px !important; ">{{ d.sample_lot_tt if d.sample_lot_tt is not none else '' }}</td>
-            <td style="padding: 3px !important; ">{{ d.batch_producer if d.batch_producer is not none else '' }}</td>
+            <td style="padding: 3px !important; ">{{ d.supplier_batch_number if d.supplier_batch_number is not none else '' }}</td>
             <td style="padding: 3px !important; ">{{ d.coa if d.coa is not none else '' }}</td>
             <td style="padding: 3px !important; ">{{ d.parameter if d.parameter is not none else '' }}</td>
             <td style="padding: 3px !important; text-align: center;">{{ d.result if d.result is not none else '' }}</td>
