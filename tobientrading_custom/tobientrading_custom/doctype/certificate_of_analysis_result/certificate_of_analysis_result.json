@@ -125,6 +125,7 @@
    "options": "Item"
   },
   {
+   "fetch_from": "coa.batch_tt",
    "fieldname": "batch_tt",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -150,7 +151,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-05 11:29:27.263752",
+ "modified": "2025-06-05 12:56:05.855842",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis Result",
