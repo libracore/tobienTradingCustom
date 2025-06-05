@@ -14,54 +14,84 @@
   <div class="print-format-gutter">
    <div class="print-format">
     <p id="subject"><strong>{{ _("Analysedatenbank") }}</strong></p>
-    <table id="meta" style="width: 100%; font-size: 14px;">
+    <table id="meta" style="width: 100%; font-size: 14px; border-collapse: collapse;">
         <tr>
-            <td style="width: 23%;"><strong>{{ _("Item") }}</strong></td>
-            <td style="width: 23%;">{{ filters.item }}</td>
-            <td style="width:  8%;"></td>
-            <td style="width: 23%;"><strong>{{ _("Parameter") }}</strong></td>
-            <td style="width: 23%;">{{ filters.parameter }}</td>
+            <td style="width: 10%;"><strong>{{ _("Date") }}</strong></td>
+            <td style="width: 15%;">{{ frappe.format_value(frappe.utils.now(), {'fieldtype': 'Date'}) }}</td>
         </tr>
         <tr>
-            <td><strong>{{ _("Date") }}</strong></td>
-            <td>{{ frappe.format_value(frappe.utils.now(), {'fieldtype': 'Date'}) }}</td>
-            <td></td>
-            <td><strong>{{ _("Batch") }}</strong></td>
-            <td>{{ filters.batch_tt }}</td>
+            {% if options.item %}
+                <td style="width: 10%;"><strong>{{ _("Item") }}</strong></td>
+                <td style="width: 15%;">{{ options.item }}</td>
+            {% endif %}
+            {% if options.parameter %}
+                <td style="width: 10%;"><strong>{{ _("Parameter") }}</strong></td>
+                <td style="width: 15%;">{{ options.parameter }}</td>
+            {% endif %}
+            {% if options.batch_tt %}
+                <td style="width: 10%;"><strong>{{ _("Batch") }}</strong></td>
+                <td style="width: 15%;">{{ options.batch_tt }}</td>
+            {% endif %}
+        </tr>
+        <tr>
+            {% if options.item_group %}
+                <td style="width: 10%;"><strong>{{ _("Item Group") }}</strong></td>
+                <td style="width: 15%;">{{ options.item_group }}</td>
+            {% endif %}
+            {% if options.test_type %}
+                <td style="width: 10%;"><strong>{{ _("Test Type") }}</strong></td>
+                <td style="width: 15%;">{{ options.test_type }}</td>
+            {% endif %}
+            {% if options.subcategory %}
+                <td style="width: 10%;"><strong>{{ _("Subcategory") }}</strong></td>
+                <td style="width: 15%;">{{ options.subcategory }}</td>
+            {% endif %}
+        </tr>
+        <tr>
         </tr>
     </table>
     <p><br></p>
-    <table class="table" style="width: 100%; font-size: 10px;">
+    <table class="table" style="width: 100%; font-size: 9px;">
         <tr>
-            <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Item") }}</th>
-            <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Item Code") }}</th>
-            <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Date") }}</th>
-            <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Batch") }}</th>
-            {% if filters.supplier_batch_number %}
-                <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Supplier Batch Number") }}</th>
+            <th style="padding: 4px !important; width: 10%; text-align: left;">{{ _("Item") }}</th>
+            <th style="padding: 4px !important; width: 5%; text-align: left;">{{ _("Item Code") }}</th>
+            <th style="padding: 4px !important; width: 7%; text-align: left;">{{ _("Date") }}</th>
+            <th style="padding: 4px !important; width: 7%; text-align: left;">{{ _("Batch") }}</th>
+            {% if options.supplier_batch_number %}
+                <th style="padding: 4px !important; width: 5%; text-align: left;">{{ _("Supplier Batch Number") }}</th>
             {% endif %}
-            <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Certificate of Analysis") }}</th>
-            <th style="padding: 3px !important; width: 10%; text-align: left;">{{ _("Parameter") }}</th>
-            <th style="padding: 3px !important; width: 10%; text-align: center;">{{ _("Result") }}</th>
-            <th style="padding: 3px !important; width: 5%; text-align: center;">{{ _("Unit") }}</th>
-            <th style="padding: 3px !important; width: 10%; text-align: center;">{{ _("Max Level") }}</th>
-            <th style="padding: 3px !important; width: 10%; text-align: center;">{{ _("Guide Value") }}</th>
-            <th style="padding: 3px !important; width: 10%; text-align: center;">{{ _("Limit Value") }}</th>
+            <th style="padding: 4px !important; width: 7%; text-align: left;">{{ _("Certificate of Analysis") }}</th>
+            <th style="padding: 4px !important; text-align: left;">{{ _("Parameter") }}</th>
+            <th style="padding: 4px !important; width: 7%; text-align: center;">{{ _("Result") }}</th>
+            <th style="padding: 4px !important; width: 4%; text-align: center;">{{ _("Unit") }}</th>
+            <th style="padding: 4px !important; width: 4%; text-align: center;">{{ _("Max Level") }}</th>
+            <th style="padding: 4px !important; width: 4%; text-align: center;">{{ _("Guide Value") }}</th>
+            <th style="padding: 4px !important; width: 4%; text-align: center;">{{ _("Limit Value") }}</th>
+            <th style="padding: 4px !important; text-align: center;">{{ _("Item Group") }}</th>
+            <th style="padding: 4px !important; text-align: center;">{{ _("Test Type") }}</th>
+            <th style="padding: 4px !important; text-align: center;">{{ _("Subcategory") }}</th>
+            <th style="padding: 4px !important; text-align: center;">{{ _("Method") }}</th>
         </tr>
     {% for d in data %}
         <tr>
-            <td style="padding: 3px !important; ">{{ d.item if d.item is not none else '' }}</td>
-            <td style="padding: 3px !important; ">{{ d.date_coa if d.date_coa is not none else '' }}</td>
-            <td style="padding: 3px !important; ">{{ d.batch_tt if d.batch_tt is not none else '' }}</td>
-            <td style="padding: 3px !important; ">{{ d.sample_lot_tt if d.sample_lot_tt is not none else '' }}</td>
-            <td style="padding: 3px !important; ">{{ d.supplier_batch_number if d.supplier_batch_number is not none else '' }}</td>
-            <td style="padding: 3px !important; ">{{ d.coa if d.coa is not none else '' }}</td>
-            <td style="padding: 3px !important; ">{{ d.parameter if d.parameter is not none else '' }}</td>
-            <td style="padding: 3px !important; text-align: center;">{{ d.result if d.result is not none else '' }}</td>
-            <td style="padding: 3px !important; text-align: center;">{{ d.unit if d.unit is not none else '' }}</td>
-            <td style="padding: 3px !important; text-align: center;">{{ d.legal_limit if d.legal_limit is not none else '' }}</td>
-            <td style="padding: 3px !important; text-align: center;">{{ d.guide_value if d.guide_value is not none else '' }}</td>
-            <td style="padding: 3px !important; text-align: center;">{{ d.limit_value if d.limit_value is not none else '' }}</td>
+            <td style="padding: 4px !important; ">{{ d.item_name if d.item_name is not none else '' }}</td>
+            <td style="padding: 4px !important; ">{{ d.item if d.item is not none else '' }}</td>
+            <td style="padding: 4px !important; ">{{ d.date_coa if d.date_coa is not none else '' }}</td>
+            <td style="padding: 4px !important; ">{{ d.batch_tt if d.batch_tt is not none else '' }}</td>
+            {% if options.supplier_batch_number %}
+                <td style="padding: 4px !important; ">{{ d.supplier_batch_number if d.supplier_batch_number is not none else '' }}</td>
+            {% endif %}
+            <td style="padding: 4px !important; ">{{ d.coa if d.coa is not none else '' }}</td>
+            <td style="padding: 4px !important; ">{{ d.parameter if d.parameter is not none else '' }}</td>
+            <td style="padding: 4px !important; text-align: center;">{{ d.result if d.result is not none else '' }}</td>
+            <td style="padding: 4px !important; text-align: center;">{{ d.unit if d.unit is not none else '' }}</td>
+            <td style="padding: 4px !important; text-align: center;">{{ d.legal_limit if d.legal_limit is not none else '' }}</td>
+            <td style="padding: 4px !important; text-align: center;">{{ d.guide_value if d.guide_value is not none else '' }}</td>
+            <td style="padding: 4px !important; text-align: center;">{{ d.limit_value if d.limit_value is not none else '' }}</td>
+            <td style="padding: 4px !important;">{{ d.item_group if d.item_group is not none else '' }}</td>
+            <td style="padding: 4px !important;">{{ d.test_type if d.test_type is not none else '' }}</td>
+            <td style="padding: 4px !important;">{{ d.subcategory_name if d.subcategory_name is not none else '' }}</td>
+            <td style="padding: 4px !important;">{{ d.method if d.method is not none else '' }}</td>
         </tr>
     {% endfor %}
     </table>

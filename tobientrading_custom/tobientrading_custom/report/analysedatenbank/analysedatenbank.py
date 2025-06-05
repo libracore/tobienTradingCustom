@@ -84,14 +84,15 @@ def get_data(filters):
 	return data
 
 @frappe.whitelist()
-def download_pdf(item, parameter, batch, item_group, test_type, subcategory):
+def download_pdf(item, parameter, batch, item_group, test_type, subcategory, supplier_batch_number=None):
     filters = {'item': item, 'parameter': parameter, 'batch_tt': batch, 'item_group': item_group, 'test_type': test_type, 'subcategory': subcategory}
+    options = {'supplier_batch_number': supplier_batch_number, **filters}
 
     content = frappe.render_template(
 		"tobientrading_custom/tobientrading_custom/report/analysedatenbank/analysedatenbank.html", 
 		{
 			'data': get_data(filters),
-			'filters': filters
+			'options': options
 		}
 	)
 

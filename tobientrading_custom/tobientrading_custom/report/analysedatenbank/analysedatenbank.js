@@ -56,7 +56,7 @@ frappe.query_reports["Analysedatenbank"] = {
         };
     
         createPdfButton('Download PDF', { supplier_batch_number: true });
-        createPdfButton('PDF without Supplier Batch Number', { supplier_batch_number: false });
+        createPdfButton('PDF without Supplier Batch Number', { supplier_batch_number: "" });
     }
 };
 
@@ -75,11 +75,12 @@ function create_pdf(options) {
         frappe.urllib.get_full_url("/api/method/tobientrading_custom.tobientrading_custom.report.analysedatenbank.analysedatenbank.download_pdf"  
                 + "?item=" + encodeURIComponent(item)
                 + "&parameter=" + encodeURIComponent(parameter)
-                + "&batch=" + encodeURIComponent(batch))
+                + "&batch=" + encodeURIComponent(batch)
                 + "&item_group=" + encodeURIComponent(item_group)
                 + "&test_type=" + encodeURIComponent(test_type)
                 + "&subcategory=" + encodeURIComponent(subcategory)
-                + "&supplier_batch_number=" + encodeURIComponent(supplier_batch_number)
+                + (supplier_batch_number ? "&supplier_batch_number=" + encodeURIComponent(supplier_batch_number) : "")
+        ),
     );
     if (!w) {
         frappe.msgprint(__("Please enable pop-ups")); return;
