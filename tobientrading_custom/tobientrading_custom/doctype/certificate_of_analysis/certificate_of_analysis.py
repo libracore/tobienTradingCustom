@@ -45,7 +45,7 @@ def create_coa_from_excel_data(data):
 
             item = frappe.get_doc("Item", item_code)
 
-            batch_tt, batch_supplier = fetch_batch_details(batch)
+            batch_tt, batch_supplier = fetch_batch_details(batch, item_code)
             
             certficate_of_analysis = create_and_fetch_coa(row[0], item_code, item.item_name, item.item_group, end_of_analysis, begin_of_analysis, "SUP-00096", batch_tt, batch_supplier)
 
@@ -84,7 +84,7 @@ def create_coa_from_xml_data(data):
                 item_code = group.find('Referencenumber').text
                 batch = group.find('BatchNumberSuppliers').text
 
-                batch_tt, batch_supplier = fetch_batch_details(batch)
+                batch_tt, batch_supplier = fetch_batch_details(batch, item_code)
 
                 for parameter in group.find_all('Parameter'):
                     try:
@@ -148,7 +148,7 @@ def parse_item_and_batch(row):
 
     return item_code, batch
 
-def fetch_batch_details(batch):
+def fetch_batch_details(batch,item):
     #remove 'LOT: ' from batch and remove breaklines
     batch = batch.replace("LOT: ", "").replace("\r\n", "")
     if frappe.db.exists("Batch", batch):
@@ -156,9 +156,21 @@ def fetch_batch_details(batch):
         batch_tt = batch_doc.name
         batch_supplier = batch_doc.supplier_batch_number
     else:
-        batch_tt = ""
+        # If batch not found, create a new batch
+        batch_doc = frappe.new_doc("Batch")
+        batch_doc.update({
+            "name": batch,
+            "batch_id": batch,
+            "item": item,
+            "expiry_date": "9999-12-31",  # Default expiry date,
+            "country_of_origin": "Switzerland",  # Default country of origin
+            "draft": 1
+        })
+        batch_tt = batch
         batch_supplier = ""
-        frappe.log_error("Batch {batch} not found.".format(batch=batch), "COA Import: Batch not found")
+        frappe.log_error("Batch {batch} not found. Therefore, a new batch has been created for item {item} and batch {batch}. Please add the missing details.".format(batch=batch, item=item), "COA Import: Batch not found")
+
+        batch_doc.save()
     
     return batch_tt, batch_supplier
 
@@ -180,7 +192,7 @@ def create_and_fetch_coa(certificate_of_analysis, item_code, item_name, item_gro
             "end_of_analysis": end_of_analysis,
             "laboratory": laboratory,
             "batch_tt": batch_tt,
-            "batch_producer": batch_supplier
+            "supplier_batch_number": batch_supplier
         })
     coa.save()
     
@@ -199,7 +211,7 @@ def create_or_fetch_parameter(parameter_name):
 
 def create_coa_result(coa, parameter, end_of_analysis, item_code, batch_tt, result, unit, max_level, method=None, guide_value=None, limit_value=None, assessment=None):
     coa_result = frappe.db.exists("Certificate of Analysis Result", {"coa": coa.name, "parameter": parameter.name})
-
+    
     if not coa_result:
         coa_result = frappe.new_doc("Certificate of Analysis Result")
         coa_result.update({
@@ -210,10 +222,9 @@ def create_coa_result(coa, parameter, end_of_analysis, item_code, batch_tt, resu
             "coa": coa.name,
             "coa_date": end_of_analysis,
             "item": item_code,
-            "batch_tt": batch_tt,
             "method": method,
             "result": result,
-            "unit": unit,
+            "unit": unit.replace(" ", ""),  # Remove all whitespaces from unit
             "max_level": max_level,
             "guide_value": guide_value,
             "limit_value": limit_value,

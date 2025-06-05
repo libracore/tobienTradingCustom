@@ -14,7 +14,7 @@
   "batch_tt",
   "sample_lot_tt",
   "batch_volume",
-  "batch_producer",
+  "supplier_batch_number",
   "assessment",
   "column_break_dz1s9",
   "certificate_of_analysis",
@@ -55,11 +55,6 @@
    "fieldtype": "Link",
    "label": "Sample Lot TT",
    "options": "Sample Lot"
-  },
-  {
-   "fieldname": "batch_producer",
-   "fieldtype": "Data",
-   "label": "Batch Producer"
   },
   {
    "fieldname": "batch_volume",
@@ -123,6 +118,7 @@
    "fieldname": "certificate_of_analysis",
    "fieldtype": "Data",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Certificate of Analysis",
    "reqd": 1,
    "unique": 1
@@ -131,11 +127,17 @@
    "fieldname": "assessment",
    "fieldtype": "Text",
    "label": "Assessment"
+  },
+  {
+   "fetch_from": "batch_tt.supplier_batch_number",
+   "fieldname": "supplier_batch_number",
+   "fieldtype": "Data",
+   "label": "Supplier Batch Number"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-09 11:17:20.539172",
+ "modified": "2025-06-05 09:22:05.346680",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis",
@@ -156,5 +158,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "title_field": "item_name"
+ "title_field": "item_name",
+ "track_changes": 1
 }
