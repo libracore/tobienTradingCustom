@@ -1,17 +1,25 @@
 <table class="table">
     <tr>
         <th>Test Type</th>
+        <th>Subcategory</th>
         <th>Parameter</th>
         <th>Result</th>
         <th>Unit</th>
+        <th>Max level</th>
+        <th>Guide value</th>
+        <th>Limit value</th>
         <th>Link</th>
     </tr>
     {% for result in results %}
     <tr>
-        <td>{{ result.test_type }}</td>
-        <td>{{ result.parameter }}</td>
-        <td>{{ result.result }}</td>
-        <td>{{ result.unit }}</td>
+        <td>{{ result.test_type or '' }}</td>
+        <td>{{ result.subcategory_name or '' }}</td>
+        <td>{{ result.parameter or '' }}</td>
+        <td>{{ result.result or '' }}</td>
+        <td>{{ result.unit or '' }}</td>
+        <td>{{ result.max_level or '' }}</td>
+        <td>{{ result.guide_value or '' }}</td>
+        <td>{{ result.limit_value or '' }}</td>
         <td><a href="/app/certificate-of-analysis-result/{{ result.name }}" target="_blank">Open</a></td>
     </tr>
     {% endfor %}

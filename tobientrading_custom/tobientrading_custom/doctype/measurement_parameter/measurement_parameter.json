@@ -8,7 +8,9 @@
  "engine": "InnoDB",
  "field_order": [
   "parameter",
-  "test_type"
+  "test_type",
+  "subcategory",
+  "subcategory_name"
  ],
  "fields": [
   {
@@ -24,13 +26,28 @@
    "fieldname": "test_type",
    "fieldtype": "Link",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Test Type",
    "options": "Test Type"
+  },
+  {
+   "fieldname": "subcategory",
+   "fieldtype": "Link",
+   "label": "Subcategory",
+   "options": "Test Type Subcategory"
+  },
+  {
+   "fetch_from": "subcategory.subcategory",
+   "fieldname": "subcategory_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Subcategory Name"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-14 11:05:33.135836",
+ "modified": "2025-06-05 08:58:34.798570",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Measurement Parameter",

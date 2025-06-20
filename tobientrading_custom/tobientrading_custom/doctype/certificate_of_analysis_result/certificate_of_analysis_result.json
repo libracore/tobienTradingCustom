@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "COAR.######",
+ "autoname": "COAR.#########",
  "creation": "2024-09-19 10:37:21.185957",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -10,16 +10,22 @@
   "parameter",
   "coa",
   "date_coa",
+  "item",
+  "batch_tt",
   "column_break_zfemy",
   "test_type",
+  "test_type_subcategory",
+  "test_type_subcategory_name",
   "method",
   "result_section",
   "result",
   "unit",
   "column_break_swuwb",
+  "max_level",
   "guide_value",
   "limit_value",
-  "max_level"
+  "assessment_section",
+  "assessment"
  ],
  "fields": [
   {
@@ -38,30 +44,32 @@
   },
   {
    "fieldname": "unit",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Unit",
-   "reqd": 1
+   "options": "UOM"
   },
   {
    "fieldname": "guide_value",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Guide value"
   },
   {
    "fieldname": "limit_value",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Limit value"
   },
   {
    "fieldname": "max_level",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Max. level"
   },
   {
    "fieldname": "coa",
    "fieldtype": "Link",
-   "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "COA",
    "options": "Certificate of Analysis",
@@ -100,11 +108,50 @@
    "fieldtype": "Date",
    "label": "Date COA",
    "read_only": 1
+  },
+  {
+   "fieldname": "test_type_subcategory",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Test Type Subcategory",
+   "options": "Test Type Subcategory"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Item",
+   "options": "Item"
+  },
+  {
+   "fetch_from": "coa.batch_tt",
+   "fieldname": "batch_tt",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Batch TT",
+   "options": "Batch"
+  },
+  {
+   "fieldname": "assessment_section",
+   "fieldtype": "Section Break",
+   "label": "Assessment"
+  },
+  {
+   "fieldname": "assessment",
+   "fieldtype": "Long Text",
+   "label": "Assessment"
+  },
+  {
+   "fieldname": "test_type_subcategory_name",
+   "fieldtype": "Data",
+   "label": "Test Type Subcategory"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-14 11:15:33.011588",
+ "modified": "2025-06-05 12:56:05.855842",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Certificate of Analysis Result",
