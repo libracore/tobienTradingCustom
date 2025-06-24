@@ -151,7 +151,7 @@ def parse_item_and_batch(row):
 def fetch_batch_details(batch, item):
     # split batch on ": " and take the last part (or the whole batch if no ": " is found)
     if ": " in batch:
-        batch = batch.split(": ")[-1]
+        batch = batch.split(": ")[-1].strip()
     else:
         batch = batch.strip()
 
