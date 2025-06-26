@@ -1096,7 +1096,7 @@
    "doctype_or_field": "DocType",
    "field_name": null,
    "idx": 0,
-   "modified": "2024-07-05 17:22:39.128318",
+   "modified": "2025-06-26 10:08:39.128318",
    "modified_by": "ft@tobien-trading.com",
    "name": "Purchase Invoice-main-default_print_format",
    "owner": "Administrator",
@@ -1106,7 +1106,7 @@
    "property": "default_print_format",
    "property_type": "Data",
    "row_name": null,
-   "value": "Einkaufsgutschrift 20210917"
+   "value": "Einkaufsgutschrift Standard"
   },
   {
    "_assign": null,
