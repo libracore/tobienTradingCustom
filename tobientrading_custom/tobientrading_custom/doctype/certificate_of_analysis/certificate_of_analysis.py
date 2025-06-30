@@ -148,9 +148,13 @@ def parse_item_and_batch(row):
 
     return item_code, batch
 
-def fetch_batch_details(batch,item):
-    #remove 'LOT: ' from batch and remove breaklines
-    batch = batch.replace("LOT: ", "").replace("\r\n", "")
+def fetch_batch_details(batch, item):
+    # split batch on ": " and take the last part (or the whole batch if no ": " is found)
+    if ": " in batch:
+        batch = batch.split(": ")[-1].strip()
+    else:
+        batch = batch.strip()
+
     if frappe.db.exists("Batch", batch):
         batch_doc = frappe.get_doc("Batch", batch)
         batch_tt = batch_doc.name
