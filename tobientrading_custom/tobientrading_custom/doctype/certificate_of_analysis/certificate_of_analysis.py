@@ -228,7 +228,7 @@ def create_coa_result(coa, parameter, end_of_analysis, item_code, batch_tt, resu
             "item": item_code,
             "method": method,
             "result": result,
-            "unit": unit.replace(" ", ""),  # Remove all whitespaces from unit
+            "unit": unit.replace(" ", "") if unit else "",  # Remove all whitespaces from unit or set to empty string if None
             "max_level": max_level,
             "guide_value": guide_value,
             "limit_value": limit_value,
