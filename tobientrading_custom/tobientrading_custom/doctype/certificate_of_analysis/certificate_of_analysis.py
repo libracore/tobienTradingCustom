@@ -214,26 +214,29 @@ def create_or_fetch_parameter(parameter_name):
     return parameter
 
 def create_coa_result(coa, parameter, end_of_analysis, item_code, batch_tt, result, unit, max_level, method=None, guide_value=None, limit_value=None, assessment=None):
-    coa_result = frappe.db.exists("Certificate of Analysis Result", {"coa": coa.name, "parameter": parameter.name})
-    
-    if not coa_result:
-        coa_result = frappe.new_doc("Certificate of Analysis Result")
-        coa_result.update({
-            "parameter": parameter.name, 
-            "test_type": parameter.test_type,
-            "test_type_subcategory": parameter.subcategory,
-            "test_type_subcategory_name": parameter.subcategory_name,
-            "coa": coa.name,
-            "coa_date": end_of_analysis,
-            "item": item_code,
-            "method": method,
-            "result": result,
-            "unit": unit.replace(" ", "") if unit else "",  # Remove all whitespaces from unit or set to empty string if None
-            "max_level": max_level,
-            "guide_value": guide_value,
-            "limit_value": limit_value,
-            "assessment": assessment
-        })
+    try:
+        coa_result = frappe.db.exists("Certificate of Analysis Result", {"coa": coa.name, "parameter": parameter.name})
         
-        coa_result.save()
-        coa.save()
+        if not coa_result:
+            coa_result = frappe.new_doc("Certificate of Analysis Result")
+            coa_result.update({
+                "parameter": parameter.name, 
+                "test_type": parameter.test_type,
+                "test_type_subcategory": parameter.subcategory,
+                "test_type_subcategory_name": parameter.subcategory_name,
+                "coa": coa.name,
+                "coa_date": end_of_analysis,
+                "item": item_code,
+                "method": method,
+                "result": result,
+                "unit": unit.replace(" ", "") if unit else "",  # Remove all whitespaces from unit or set to empty string if None
+                "max_level": max_level,
+                "guide_value": guide_value,
+                "limit_value": limit_value,
+                "assessment": assessment
+            })
+            
+            coa_result.save()
+            coa.save()
+    except Exception as e:
+        frappe.log_error(f"Error creating COA result for COA {coa.name} and parameter {parameter.name}: {str(e)}", "COA Result Creation Error")
