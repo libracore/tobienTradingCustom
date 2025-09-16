@@ -18,8 +18,7 @@ def auto_fetch(customer):
     address_name_billing = ""
     eori_shipping = None
     eori_billing = None
-    address = frappe.db.get_list('Dynamic Link',
-                              {"link_doctype": "Customer","parenttype": "Address","link_name": customer}, ["parent"])
+    address = frappe.get_all("Dynamic Link", filters={"link_doctype": "Customer", "link_name": customer, "parenttype": "Address"}, fields=["parent"])
 
 
 
