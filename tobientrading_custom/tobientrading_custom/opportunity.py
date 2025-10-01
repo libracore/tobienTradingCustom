@@ -50,7 +50,7 @@ def get_activities(opportunity):
               AND  `tabComment`.`reference_name` = '{opportunity}'
             UNION SELECT
                 "Note" AS `type`, 
-                "engu" AS `name`,
+                "" AS `name`,
                 "" AS `subject`,
                 NULL AS `event_category`,
                 NULL AS `starts_on`,
