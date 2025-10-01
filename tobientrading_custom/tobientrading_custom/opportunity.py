@@ -48,9 +48,9 @@ def get_activities(opportunity):
             WHERE `tabComment`.`reference_doctype` = 'Opportunity'
               AND  `tabComment`.`comment_type` = 'Comment' 
               AND  `tabComment`.`reference_name` = '{opportunity}'
-            /* UNION SELECT   // THIS IS ONLY V14
+            UNION SELECT
                 "Note" AS `type`, 
-                `tabCRM Note`.`name` AS `name`,
+                "engu" AS `name`,
                 "" AS `subject`,
                 NULL AS `event_category`,
                 NULL AS `starts_on`,
@@ -59,9 +59,9 @@ def get_activities(opportunity):
                 `tabCRM Note`.`note` AS `description`,
                 `tabCRM Note`.`added_on` AS `creation`
             FROM `tabCRM Note`
-            LEFT JOIN `tabUser` ON `tabCRM Note`.`owner` = `tabUser`.`name`
+            LEFT JOIN `tabUser` ON `tabCRM Note`.`added_by` = `tabUser`.`name`
             WHERE `tabCRM Note`.`parenttype` = 'Opportunity'
-              AND  `tabCRM Note`.`parent` = '{opportunity}' */ 
+              AND  `tabCRM Note`.`parent` = '{opportunity}'
         ) AS `raw`
         ORDER BY `raw`.`creation` DESC;""".format(opportunity=opportunity)
     return frappe.db.sql(sql_query, as_dict=True)
