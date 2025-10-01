@@ -14,7 +14,6 @@ function render_activities_and_comments(frm) {
             ref_docname: frm.doc.name
         },
         callback: (r) => {
-            console.log(r);
 			if (!r.exc) {
 				cur_frm.set_df_property('custom_all_activities_html', 'options', r.message.html);
 			}
