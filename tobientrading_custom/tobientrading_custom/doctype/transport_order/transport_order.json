@@ -1,0 +1,393 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2022-03-09 15:19:29.053799",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "allgemeine_info_section",
+  "purchase_order",
+  "naming_series",
+  "sales_order",
+  "column_break_5",
+  "logistic_company",
+  "transport_cost",
+  "logistic_order_id",
+  "verrechnet",
+  "section_break_3",
+  "loading_address",
+  "loading_address_details",
+  "contact_person",
+  "contact",
+  "phone",
+  "email",
+  "column_break_9",
+  "company_shipping_address",
+  "shipping_address_details",
+  "company_contact_person",
+  "company_contact",
+  "company_phone",
+  "company_email",
+  "warehouse_section",
+  "company_warehouse_hours",
+  "loading_reference",
+  "column_break_22",
+  "warehouse_hours",
+  "artikel_section",
+  "items",
+  "goods",
+  "additional_info_section",
+  "incoterms_from_po",
+  "incoterm_place_from_po",
+  "pick_up_date",
+  "neutral",
+  "pallet_exchange",
+  "column_break_29",
+  "incoterms_from_ord",
+  "incoterm_place_from_ord",
+  "delivery_date",
+  "stackable",
+  "amended_from",
+  "customs_clearance_instructions_section",
+  "verzollung",
+  "transport_claim_section",
+  "claim_customer",
+  "claim_transport_company",
+  "claim_feedback_transport_company"
+ ],
+ "fields": [
+  {
+   "fieldname": "allgemeine_info_section",
+   "fieldtype": "Section Break",
+   "label": "Allgemeine Info"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "purchase_order",
+   "fieldtype": "Link",
+   "label": "Purchase Order",
+   "options": "Purchase Order"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "sales_order",
+   "fieldtype": "Link",
+   "label": "Sales Order",
+   "options": "Sales Order"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "logistic_company",
+   "fieldtype": "Link",
+   "label": "Logistic Company",
+   "options": "Supplier"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "transport_cost",
+   "fieldtype": "Currency",
+   "label": "Transport Cost"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "logistic_order_id",
+   "fieldtype": "Data",
+   "label": "Logistic Order ID"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "verrechnet",
+   "fieldtype": "Check",
+   "label": "Verrechnet"
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break",
+   "label": "Adresse und Anschrift"
+  },
+  {
+   "fetch_from": "purchase_order.loading_address",
+   "fieldname": "loading_address",
+   "fieldtype": "Link",
+   "label": "Loading Address",
+   "options": "Address"
+  },
+  {
+   "fieldname": "loading_address_details",
+   "fieldtype": "Small Text",
+   "label": "Loading Address Details",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "purchase_order.contact_person",
+   "fetch_if_empty": 1,
+   "fieldname": "contact_person",
+   "fieldtype": "Link",
+   "label": "Contact Person",
+   "options": "Contact"
+  },
+  {
+   "fieldname": "contact",
+   "fieldtype": "Data",
+   "label": "Contact",
+   "read_only": 1
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Phone",
+   "read_only": 1
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "sales_order.shipping_address_name",
+   "fieldname": "company_shipping_address",
+   "fieldtype": "Link",
+   "label": "Shipping Address",
+   "options": "Address"
+  },
+  {
+   "fieldname": "shipping_address_details",
+   "fieldtype": "Small Text",
+   "label": "Shipping Address Details",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "sales_order.contact_person",
+   "fetch_if_empty": 1,
+   "fieldname": "company_contact_person",
+   "fieldtype": "Link",
+   "label": "Company Contact Person",
+   "options": "Contact"
+  },
+  {
+   "fieldname": "company_contact",
+   "fieldtype": "Data",
+   "label": "Company Contact",
+   "read_only": 1
+  },
+  {
+   "fieldname": "company_phone",
+   "fieldtype": "Data",
+   "label": "Company Phone",
+   "read_only": 1
+  },
+  {
+   "fieldname": "company_email",
+   "fieldtype": "Data",
+   "label": "Company Email",
+   "read_only": 1
+  },
+  {
+   "fieldname": "warehouse_section",
+   "fieldtype": "Section Break",
+   "label": "Warehouse"
+  },
+  {
+   "fetch_from": "loading_address.warehouse_hours_",
+   "fieldname": "company_warehouse_hours",
+   "fieldtype": "Small Text",
+   "label": "Loading Address Warehouse Hours"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "loading_reference",
+   "fieldtype": "Data",
+   "label": "Loading Reference"
+  },
+  {
+   "fieldname": "column_break_22",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "company_shipping_address.warehouse_hours_",
+   "fieldname": "warehouse_hours",
+   "fieldtype": "Small Text",
+   "label": "Consignee Warehouse Hours"
+  },
+  {
+   "fieldname": "artikel_section",
+   "fieldtype": "Section Break",
+   "label": "Artikel"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Transport Table Item"
+  },
+  {
+   "default": "Number of Pallets\nPallet:    1.2 x 0.8 x \nNet weight per pallet: \nGross weight per pallet: \n\n\nNumber of Pallets\nPallet:  1.2 x 0.8 x\nNet weight per pallet:\nGross weight per pallet:",
+   "fieldname": "goods",
+   "fieldtype": "Small Text",
+   "label": "Goods"
+  },
+  {
+   "fieldname": "additional_info_section",
+   "fieldtype": "Section Break",
+   "label": "Additional Info"
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "purchase_order.incoterm",
+   "fetch_if_empty": 1,
+   "fieldname": "incoterms_from_po",
+   "fieldtype": "Data",
+   "label": "Incoterms from PO"
+  },
+  {
+   "fetch_from": "purchase_order.incoterm_place",
+   "fetch_if_empty": 1,
+   "fieldname": "incoterm_place_from_po",
+   "fieldtype": "Data",
+   "label": "Incoterm Place from PO"
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "purchase_order.schedule_date",
+   "fetch_if_empty": 1,
+   "fieldname": "pick_up_date",
+   "fieldtype": "Date",
+   "label": "Pick up Date"
+  },
+  {
+   "fieldname": "neutral",
+   "fieldtype": "Select",
+   "label": "Neutral",
+   "options": "Strickly neutral shipment (Both sides are not allowed to know anything!)\nNeutral shipment for the customer\nNo neutral shipment requiered"
+  },
+  {
+   "fieldname": "pallet_exchange",
+   "fieldtype": "Select",
+   "label": "Pallet Exchange",
+   "options": "Pallet Exchange (Food Quality)\nNo Exchange requiered"
+  },
+  {
+   "fieldname": "column_break_29",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "sales_order.incoterm",
+   "fetch_if_empty": 1,
+   "fieldname": "incoterms_from_ord",
+   "fieldtype": "Data",
+   "label": "Incoterms from ORD"
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "sales_order.incoterm_place",
+   "fetch_if_empty": 1,
+   "fieldname": "incoterm_place_from_ord",
+   "fieldtype": "Data",
+   "label": "Incoterm Place from ORD"
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "sales_order.delivery_date",
+   "fetch_if_empty": 1,
+   "fieldname": "delivery_date",
+   "fieldtype": "Date",
+   "label": "Delivery Date"
+  },
+  {
+   "fieldname": "stackable",
+   "fieldtype": "Select",
+   "label": "Stackable",
+   "options": "Pallets are not stackable\nPallets may be placed on top of other pallets"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Transport Order",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "customs_clearance_instructions_section",
+   "fieldtype": "Section Break",
+   "label": "Customs clearance instructions"
+  },
+  {
+   "fieldname": "verzollung",
+   "fieldtype": "Small Text",
+   "label": "Verzollung"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "transport_claim_section",
+   "fieldtype": "Section Break",
+   "label": "Transport Claim"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "claim_customer",
+   "fieldtype": "Small Text",
+   "label": "Claim Customer"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "claim_transport_company",
+   "fieldtype": "Small Text",
+   "label": "Claim Transport Company"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "claim_feedback_transport_company",
+   "fieldtype": "Small Text",
+   "label": "Claim Feedback Transport Company"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-10-20 14:43:54.579774",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Transport Order",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "ft@tobien-trading.com",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
