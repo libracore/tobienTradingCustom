@@ -42,3 +42,44 @@ function prepare_naming_series(frm) {
         }
     }
 }
+
+$(document).ready(function() {
+
+    document.addEventListener('click',function(event) {
+
+        // Replace email dialog to get a more sensible draft message
+        var on_email_menutext = event.target.classList.contains('menu-item-label') && ['E-Mail','Email'].includes(event.target.innerText);
+        var on_email_menuitem = event.target.children.length > 0
+                                                 && event.target.children[0].classList.contains('menu-item-label')
+                                                 && ['E-Mail','Email'].includes(event.target.children[0].innerText);
+
+      if(on_email_menutext || on_email_menuitem) {
+          custom_email_dialog(event);
+            $('.menu-item-label[data-label="Email"]').parent().off('click');
+            $('.menu-item-label[data-label="E-Mail"]').parent().off('click');
+        }
+    }, true);
+
+    // Catch Ctrl+E
+    document.addEventListener('keydown',function(event) {
+        if (event.key == 'e' && event.ctrlKey){
+            custom_email_dialog(event);
+            event.stopPropagation();
+            event.preventDefault();
+        }
+    }, true);
+});
+
+
+function custom_email_dialog(e) {
+    let lang = cur_frm.doc.language.toUpperCase() || 'EN';
+    new frappe.erpnextswiss.MailComposer({
+        doc: cur_frm.doc,
+        frm: cur_frm,
+        subject: __(cur_frm.meta.name) + ': ' + cur_frm.docname,
+        recipients: cur_frm.doc.email || cur_frm.doc.email_id || cur_frm.doc.contact_email,
+        cc: 'order@tobien-trading.com',
+        'email_template': cur_frm.doctype + ' ' + lang,
+        attach_document_print: true
+    });
+}
