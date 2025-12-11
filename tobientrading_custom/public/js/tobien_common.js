@@ -55,8 +55,10 @@ $(document).ready(function() {
 
       if(on_email_menutext || on_email_menuitem) {
           custom_email_dialog(event);
-            $('.menu-item-label[data-label="Email"]').parent().off('click');
-            $('.menu-item-label[data-label="E-Mail"]').parent().off('click');
+          event.stopPropagation();
+          event.preventDefault();
+          $('.menu-item-label:contains("Email")').parent().off('click');
+          $('.menu-item-label:contains("E-Mail")').parent().off('click');
         }
     }, true);
 
