@@ -5,27 +5,28 @@
 from __future__ import unicode_literals
 import frappe
 import json
+import erpnextswiss.erpnextswiss.attach_pdf
 
 @frappe.whitelist()
 def apply_origins_to_variants(template_item_code, origins):
     if type(origins) == str:
         origins = json.loads(origins)
-        
+
     items = frappe.get_all("Item", filters={'variant_of': template_item_code}, fields=['name'])
-    
+
     for i in items:
         item = frappe.get_doc("Item", i['name'])
         item.origins = []
         for o in origins:
             item.append("origins", {'country_of_origin': o})
         item.save()
-        
+
     return
-    
+
 @frappe.whitelist()
 def attach_tds_pdfs(sales_order):
     so_doc = frappe.get_doc("Sales Order", sales_order)
-    
+
     crawled_items = []
     # get technical data sheets
     for i in so_doc.items:
@@ -35,7 +36,7 @@ def attach_tds_pdfs(sales_order):
         tds = frappe.get_value("Item", i.item_code, "technical_data_sheet")
         if tds:
             # find all files attached to this tds
-            pdfs = frappe.get_all("File", 
+            pdfs = frappe.get_all("File",
                 filters={
                     'attached_to_doctype': 'Technical Data Sheet',
                     'attached_to_name': tds
@@ -51,10 +52,23 @@ def attach_tds_pdfs(sales_order):
                     'attached_to_name': sales_order
                 })
                 so_pdf.insert()
-                
+
             frappe.db.commit()
-            
+
     return
+
+# Called by doc_events hook when purchasing or sales docs are submitted
+def attach_pdf_hook(doc, event=None):
+    fallback_language = frappe.db.get_single_value("System Settings", "language") or "en"
+    args = {
+        "doctype": doc.doctype,
+        "name": doc.name,
+        "title": getattr(doc, "title", doc.name),
+        "lang": getattr(doc, "language", fallback_language),
+    }
+    erpnextswiss.erpnextswiss.attach_pdf.execute(**args)
+    if doc.doctype == 'Sales Order':
+        attach_tds_pdfs(doc.name)
 
 @frappe.whitelist()
 def get_emergency_contact(dt, dn):
@@ -73,5 +87,5 @@ def get_emergency_contact(dt, dn):
             AND `tabContact`.`is_emergency_contact` = 1
         ;
     """.format(dt=dt, dn=dn), as_dict=True)
-    
+
     return contacts

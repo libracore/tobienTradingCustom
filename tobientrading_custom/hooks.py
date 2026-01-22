@@ -101,7 +101,40 @@ doctype_list_js = {
 
 doc_events = {
     "Measurement Parameter": {
-		"on_update": "tobientrading_custom.tobientrading_custom.doctype.certificate_of_analysis_result.certificate_of_analysis_result.update_test_type_and_subcategory"
+        "on_update": "tobientrading_custom.tobientrading_custom.doctype.certificate_of_analysis_result.certificate_of_analysis_result.update_test_type_and_subcategory"
+    },
+    "Sales Invoice": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Quotation": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Sales Order": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Delivery Note": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Purchase Order": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Purchase Receipt": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Purchase Invoice": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Sample Lot Letter": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Transport Order": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Request for Quotation": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Technical Data Sheet": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
     }
 }
 
