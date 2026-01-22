@@ -166,12 +166,22 @@ function custom_email_dialog() {
                 },
                 callback: function(r) {
                     if(r.message && !r.exc) {
-                        setTimeout(() => {
-                           $('*[data-fieldname="subject"]').val("Your PO " + r.message + " (" + cur_frm.doc.name + ")");
-                       },500);
+                        set_email_subject("Your PO " + r.message + " (" + cur_frm.doc.name + ")");
                     }
                 }
             });
         }
+        else if(cur_frm.doc.doctype == "Sales Order" && cur_frm.doc.po_no) {
+            set_email_subject("Your PO " + cur_frm.doc.po_no + " (" + cur_frm.doc.name + ")");
+        }
+        else if(cur_frm.doc.doctype == "Blanket Order") {
+            set_email_subject("Your Contract " + cur_frm.doc.your_contract_no + " (" + cur_frm.doc.name + ")");
+        }
     });
+}
+
+function set_email_subject(subject) {
+    setTimeout(() => {
+        $('*[data-fieldname="subject"]').val(subject);
+    }, 500);
 }
