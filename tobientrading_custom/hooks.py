@@ -43,7 +43,8 @@ doctype_js = {
     "Purchase Invoice": "public/js/purchase_invoice.js",
     "Item": "public/js/item.js",
     "Supplier": "public/js/supplier.js",
-    "Supplier": "public/js/customer.js"
+    "Supplier": "public/js/customer.js",
+    "Blanket Order": "public/js/blanket_order.js",
 }
 doctype_list_js = {
     "Certificate of Analysis" : "public/js/certificate_of_analysis_list.js"}
