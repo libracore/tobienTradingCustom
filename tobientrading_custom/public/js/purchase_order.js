@@ -39,9 +39,9 @@ frappe.ui.form.on('Purchase Order', {
         if (frm.doc.name && !frm.is_new() && (frm.doc.docstatus === 0 || frm.doc.docstatus === 1)) {
             frm.add_custom_button(__('Batch erstellen'), function () {
                 frappe.call({
-                    method: 'create_batches_from_po',
+                    method: 'tobientrading_custom.tobientrading_custom.utils.create_batches_from_po',
                     args: {
-                        purchase_order: frm.doc.name
+                        po_no: frm.doc.name
                     },
                     callback: function (r) {
                         if (r.message) {
@@ -69,5 +69,3 @@ function fetch_tax_category(frm) {
         }
     });
 }
-
-});
