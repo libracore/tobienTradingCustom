@@ -3,30 +3,12 @@
  */
 
 frappe.ui.form.on('Delivery Note', {
+
     refresh: function(frm) {
         prepare_naming_series(frm);  // common function
 
         if (!frm.doc.__islocal) {
             cur_frm.set_df_property('company', 'read_only', 1);
-        }
-    },
-    onload: function(frm) {
-        if (frm.doc.name){
-            $('button:contains("New Email")').on('click', function() {
-                frappe.call({
-                    method: "tobientrading_custom.api.delivery_note.get_customer_po",
-                    args: {
-                        so: frm.doc.items[0]['against_sales_order']
-                    },
-                    callback: function(r) {
-                        if(r.message && !r.exc) {
-                            setTimeout(() => {
-                               $('*[data-fieldname="subject"]').val("Your PO " + r.message + " (" + frm.doc.name + ")");
-                           },500);
-                        }
-                    }
-                })
-            });
         }
     },
 
@@ -62,5 +44,4 @@ frappe.ui.form.on('Delivery Note', {
     company: function(frm) {
         prepare_naming_series(frm);  // common function
     }
-});
 });
