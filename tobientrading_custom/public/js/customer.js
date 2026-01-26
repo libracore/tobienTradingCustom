@@ -25,40 +25,25 @@ frappe.ui.form.on('Customer', {
                 }
             }
         });
-
-        frm.add_custom_button(__('Show on Google Maps'), function() {
-            frappe.call({
-                method: 'frappe.client.get_list',
-                args: {
-                    doctype: 'Dynamic Link',
-                    filters: {
-                        link_doctype: 'Customer',
-                        link_name: frm.doc.name,
-                        parenttype: 'Address'
-                    },
-                    fields: ['parent'],
-                    limit: 1
-                },
-                callback: function(res) {
-                    if (res.message && res.message.length > 0) {
-                        let address_name = res.message[0].parent;
-                        frappe.db.get_doc('Address', address_name).then(address => {
-                            let full_address = [
-                                address.address_line1,
-                                address.address_line2,
-                                address.city,
-                                address.state,
-                                address.country,
-                                address.pincode
-                            ].filter(Boolean).join(', ');
-                            let url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(full_address)}`;
-                            window.open(url, '_blank');
-                        });
-                    } else {
-                        frappe.show_alert({message: __('Maps: No address found.'), indicator: 'orange'});
-                    }
+        if(frm.doc.__onload.addr_list && frm.doc.__onload.addr_list.length > 0) {
+            frm.add_custom_button(__('Show on Google Maps'), function() {
+                let address = frm.doc.__onload.addr_list.filter(f => f.is_primary_address);
+                if(address.length > 0) {
+                    address = address[0];
+                } else {
+                    address = frm.doc.__onload.addr_list[0];
                 }
+                let full_address = [
+                    address.address_line1,
+                    address.address_line2,
+                    address.city,
+                    address.state,
+                    address.country,
+                    address.pincode
+                ].filter(Boolean).join(', ');
+                let url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(full_address)}`;
+                window.open(url, '_blank');
             });
-        });
+        }
     }
 });
