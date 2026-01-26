@@ -177,6 +177,9 @@ function custom_email_dialog() {
         else if(cur_frm.doc.doctype == "Blanket Order") {
             set_email_subject("Your Contract " + cur_frm.doc.your_contract_no + " (" + cur_frm.doc.name + ")");
         }
+        else if(cur_frm.doc.doctype == "Purchase Invoice") {
+            set_email_subject(cur_frm.doc.bill_no + " ("+cur_frm.doc.name+")");
+        }
     });
 }
 

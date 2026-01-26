@@ -29,22 +29,27 @@ app_include_js = [
 
 # include js in doctype views
 doctype_js = {
-    "Opportunity" : "public/js/opportunity.js",
-    "Sales Invoice": "public/js/sales_invoice.js",
+    "Address" : "public/js/address.js",
+    "Blanket Order": "public/js/blanket_order.js",
+    "Claim": "public/js/claim.js",
+    "Customer": "public/js/customer.js",
     "Delivery Note": "public/js/delivery_note.js",
-    "Sales Order": "public/js/sales_order.js",
-    "Quotation": "public/js/quotation.js",
-    "Payment Reminder": "public/js/payment_reminder.js",
+    "Item": "public/js/item.js",
     "Material Request": "public/js/material_request.js",
-    "Request for Quotation": "public/js/request_for_quotation.js",
-    "Supplier Quotation": "public/js/supplier_quotation.js",
+    "Opportunity" : "public/js/opportunity.js",
+    "Payment Entry": "public/js/payment_entry.js",
+    "Payment Reminder": "public/js/payment_reminder.js",
+    "Purchase Invoice": "public/js/purchase_invoice.js",
     "Purchase Order": "public/js/purchase_order.js",
     "Purchase Receipt": "public/js/purchase_receipt.js",
-    "Purchase Invoice": "public/js/purchase_invoice.js",
-    "Item": "public/js/item.js",
+    "Quotation": "public/js/quotation.js",
+    "Request for Quotation": "public/js/request_for_quotation.js",
+    "Sales Invoice": "public/js/sales_invoice.js",
+    "Sales Order": "public/js/sales_order.js",
     "Supplier": "public/js/supplier.js",
-    "Supplier": "public/js/customer.js",
-    "Blanket Order": "public/js/blanket_order.js",
+    "Supplier Quotation": "public/js/supplier_quotation.js",
+    "Technical Data Sheet": "public/js/technical_data_sheet.js",
+    "Transport Order": "public/js/transport_order.js",
 }
 doctype_list_js = {
     "Certificate of Analysis" : "public/js/certificate_of_analysis_list.js"}
