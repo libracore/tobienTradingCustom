@@ -28,7 +28,7 @@ frappe.ui.form.on('Sales Order', {
                         frappe.msgprint({
                         title: __('Label Required<br>'),
                         indicator: 'black',
-                        message: __("<b>Label für die Gebinde:</b><br><div style='border-style: solid; border-color: red; border-width: 1rem; padding: 1rem;background-color: #0053e2;'>" + customer.customer_label_on_packaging_requiered_.replaceAll("\n", "<br>") + "</div>")
+                        message: __("<b>Label für die Gebinde:</b><br><div style='border-style: solid; border-color: red; border-width: 1rem; padding: 1rem;background-color: #0053e2;color:white'>" + customer.customer_label_on_packaging_requiered_.replaceAll("\n", "<br>") + "</div>")
                     });
                 }
             }
@@ -47,7 +47,7 @@ frappe.ui.form.on('Sales Order', {
                         frappe.msgprint({
                         title: __('Label Required<br>'),
                         indicator: 'black',
-                        message: __("<b>Label für die Palette:</b><br><div style='border-style: solid; border-color: red; border-width: 1rem; padding: 1rem;background-color: #0053e2;'>" + customer.customer_label_on_pallet_requiered_text.replaceAll("\n", "<br>") + "</div>")
+                        message: __("<b>Label für die Palette:</b><br><div style='border-style: solid; border-color: red; border-width: 1rem; padding: 1rem;background-color: #0053e2;color:white'>" + customer.customer_label_on_pallet_requiered_text.replaceAll("\n", "<br>") + "</div>")
                     });
                 }
             }
