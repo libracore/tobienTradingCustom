@@ -69,6 +69,11 @@ def attach_pdf_hook(doc, event=None):
     erpnextswiss.erpnextswiss.attach_pdf.execute(**args)
     if doc.doctype == 'Sales Order':
         attach_tds_pdfs(doc.name)
+    elif doc.doctype == 'Delivery Note' and doc.tax_category in ['Umsatzsteuer EU - IGD','Umsatzsteuer EU - IGL','Umsatzsteuer Export']:
+        gb = args.copy()
+        gb['print_format'] = 'Gelangensbestätigung Standard'
+        gb['file_name'] = "VAT_{0}_to_sign.pdf".format(doc.name.replace(" ", "-").replace("/", "-"))
+        erpnextswiss.erpnextswiss.attach_pdf.execute(**gb)
 
 @frappe.whitelist()
 def get_emergency_contact(dt, dn):
