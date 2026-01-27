@@ -15,7 +15,7 @@ app_license = "MIT"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/tobientrading_custom/css/tobientrading_custom.css"
+app_include_css = "/assets/tobientrading_custom/css/tt.css"
 app_include_js = [
     "/assets/tobientrading_custom/js/tobien_common.js"
 ]
@@ -29,21 +29,27 @@ app_include_js = [
 
 # include js in doctype views
 doctype_js = {
-    "Opportunity" : "public/js/opportunity.js",
-    "Sales Invoice": "public/js/sales_invoice.js",
+    "Address" : "public/js/address.js",
+    "Blanket Order": "public/js/blanket_order.js",
+    "Claim": "public/js/claim.js",
+    "Customer": "public/js/customer.js",
     "Delivery Note": "public/js/delivery_note.js",
-    "Sales Order": "public/js/sales_order.js",
-    "Quotation": "public/js/quotation.js",
-    "Payment Reminder": "public/js/payment_reminder.js",
+    "Item": "public/js/item.js",
     "Material Request": "public/js/material_request.js",
-    "Request for Quotation": "public/js/request_for_quotation.js",
-    "Supplier Quotation": "public/js/supplier_quotation.js",
+    "Opportunity" : "public/js/opportunity.js",
+    "Payment Entry": "public/js/payment_entry.js",
+    "Payment Reminder": "public/js/payment_reminder.js",
+    "Purchase Invoice": "public/js/purchase_invoice.js",
     "Purchase Order": "public/js/purchase_order.js",
     "Purchase Receipt": "public/js/purchase_receipt.js",
-    "Purchase Invoice": "public/js/purchase_invoice.js",
-    "Item": "public/js/item.js",
+    "Quotation": "public/js/quotation.js",
+    "Request for Quotation": "public/js/request_for_quotation.js",
+    "Sales Invoice": "public/js/sales_invoice.js",
+    "Sales Order": "public/js/sales_order.js",
     "Supplier": "public/js/supplier.js",
-    "Supplier": "public/js/customer.js"
+    "Supplier Quotation": "public/js/supplier_quotation.js",
+    "Technical Data Sheet": "public/js/technical_data_sheet.js",
+    "Transport Order": "public/js/transport_order.js",
 }
 doctype_list_js = {
     "Certificate of Analysis" : "public/js/certificate_of_analysis_list.js"}
@@ -100,7 +106,40 @@ doctype_list_js = {
 
 doc_events = {
     "Measurement Parameter": {
-		"on_update": "tobientrading_custom.tobientrading_custom.doctype.certificate_of_analysis_result.certificate_of_analysis_result.update_test_type_and_subcategory"
+        "on_update": "tobientrading_custom.tobientrading_custom.doctype.certificate_of_analysis_result.certificate_of_analysis_result.update_test_type_and_subcategory"
+    },
+    "Sales Invoice": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Quotation": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Sales Order": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Delivery Note": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Purchase Order": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Purchase Receipt": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Purchase Invoice": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Sample Lot Letter": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Transport Order": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Request for Quotation": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+    },
+    "Technical Data Sheet": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
     }
 }
 
