@@ -35,4 +35,4 @@ def execute():
     
     frappe.db.sql(sql_query)
     
-    print("Moving CRM Notes to Comments done. 🚀🚀🚀")
+    print("Moving CRM Notes to Comments done.")
