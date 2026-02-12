@@ -1,1 +1,2 @@
 tobientrading_custom.patches.v0_2_0.migrate_tds_childtables
+tobientrading_custom.patches.migrate_crm_notes_to_comments.migrate_crm_notes_to_comments
