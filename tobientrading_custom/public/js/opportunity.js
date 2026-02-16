@@ -1,23 +1,20 @@
-// Copyright (c) 2023, Frappe Technologies Pvt. Ltd. and Contributors
+// Copyright (c) 2026, libracore AG and contributors
 // License: GNU General Public License v3. See license.txt
 
 frappe.ui.form.on("Opportunity", {
      refresh: function(frm) {
-        render_activities_and_comments(frm);
-    },
+        display_comment_box();
+    }
 })
 
-function render_activities_and_comments(frm) {
-    frappe.call({
-        method: "tobientrading_custom.tobientrading_custom.opportunity.get_activities_and_comments",
-        args: {
-            ref_docname: frm.doc.name
-        },
-        callback: (r) => {
-			if (!r.exc) {
-				cur_frm.set_df_property('custom_all_activities_html', 'options', r.message.html);
-			}
+function display_comment_box() {
+    setTimeout(() => {
+        const comment_box = document.querySelector(".comment-box");
+        if (comment_box) {
+            comment_box.style.display = "block";
         }
-    });
+
+    }, 100);
 }
+
 
