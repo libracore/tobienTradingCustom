@@ -15,6 +15,16 @@ frappe.ui.form.on('Blanket Order', {
             }
         });
     },
+    shipping_address_name: function(frm) {
+        if (frm.doc.shipping_address_name){
+            erpnext.utils.get_address_display(frm, 'shipping_address_name', 'shipping_address', true);
+        }
+    },
+    shipping_address_name1: function(frm) {
+        if (frm.doc.shipping_address_name1){
+            erpnext.utils.get_address_display(frm, 'shipping_address_name1', 'shipping_address1', true);
+        }
+    },
     customer: function(frm){
         var customer = frappe.get_doc("Customer",frm.doc.customer);
         frappe.call({
@@ -152,7 +162,7 @@ frappe.ui.form.on('Blanket Order', {
                             frappe.msgprint({
                             title: __('Label Required<br>'),
                             indicator: 'black',
-                            message: __("<b>Label für die Gebinde:</b><br><div style='border-style: solid; border-color: red; border-width: 1rem; padding: 1rem;background-color: #0053e2;color:white'>" + customer.customer_label_on_packaging_requiered_.replaceAll("\n", "<br>") + "</div>")
+                            message: __("<b>Label für die Gebinde:</b><br><div style='border-style: solid; border-color: red; border-width: 1rem; padding: 1rem;background-color: #0053e2;color:white'>" + (customer.customer_label_on_packaging_requiered_ || '').replaceAll("\n", "<br>") + "</div>")
                         });
                     }
                 }
