@@ -2,6 +2,7 @@
  "custom_fields": [],
  "custom_perms": [],
  "doctype": "Technical Data Sheet Microbiologiacal Properties",
+ "links": [],
  "property_setters": [
   {
    "_assign": null,
@@ -15,8 +16,10 @@
    "doctype_or_field": "DocField",
    "field_name": "value_po",
    "idx": 0,
-   "modified": "2024-05-22 08:14:15.378755",
-   "modified_by": "ft@tobien-trading.com",
+   "is_system_generated": 0,
+   "modified": "2026-03-03 17:42:59.920001",
+   "modified_by": "Administrator",
+   "module": null,
    "name": "Technical Data Sheet Microbiologiacal Properties-value_po-in_list_view",
    "owner": "ft@tobien-trading.com",
    "parent": null,

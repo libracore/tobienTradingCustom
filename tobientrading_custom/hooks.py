@@ -35,6 +35,7 @@ doctype_js = {
     "Customer": "public/js/customer.js",
     "Delivery Note": "public/js/delivery_note.js",
     "Item": "public/js/item.js",
+    "Item Approval Sensoric": "public/js/item_approval_sensoric.js",
     "Material Request": "public/js/material_request.js",
     "Opportunity" : "public/js/opportunity.js",
     "Payment Entry": "public/js/payment_entry.js",
