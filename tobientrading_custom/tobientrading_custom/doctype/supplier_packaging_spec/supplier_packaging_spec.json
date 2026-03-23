@@ -1,0 +1,181 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{supplier} - {description}",
+ "creation": "2026-03-19 16:54:01.900557",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "supplier",
+  "column_break_qeqh",
+  "description",
+  "pallet_details_section",
+  "pallet_type",
+  "column_break_staf",
+  "pallet_max_height",
+  "package_details_section",
+  "packaging_type",
+  "package_tare",
+  "column_break_lhie",
+  "package_length",
+  "package_width",
+  "package_height",
+  "calculations_section",
+  "packages_per_layer",
+  "layers_per_pallet",
+  "packages_per_pallet",
+  "column_break_jsjo",
+  "item_assignments_section",
+  "items"
+ ],
+ "fields": [
+  {
+   "fieldname": "pallet_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Pallet type",
+   "options": "Pallet Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "packaging_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Packaging type",
+   "options": "Packaging Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pallet_details_section",
+   "fieldtype": "Section Break",
+   "label": "Pallet Details"
+  },
+  {
+   "fieldname": "column_break_staf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pallet_max_height",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Max height in cm",
+   "reqd": 1
+  },
+  {
+   "fieldname": "package_details_section",
+   "fieldtype": "Section Break",
+   "label": "Package Details"
+  },
+  {
+   "fieldname": "package_tare",
+   "fieldtype": "Float",
+   "label": "Tare in kg",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_lhie",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "package_length",
+   "fieldtype": "Int",
+   "label": "Length in cm",
+   "reqd": 1
+  },
+  {
+   "fieldname": "package_width",
+   "fieldtype": "Int",
+   "label": "Width in cm",
+   "reqd": 1
+  },
+  {
+   "fieldname": "package_height",
+   "fieldtype": "Int",
+   "label": "Height in cm",
+   "reqd": 1
+  },
+  {
+   "fieldname": "calculations_section",
+   "fieldtype": "Section Break",
+   "label": "Calculations"
+  },
+  {
+   "fieldname": "packages_per_layer",
+   "fieldtype": "Int",
+   "label": "Number of packages per layer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "layers_per_pallet",
+   "fieldtype": "Int",
+   "label": "Number of layers",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_jsjo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "packages_per_pallet",
+   "fieldtype": "Int",
+   "label": "Number of packages per pallet",
+   "read_only": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Spec description",
+   "read_only": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Supplier",
+   "options": "Supplier",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_qeqh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item_assignments_section",
+   "fieldtype": "Section Break",
+   "label": "Item assignments"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Item assignments",
+   "options": "Supplier Packaging Item Assignment"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-03-23 08:12:52.608677",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Supplier Packaging Spec",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
