@@ -58,7 +58,7 @@
    "fieldname": "pallet_max_height",
    "fieldtype": "Int",
    "in_list_view": 1,
-   "label": "Max height in cm",
+   "label": "Max height [cm]",
    "reqd": 1
   },
   {
@@ -69,7 +69,7 @@
   {
    "fieldname": "package_tare",
    "fieldtype": "Float",
-   "label": "Tare in kg",
+   "label": "Tare [kg]",
    "reqd": 1
   },
   {
@@ -79,19 +79,19 @@
   {
    "fieldname": "package_length",
    "fieldtype": "Int",
-   "label": "Length in cm",
+   "label": "Length [cm]",
    "reqd": 1
   },
   {
    "fieldname": "package_width",
    "fieldtype": "Int",
-   "label": "Width in cm",
+   "label": "Width [cm]",
    "reqd": 1
   },
   {
    "fieldname": "package_height",
    "fieldtype": "Int",
-   "label": "Height in cm",
+   "label": "Height [cm]",
    "reqd": 1
   },
   {
@@ -154,7 +154,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-23 08:12:52.608677",
+ "modified": "2026-03-24 14:51:58.362223",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Supplier Packaging Spec",

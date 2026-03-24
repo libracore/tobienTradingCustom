@@ -38,6 +38,13 @@
   "artikel_section",
   "items",
   "goods",
+  "pallets_section",
+  "pallets",
+  "customer_requirements_section",
+  "customer_max_pallet_height",
+  "customer_pallet_types",
+  "column_break_vrot",
+  "customer_labelling_specs",
   "additional_info_section",
   "incoterms_from_po",
   "incoterm_place_from_po",
@@ -359,13 +366,49 @@
    "fieldname": "claim_feedback_transport_company",
    "fieldtype": "Small Text",
    "label": "Claim Feedback Transport Company"
+  },
+  {
+   "fieldname": "pallets_section",
+   "fieldtype": "Section Break",
+   "label": "Pallets"
+  },
+  {
+   "fieldname": "pallets",
+   "fieldtype": "Table",
+   "label": "Pallets",
+   "options": "Transport Order Pallet Spec"
+  },
+  {
+   "fieldname": "customer_requirements_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Requirements"
+  },
+  {
+   "fieldname": "customer_max_pallet_height",
+   "fieldtype": "Int",
+   "label": "Max pallet height [cm]"
+  },
+  {
+   "fieldname": "customer_labelling_specs",
+   "fieldtype": "Small Text",
+   "label": "Labelling specs"
+  },
+  {
+   "fieldname": "column_break_vrot",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "customer_pallet_types",
+   "fieldtype": "Table MultiSelect",
+   "label": "Allowed pallet types",
+   "options": "Allowed Pallet Type"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-10-20 14:43:54.579774",
+ "modified": "2026-03-24 15:29:41.027754",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Transport Order",
