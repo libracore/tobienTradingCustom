@@ -35,7 +35,6 @@ doctype_js = {
     "Customer": "public/js/customer.js",
     "Delivery Note": "public/js/delivery_note.js",
     "Item": "public/js/item.js",
-    "Item Approval Sensoric": "public/js/item_approval_sensoric.js",
     "Material Request": "public/js/material_request.js",
     "Opportunity" : "public/js/opportunity.js",
     "Payment Entry": "public/js/payment_entry.js",
@@ -49,8 +48,6 @@ doctype_js = {
     "Sales Order": "public/js/sales_order.js",
     "Supplier": "public/js/supplier.js",
     "Supplier Quotation": "public/js/supplier_quotation.js",
-    "Technical Data Sheet": "public/js/technical_data_sheet.js",
-    "Transport Order": "public/js/transport_order.js",
 }
 doctype_list_js = {
     "Certificate of Analysis" : "public/js/certificate_of_analysis_list.js"}
