@@ -17,34 +17,34 @@
    "fieldname": "title",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Bezeichnung",
+   "label": "Caption",
    "unique": 1
   },
   {
    "fieldname": "length",
    "fieldtype": "Int",
-   "label": "L\u00e4nge in cm"
+   "label": "Length [cm]"
   },
   {
    "fieldname": "width",
    "fieldtype": "Int",
-   "label": "Breite in cm"
+   "label": "Width [cm]"
   },
   {
    "fieldname": "height",
    "fieldtype": "Int",
-   "label": "H\u00f6he in cm"
+   "label": "Height [cm]"
   },
   {
    "fieldname": "tare",
    "fieldtype": "Float",
-   "label": "Tara in kg"
+   "label": "Tare [kg]"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-24 14:04:21.628055",
+ "modified": "2026-03-26 09:08:34.692491",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Pallet Type",
