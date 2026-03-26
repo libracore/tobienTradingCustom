@@ -30,6 +30,7 @@ app_include_js = [
 # include js in doctype views
 doctype_js = {
     "Address" : "public/js/address.js",
+    "Batch" : "public/js/batch.js",
     "Blanket Order": "public/js/blanket_order.js",
     "Claim": "public/js/claim.js",
     "Customer": "public/js/customer.js",

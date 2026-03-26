@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 import json
 import erpnextswiss.erpnextswiss.attach_pdf
+from tobientrading_custom.tobientrading_custom.doctype.supplier_packaging_spec.supplier_packaging_spec import get_pallet_details
 
 @frappe.whitelist()
 def apply_origins_to_variants(template_item_code, origins):
@@ -136,17 +137,35 @@ def create_batches_from_po(po_no):
                 expiry_date = today
 
             # Prepare batch values
-            batch_values = {
+            batch_values = frappe._dict({
                 "doctype": "Batch",
                 "item": item.item_code,
                 "batch_id": batch_id,
                 "manufacturing_date": manufacturing_date,
                 "workflow_state": "Pending",
                 "country_of_origin": country_of_origin
-            }
+            })
 
             if expiry_date:
-                batch_values["expiry_date"] = expiry_date
+                batch_values.expiry_date = expiry_date
+
+            if item.get('packaging_spec'):
+                pspec_doc = frappe.get_doc("Supplier Packaging Spec", item.packaging_spec)
+                batch_values.packaging_spec = item.packaging_spec
+                batch_values.package_weight = item.package_weight
+                batch_values.pallet_type = pspec_doc.pallet_type
+                batch_values.pallet_max_height = pspec_doc.pallet_max_height
+                batch_values.packaging_type = pspec_doc.packaging_type
+                batch_values.package_tare = pspec_doc.package_tare
+                batch_values.package_length = pspec_doc.package_length
+                batch_values.package_width = pspec_doc.package_width
+                batch_values.package_height = pspec_doc.package_height
+
+                pallet_doc = frappe.get_doc("Pallet Type", pspec_doc.pallet_type)
+                batch_values.pallet_tare = pallet_doc.tare
+                batch_values.pallet_length = pallet_doc.length
+                batch_values.pallet_width = pallet_doc.width
+                batch_values.pallet_base_height = pallet_doc.height
 
             batch = frappe.get_doc(batch_values)
             batch.insert()
@@ -168,3 +187,28 @@ def create_batches_from_po(po_no):
         message_parts.append(f"<br><hr><span style='color: red;'>Skipped existing/failed Batch ID(s): {', '.join(skipped_batches)}</span>")
 
     frappe.response['message'] = "".join(message_parts)
+
+
+@frappe.whitelist()
+def get_batch_info(item_code):
+    sql_query = """
+        SELECT
+          `batches`.`item_code`,
+          `batches`.`batch_no`,
+          `batches`.`qty`,
+          `batches`.`stock_uom`,
+          `tabBatch`.`pallet_length`, `tabBatch`.`pallet_width`, `tabBatch`.`pallet_base_height`, `tabBatch`.`pallet_max_height`,
+          `tabBatch`.`package_length`, `tabBatch`.`package_width`, `tabBatch`.`package_height`, `tabBatch`.`package_weight`
+        FROM (
+          SELECT `item_code`, IFNULL(`batch_no`, 'None') AS `batch_no`, SUM(`actual_qty`) AS `qty`, `stock_uom`
+          FROM `tabStock Ledger Entry`
+          WHERE `item_code` = '{item_code}'
+          GROUP BY `batch_no`
+        ) AS `batches`
+        INNER JOIN `tabBatch` ON `batches`.`batch_no` = `tabBatch`.`name`
+        WHERE `qty` != 0;""".format(item_code=item_code)
+    data = frappe.db.sql(sql_query, as_dict=1)
+    for row in data:
+        pallet_details = get_pallet_details(row.pallet_length, row.pallet_width, row.pallet_base_height, row.pallet_max_height, row.package_length, row.package_width, row.package_height)
+        row.update(pallet_details)
+    return data

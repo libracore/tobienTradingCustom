@@ -3,13 +3,6 @@
  */
 
 frappe.ui.form.on('Purchase Order', {
-    refresh: function(frm) {
-        prepare_naming_series(frm);  // common function
-
-        if (!frm.doc.__islocal) {
-            cur_frm.set_df_property('company', 'read_only', 1);
-        }
-    },
     company: function(frm) {
         prepare_naming_series(frm);  // common function
     },
@@ -24,16 +17,24 @@ frappe.ui.form.on('Purchase Order', {
         }
     },
     refresh: function(frm) {
-        // shipping_address-Query
-        setTimeout(function() {
-            frm.fields_dict.shipping_address.get_query = function(doc) {
-                return {
-                    filters: {
-                        'is_shipping_address': 1
-                    }
-                };
+        prepare_naming_series(frm);  // common function
+
+        if (!frm.doc.__islocal) {
+            cur_frm.set_df_property('company', 'read_only', 1);
+        }
+
+        frm.set_query('shipping_address', function(doc) {
+            return {
+                filters: {
+                    'is_shipping_address': 1
+                }
             };
-        }, 1000);
+        });
+        frm.set_query('packaging_spec', "items", function(doc, cdt, cdn) {
+            return {
+                filters: { supplier: doc.supplier }
+            };
+        });
 
         // Custom Button nur wenn Name gesetzt
         if (frm.doc.name && !frm.is_new() && (frm.doc.docstatus === 0 || frm.doc.docstatus === 1)) {
@@ -53,6 +54,30 @@ frappe.ui.form.on('Purchase Order', {
             });
         }
     }
+});
+
+frappe.ui.form.on('Purchase Order Item', {
+    packaging_spec(frm, cdt, cdn) {
+        if(locals[cdt][cdn].packaging_spec) {
+            frappe.db.get_doc("Supplier Packaging Spec", locals[cdt][cdn].packaging_spec).then(pspec_doc => {
+                item_assignment = pspec_doc.items.filter(a => a.item == locals[cdt][cdn].item_code);
+                if(item_assignment.length > 0) {
+                    item_assignment = item_assignment[0];
+                    if(!item_assignment.batch_specific_package_weight) {
+                        // Load package weight from specs unless it is batch-specific
+                        frappe.model.set_value(cdt, cdn, "package_weight", item_assignment.nominal_package_weight);
+                    }
+                    else {
+                        frappe.show_alert({message: __("Package weight is defined to be batch-specific here, please enter a weight manually.<br> Nominal weight: {0} kg", [item_assignment.nominal_package_weight]), indicator: "blue"}, 30);
+                    }
+                }
+                else {
+                    frappe.show_alert({message: __("The selected packaging spec contains no details for this Item. If you want to use it with this Item anyway, please set the package weight manually."), indicator: "orange"}, 30);
+                }
+            });
+        }
+    }
+
 });
 
 function fetch_tax_category(frm) {
