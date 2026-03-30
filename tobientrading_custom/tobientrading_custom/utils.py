@@ -141,6 +141,7 @@ def create_batches_from_po(po_no):
                 "doctype": "Batch",
                 "item": item.item_code,
                 "batch_id": batch_id,
+                "supplier": po.supplier,
                 "manufacturing_date": manufacturing_date,
                 "workflow_state": "Pending",
                 "country_of_origin": country_of_origin
@@ -212,3 +213,29 @@ def get_batch_info(item_code):
         pallet_details = get_pallet_details(row.pallet_length, row.pallet_width, row.pallet_base_height, row.pallet_max_height, row.package_length, row.package_width, row.package_height)
         row.update(pallet_details)
     return data
+
+
+@frappe.whitelist()
+def set_batch_packaging_specs(batch, specs):
+    if type(specs) == str:
+        specs = json.loads(specs)
+
+    pallet_specs = {
+        'tare': specs.get('pallet_tare'),
+        'height': specs.get('pallet_base_height'),
+        'length': specs.get('pallet_length'),
+        'width': specs.get('pallet_width')
+    }
+    packspecs =  {key: specs.get(key) for key in [
+        'pallet_type', 'pallet_max_height', 'packaging_type', 'package_length', 'package_width', 'package_height', 'package_tare',
+    ]}
+    pallet_doc = frappe.get_doc("Pallet Type", specs['pallet_type'])
+    pallet_doc.update(pallet_specs)
+    pallet_doc.save()
+    packspec_doc = frappe.get_doc("Supplier Packaging Spec", specs['packaging_spec'])
+    packspec_doc.update(packspecs)
+    packspec_doc.save()
+    batch_doc = frappe.get_doc("Batch", batch)
+    batch_doc.update({'package_weight': specs.get('package_weight'), 'packaging_spec': specs['packaging_spec']})
+    batch_doc.save()
+    frappe.db.commit()

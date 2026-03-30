@@ -11,6 +11,15 @@ frappe.ui.form.on('Purchase Order', {
             // fetch_tax_category(frm);
         }
     },
+    validate(frm) {
+        for(let i=0; i < frm.doc.items.length; i++) {
+            if(!frm.doc.items[i].package_weight) {
+                frappe.msgprint(__("Item #{0}: Package weight is required.", [frm.doc.items[i].idx]), __("Validation error"));
+                frappe.validated = false;
+                break;
+            }
+        }
+    },
     before_save: function(frm) {
         if (frm.doc.__islocal) {
             // fetch_tax_category(frm);
