@@ -17,6 +17,7 @@
   "logistic_order_id",
   "verrechnet",
   "section_break_3",
+  "supplier",
   "loading_address",
   "loading_address_details",
   "contact_person",
@@ -24,6 +25,7 @@
   "phone",
   "email",
   "column_break_9",
+  "customer",
   "company_shipping_address",
   "shipping_address_details",
   "company_contact_person",
@@ -35,16 +37,22 @@
   "loading_reference",
   "column_break_22",
   "warehouse_hours",
-  "artikel_section",
-  "items",
-  "goods",
-  "pallets_section",
-  "pallets",
   "customer_requirements_section",
   "customer_max_pallet_height",
   "customer_pallet_types",
   "column_break_vrot",
   "customer_labelling_specs",
+  "artikel_section",
+  "items",
+  "pallets_section",
+  "pallets",
+  "section_break_yqrc",
+  "total_net_weight",
+  "column_break_edyw",
+  "total_gross_weight",
+  "section_break_pznu",
+  "goods_button",
+  "goods",
   "additional_info_section",
   "incoterms_from_po",
   "incoterm_place_from_po",
@@ -74,6 +82,7 @@
    "allow_on_submit": 1,
    "fieldname": "purchase_order",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Purchase Order",
    "options": "Purchase Order"
   },
@@ -86,6 +95,7 @@
    "allow_on_submit": 1,
    "fieldname": "sales_order",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Sales Order",
    "options": "Sales Order"
   },
@@ -97,6 +107,7 @@
    "allow_on_submit": 1,
    "fieldname": "logistic_company",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Logistic Company",
    "options": "Supplier"
   },
@@ -104,6 +115,7 @@
    "allow_on_submit": 1,
    "fieldname": "transport_cost",
    "fieldtype": "Currency",
+   "in_list_view": 1,
    "label": "Transport Cost"
   },
   {
@@ -234,21 +246,23 @@
    "label": "Consignee Warehouse Hours"
   },
   {
+   "description": "Items are pulled from Purchase Order or Sales Order.",
    "fieldname": "artikel_section",
    "fieldtype": "Section Break",
-   "label": "Artikel"
+   "label": "Items"
   },
   {
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Items",
-   "options": "Transport Table Item"
+   "options": "Transport Table Item",
+   "read_only": 1
   },
   {
    "default": "Number of Pallets\nPallet:    1.2 x 0.8 x \nNet weight per pallet: \nGross weight per pallet: \n\n\nNumber of Pallets\nPallet:  1.2 x 0.8 x\nNet weight per pallet:\nGross weight per pallet:",
    "fieldname": "goods",
    "fieldtype": "Small Text",
-   "label": "Goods"
+   "label": "Goods Summary"
   },
   {
    "fieldname": "additional_info_section",
@@ -276,19 +290,20 @@
    "fetch_if_empty": 1,
    "fieldname": "pick_up_date",
    "fieldtype": "Date",
+   "in_list_view": 1,
    "label": "Pick up Date"
   },
   {
    "fieldname": "neutral",
    "fieldtype": "Select",
    "label": "Neutral",
-   "options": "Strickly neutral shipment (Both sides are not allowed to know anything!)\nNeutral shipment for the customer\nNo neutral shipment requiered"
+   "options": "Strictly neutral shipment (Neither side is allowed to know anything!)\nNeutral shipment for the customer\nNo neutral shipment required"
   },
   {
    "fieldname": "pallet_exchange",
    "fieldtype": "Select",
    "label": "Pallet Exchange",
-   "options": "Pallet Exchange (Food Quality)\nNo Exchange requiered"
+   "options": "Pallet Exchange (Food Quality)\nNo exchange required"
   },
   {
    "fieldname": "column_break_29",
@@ -316,6 +331,7 @@
    "fetch_if_empty": 1,
    "fieldname": "delivery_date",
    "fieldtype": "Date",
+   "in_list_view": 1,
    "label": "Delivery Date"
   },
   {
@@ -384,11 +400,15 @@
    "label": "Customer Requirements"
   },
   {
+   "fetch_from": "sales_order.customer_max_pallet_height",
+   "fetch_if_empty": 1,
    "fieldname": "customer_max_pallet_height",
    "fieldtype": "Int",
    "label": "Max pallet height [cm]"
   },
   {
+   "fetch_from": "sales_order.customer_labelling_specs",
+   "fetch_if_empty": 1,
    "fieldname": "customer_labelling_specs",
    "fieldtype": "Small Text",
    "label": "Labelling specs"
@@ -402,13 +422,56 @@
    "fieldtype": "Table MultiSelect",
    "label": "Allowed pallet types",
    "options": "Allowed Pallet Type"
+  },
+  {
+   "fetch_from": "purchase_order.supplier",
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier"
+  },
+  {
+   "fetch_from": "sales_order.customer",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "goods_button",
+   "fieldtype": "Button",
+   "label": "Generate Goods Summary"
+  },
+  {
+   "fieldname": "section_break_yqrc",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "total_net_weight",
+   "fieldtype": "Float",
+   "label": "Total net weight [kg]",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_edyw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_gross_weight",
+   "fieldtype": "Float",
+   "label": "Total gross weight [kg]",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_pznu",
+   "fieldtype": "Section Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-24 15:29:41.027754",
+ "modified": "2026-04-01 21:27:43.963068",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Transport Order",

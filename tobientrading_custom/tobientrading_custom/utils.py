@@ -170,6 +170,9 @@ def create_batches_from_po(po_no):
 
             batch = frappe.get_doc(batch_values)
             batch.insert()
+            item.batch_no = batch_id
+            item.save()
+            frappe.db.commit()
             created_batches.append(f'<a href="/app/batch/{batch.name}">{batch.name}</a>')
 
         except Exception as e:

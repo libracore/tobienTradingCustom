@@ -67,9 +67,9 @@ function confirm_packspec_for_row(frm, row_no) {
                 frm.fields_dict.items.grid.grid_rows[0].open_row_at_index(row.idx - 1);
                 setTimeout(() => { frm.fields_dict.items.grid.open_grid_row.fields_dict.batch_no.wrapper.scrollIntoView(); }, 500);
             } else if(frm.doc.items.length - 1 > row_no) {
-                confirm_packspec_for_row(row_no + 1);
+                confirm_packspec_for_row(frm, row_no + 1); // This row needs no Batch, continue with next one
             } else {
-                do_submit(frm);
+                do_submit(frm); // No more rows to process, ready to submit
             }
         });
         return;
@@ -244,10 +244,10 @@ function confirm_packspec_for_row(frm, row_no) {
                             callback: function(response) {
                                 frappe.show_alert({message: __("Packaging specs updated"), indicator: "green"});
                                 if(frm.doc.items.length - 1 > row_no) {
-                                    confirm_packspec_for_row(row_no + 1);
+                                    confirm_packspec_for_row(frm, row_no + 1); // Done processing this row's packaging specs, continue with next one
                                 }
                                 else {
-                                    do_submit(frm);
+                                    do_submit(frm); // No more rows to process, ready to submit
                                 }
                             },
                             error: function(message) {
@@ -256,10 +256,10 @@ function confirm_packspec_for_row(frm, row_no) {
                         });
                     } else {
                         if(frm.doc.items.length - 1 > row_no) {
-                            confirm_packspec_for_row(row_no + 1);
+                            confirm_packspec_for_row(frm, row_no + 1); // Nothing to update, continue with next row
                         }
                         else {
-                            do_submit(frm);
+                            do_submit(frm); // No more rows to process, ready to submit
                         }
 
                     }

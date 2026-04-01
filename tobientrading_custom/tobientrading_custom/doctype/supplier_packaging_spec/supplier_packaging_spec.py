@@ -4,7 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from frappe.model.rename_doc import rename_doc
-from math import floor
+from math import floor, ceil
 
 class SupplierPackagingSpec(Document):
     pass
@@ -31,6 +31,56 @@ def get_pallet_details(pallet_length, pallet_width, pallet_base_height, pallet_m
     layers_per_pallet = floor((pallet_max_height - pallet_base_height) / package_height) if package_height else 0
     packages_per_pallet = packages_per_layer * layers_per_pallet
     return {'packages_per_layer': packages_per_layer, 'layers_per_pallet': layers_per_pallet, 'packages_per_pallet': packages_per_pallet}
+
+
+@frappe.whitelist()
+def get_pallet_details_for_batch(batch, qty, customer_max_pallet_height=0):
+    batch_doc = frappe.get_doc("Batch", batch)
+    customer_max_pallet_height = int(customer_max_pallet_height)
+    if customer_max_pallet_height == 0:
+        customer_max_pallet_height = batch_doc.pallet_max_height
+    max_pallet_height = min(batch_doc.pallet_max_height, customer_max_pallet_height)
+    details = frappe._dict(get_pallet_details(
+        batch_doc.pallet_length,
+        batch_doc.pallet_width,
+        batch_doc.pallet_base_height,
+        max_pallet_height,
+        batch_doc.package_length,
+        batch_doc.package_width,
+        batch_doc.package_height
+    ))
+    # Return basic pallet specs along with the calculations as these aren't fetched automatically from Batch
+    details.pallet_type = batch_doc.pallet_type
+    details.pallet_length = batch_doc.pallet_length
+    details.pallet_width = batch_doc.pallet_width
+    details.pallet_base_height = batch_doc.pallet_base_height
+    details.pallet_tare = batch_doc.pallet_tare
+    # Calculate extra details from Batch specs and quantity
+    details.num_packages = ceil(int(qty) / batch_doc.package_weight) if batch_doc.package_weight > 0 else 0
+    details.num_full_pallets = floor(details.num_packages / details.packages_per_pallet) if details.packages_per_pallet > 0 else 0
+    details.full_pallet_height = batch_doc.pallet_base_height + details.layers_per_pallet * batch_doc.package_height
+    details.full_pallet_net_weight = details.packages_per_pallet * batch_doc.package_weight
+    details.full_pallet_gross_weight = details.full_pallet_net_weight + batch_doc.pallet_tare + details.packages_per_pallet * batch_doc.package_tare
+
+    if details.num_packages > details.num_full_pallets * details.packages_per_pallet:
+        details.has_rest_pallet = 1
+        details.rest_pallet_packages = details.num_packages - details.num_full_pallets * details.packages_per_pallet
+        details.rest_pallet_layers = ceil(details.rest_pallet_packages / details.packages_per_layer)
+        details.rest_pallet_height = batch_doc.pallet_base_height + details.rest_pallet_layers * batch_doc.package_height
+        details.rest_pallet_net_weight = int(qty) - details.num_full_pallets * details.full_pallet_net_weight
+        details.rest_pallet_gross_weight = details.rest_pallet_net_weight + batch_doc.pallet_tare + details.rest_pallet_packages * batch_doc.package_tare
+    else:
+        details.has_rest_pallet = 0
+        details.rest_pallet_packages = 0
+        details.rest_pallet_layers = 0
+        details.rest_pallet_height = 0
+        details.rest_pallet_net_weight = 0
+        details.rest_pallet_gross_weight = 0
+
+    details.shipment_net_weight = details.num_full_pallets * details.full_pallet_net_weight + details.has_rest_pallet * details.rest_pallet_net_weight
+    details.shipment_gross_weight = details.num_full_pallets * details.full_pallet_gross_weight + details.has_rest_pallet * details.rest_pallet_gross_weight
+
+    return details
 
 
 def get_optimal_packages_per_layer(pallet_length, pallet_width, package_length, package_width):
