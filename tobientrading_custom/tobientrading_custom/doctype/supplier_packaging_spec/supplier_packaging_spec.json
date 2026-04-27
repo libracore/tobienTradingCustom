@@ -6,8 +6,10 @@
  "engine": "InnoDB",
  "field_order": [
   "supplier",
+  "supplier_name",
   "column_break_qeqh",
   "description",
+  "image",
   "pallet_details_section",
   "pallet_type",
   "column_break_staf",
@@ -148,12 +150,29 @@
    "fieldtype": "Table",
    "label": "Item assignments",
    "options": "Supplier Packaging Item Assignment"
+  },
+  {
+   "fetch_from": "supplier.supplier_name",
+   "fieldname": "supplier_name",
+   "fieldtype": "Data",
+   "label": "Supplier name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "hidden": 1,
+   "in_preview": 1,
+   "label": "Image",
+   "options": "image",
+   "print_hide": 1
   }
  ],
  "grid_page_length": 50,
+ "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-26 17:08:45.486479",
+ "modified": "2026-04-27 08:09:56.355817",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Supplier Packaging Spec",
