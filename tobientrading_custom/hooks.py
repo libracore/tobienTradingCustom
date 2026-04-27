@@ -195,6 +195,12 @@ override_doctype_class = {
     "Supplier Quotation": "tobientrading_custom.overrides.third_party_address.CustomSupplierQuotation",
 }
 
+jinja = {
+    'methods': [
+        "tobientrading_custom.tobientrading_custom.doctype.pallet_type.pallet_type.get_pallet_details_from_type"
+    ]
+}
+
 fixtures = [{
     'doctype': 'Print Format',
     'filters': [['name', 'in', [
