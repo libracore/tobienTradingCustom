@@ -10,6 +10,14 @@ frappe.ui.form.on('Sales Order', {
             cur_frm.set_df_property('company', 'read_only', 1);
         }
     },
+	items_add: function(frm, cdt, cdn) {
+		set_blanket_rate(frm, cdt, cdn);
+	},
+	validate: function(frm) {
+		frm.doc.items.forEach((row) => {
+			set_blanket_rate(frm, row.doctype, row.name);
+		});
+	},
     company: function(frm) {
         prepare_naming_series(frm);  // common function
     },
@@ -54,3 +62,24 @@ frappe.ui.form.on('Sales Order', {
         });
 	}
 });
+
+frappe.ui.form.on('Sales Order Item', {
+	blanket_order_rate: function(frm, cdt, cdn) {
+		set_blanket_rate(frm, cdt, cdn);
+	},
+	item_code: function(frm, cdt, cdn) {
+		set_blanket_rate(frm, cdt, cdn);
+	}
+});
+
+
+// Blanket Order Rate in den Listenpreis schreiben, damit darauf Rabatte aus Pricing Rules angewendet werden
+function set_blanket_rate(frm, cdt, cdn) {
+	let row = locals[cdt][cdn];
+	if (!row) return;
+
+    if(row.blanket_order_rate && row.blanket_order_rate != row.price_list_rate){
+		frappe.model.set_value(cdt, cdn, 'price_list_rate', row.blanket_order_rate);
+		frappe.show_alert({message: __("Row {0}: List price was set to Blanket Order price", [row.idx])}, 10);
+	}
+}
