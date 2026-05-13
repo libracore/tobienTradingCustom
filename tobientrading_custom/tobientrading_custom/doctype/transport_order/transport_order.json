@@ -89,6 +89,7 @@
   {
    "fieldname": "naming_series",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Series"
   },
   {
@@ -255,8 +256,7 @@
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Items",
-   "options": "Transport Table Item",
-   "read_only": 1
+   "options": "Transport Table Item"
   },
   {
    "default": "Number of Pallets\nPallet:    1.2 x 0.8 x \nNet weight per pallet: \nGross weight per pallet: \n\n\nNumber of Pallets\nPallet:  1.2 x 0.8 x\nNet weight per pallet:\nGross weight per pallet:",
@@ -471,7 +471,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-04-01 21:27:43.963068",
+ "modified": "2026-05-13 17:08:11.571645",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Transport Order",

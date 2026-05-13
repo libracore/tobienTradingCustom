@@ -1,7 +1,7 @@
 # Copyright (c) 2025, libracore AG and contributors
 # For license information, please see license.txt
 
-# import frappe
+import frappe
 from frappe.model.document import Document
 from tobientrading_custom.tobientrading_custom.utils import get_batch_info
 from erpnext.stock.get_item_details import get_conversion_factor
@@ -24,9 +24,9 @@ def get_matching_batches(sales_order, sales_order_item):
     batches = []
     for batch in batch_info:
         if batch.stock_uom != item_doc.stock_uom:
-        conv_factor = get_conversion_factor(so_item_doc.item_code, batch.stock_uom)
-            qty = batch.qty * conv_factor
-        qty_to_use = min(qty, remaining_qty)
+            conv_factor = get_conversion_factor(so_item_doc.item_code, batch.stock_uom)
+            batch.qty *= conv_factor
+        qty_to_use = min(batch.qty, remaining_qty)
         batches.append({
             'batch_no': batch.batch_no,
             'qty': qty_to_use,

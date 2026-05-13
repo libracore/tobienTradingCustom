@@ -62,7 +62,37 @@ Gross weight per pallet: ${(pal.pallet_gross_weight || 0)} kg`;
         }
         frm.set_value("goods", goods_desc);
     },
+    customer_max_pallet_height(frm) {
+        console.log('HeightX'); //TODO remove
+        generate_pallets_list(frm);
+    },
+    customer_pallet_types(frm) {
+        console.log('PAllTX'); // TODO remove
+        generate_pallets_list(frm);
+    }
 });
+
+
+frappe.ui.form.on('Transport Table Item', {
+    // items_add: probably nothing to do, usually item is empty when being added
+    items_remove(frm, cdt, cdn) {
+        console.log("AddX"); // TODO remove me
+        generate_pallets_list(frm);
+    },
+    item_code(frm, cdt, cdn) {
+        console.log("ItemX"); // TODO remove me
+        calculate_item_dimensions(frm, cdt, cdn);
+    },
+    batch(frm, cdt, cdn) {
+        console.log("BatchX"); // TODO remove me
+        calculate_item_dimensions(frm, cdt, cdn);
+    },
+    qty(frm, cdt, cdn) {
+        console.log("QtyX"); // TODO remove me
+        calculate_item_dimensions(frm, cdt, cdn);
+    }
+});
+
 
 frappe.ui.form.on('Transport Order Pallet Spec', {
     pallets_add(frm, cdt, cdn) {
@@ -158,7 +188,7 @@ function fetch_shipping_address_details(frm) {
 
 function fetch_items_from_doc(frm, dt, dn) {
     frappe.db.get_doc(dt, dn).then(ref_doc => {
-        // Sales Order: Fetch allowed pallet types as well
+        // Sales Order: Fetch allowed pallet types as well (the other customer specs are fetched automatically by "fetch_from")
         if(dt == "Sales Order" && ref_doc.customer_pallet_types) {
             frm.fields_dict.customer_pallet_types.set_value([]).then(() => {
                 ref_doc.customer_pallet_types.forEach(pt => {
@@ -169,37 +199,62 @@ function fetch_items_from_doc(frm, dt, dn) {
             });
         }
 
-        // Clear item table and add items from reference doc
-        // (Only fetch items from SO if no PO selected)
+        // PO: Clear item table and add items from reference doc. Populate Batch by looking for a batch no matching the PO.
+        // SO: Fetch items from reference doc and add any items that aren't there yet.
+        //     For existing items (identified by item code and qty) set the reference to SO Item only.
         if(dt == "Purchase Order" || !frm.doc.purchase_order) {
             frm.set_value("items",[]);
+        }
+        if(dt == "Purchase Order") {
             for(var item of ref_doc.items) {
-                let new_item = frm.add_child("items");
-                new_item.item_code = item.item_code;
-                new_item.required_by = item.required_by;
-                new_item.item_name = item.item_name;
-                new_item.quantity = item.qty;
-                new_item.uom = item.uom;
-                new_item.rate = item.rate;
-                new_item.amount = item.amount;
-                new_item.batch = item.batch_no;
-                new_item.dimensions_calculated = false;
-                // If no Batch is given in the reference doc, check if a matching batch by the name of the PO exists
-                if(dt == "Purchase Order" && !new_item.batch) {
-                    frappe.db.get_value("Batch", {name: ref_doc.name, item: new_item.item_code}, "name").then(val => {
-                        if(val.length > 0) {
-                            frappe.model.set_value(new_item.doctype, new_item.name, "batch", ref_doc.name);
-                            frappe.show_alert({message: __("Row #{0}: Batch not linked in PO. Matching batch '{1}' found.", [new_item.idx, ref_doc.name]), indicator: 'blue'});
+                let new_item = get_new_child_table_item(frm, item);
+
+                if(new_item.batch) {
+                    // Trigger recalculation of item dimensions if batch already given
+                    frappe.model.set_value(new_item.doctype, new_item.name, "batch", new_item.batch);
+                } else {
+                    // If no Batch is given in the reference doc, check if a matching batch by the name of the PO (-Item) exists
+                    frappe.db.get_value("Batch", {name: ['IN',[ref_doc.name,ref_doc.name+'-'+item.idx]], item: new_item.item_code}, "name").then(r => {
+                        if(r.message && r.message.name) {
+                            frappe.model.set_value(new_item.doctype, new_item.name, "batch", r.message.name);
+                            frappe.show_alert({message: __("Row #{0}: Batch not linked in PO. Matching batch '{1}' found.", [new_item.idx, r.message.name]), indicator: 'blue'}, 30);
                         }
                         else {
                             frappe.show_alert({message: __("Row #{0}: Batch not linked in PO and no matching Batch found. Please set Batch in PO to proceed.", [new_item.idx]), indicator: 'red'}, 30);
                         }
-                        calculate_item_dimensions(frm, new_item.doctype, new_item.name);
                     });
-                } else if(new_item.batch) {
-                    calculate_item_dimensions(frm, new_item.doctype, new_item.name);
+                }
+            }
+            frappe.show_alert({message: __("Fetched {0} Items from {1}", [ref_doc.items.length, dt]), indicator: 'blue'}, 30);
+
+
+        } else { // dt == "Sales Order"
+            let updated_cnt = 0;
+            let added_cnt = 0;
+            let ignored_cnt = 0;
+            for(var item of ref_doc.items) {
+                let existing_items = frm.doc.items.filter(i => i.item_code == item.item_code && i.quantity == i.quantity);
+                let my_item = null;
+                if(existing_items.length > 0) {
+                    // Item already in table: Just set a reference to Sales Order Item
+                    my_item = existing_items[0];
+                    updated_cnt++;
+                    frappe.model.set_value(my_item.doctype, my_item.name, "sales_order_item", item.name);
+                } else if(!frm.doc.purchase_order) {
+                    // Item not there yet and no PO given: Create new row
+                    my_item = get_new_child_table_item(frm, item);
+                    added_cnt++;
                 } else {
-                    // dt == "Sales Order", kein Batch hinterlegt => Batches nach FIFO-Prinzip zuordnen
+                    ignored_cnt++;
+                    continue;
+                }
+
+                if(my_item.batch) {
+                    // Trigger recalculation of item dimensions if batch already given
+                    frappe.model.set_value(my_item.doctype, my_item.name, "batch", my_item.batch);
+                } else if(!frm.doc.purchase_order) {
+                    // No Batch given: Assign batches by FIFO principle, split quantity over several batches if needed
+                    // (Except if PO given - in that case we only want to ship batches from that PO)
                     frappe.call({
                         method: 'tobientrading_custom.tobientrading_custom.doctype.transport_order.transport_order.get_matching_batches',
                         args: {
@@ -211,41 +266,34 @@ function fetch_items_from_doc(frm, dt, dn) {
                                 return;
                             }
                             if(r.message.status != 'OK') {
-                                frappe.show_alert({message: __("Row #{0}: "+r.message.status, [new_item.idx]), indicator: 'orange'}, 30);
+                                frappe.show_alert({message: __("Row #{0}: "+r.message.status, [my_item.idx]), indicator: 'orange'}, 30);
                             }
                             let batches = r.message.batches;
                             if(batches.length == 0) {
-                                frappe.show_alert({message: __("Row #{0}: No matching batches in stock", [new_item.idx]), indicator: 'red'}, 30);
+                                frappe.show_alert({message: __("Row #{0}: No matching batches in stock", [my_item.idx]), indicator: 'red'}, 30);
                             } else {
-                                new_item.batch = batches[0].batch_no;
-                                new_item.quantity = batches[0].qty;
-                                new_item.uom = batches[0].uom; // TODO - adapt rate to new UOM here if needed
-                                new_item.amount = new_item.rate * batches[0].qty;
+                                my_item.quantity = batches[0].qty;
+                                my_item.uom = batches[0].uom; // TODO - adapt rate to new UOM here if needed
+                                my_item.amount = my_item.rate * batches[0].qty;
+                                frappe.model.set_value(my_item.doctype, my_item.name, "batch", batches[0].batch_no);
                                 for(var i=1; i<batches.length; i++) {
-                                    let extra_line_item = frm.add_child("items");
-                                    extra_line_item.item_code = new_item.item_code;
-                                    extra_line_item.required_by = new_item.required_by;
-                                    extra_line_item.item_name = new_item.item_name;
-                                    extra_line_item.quantity = batches[i].qty;
-                                    extra_line_item.uom = batches[i].uom;
-                                    extra_line_item.rate = new_item.rate; // TODO - adapt rate to new UOM here if needed
-                                    extra_line_item.amount = new_item.rate * batches[i].qty;
-                                    extra_line_item.batch = batches[i].batch_no;
-                                    extra_line_item.dimensions_calculated = false;
+                                    let extra_item = get_new_child_table_item(frm, my_item);
+                                    extra_item.quantity = batches[i].qty;
+                                    extra_item.uom = batches[i].uom;
+                                    extra_item.amount = my_item.rate * batches[i].qty;
+                                    frappe.model.set_value(extra_item.doctype, extra_item.name, "batch", batches[i].batch_no);
+                                    frm.refresh_field("items");
                                 }
                             }
                         }
-                    );
-
-                    frappe.show_alert({message: __("Row #{0}: Batch not linked in {1}. Please set Batch in {1} to proceed.", [new_item.idx, ref_doc.doctype]), indicator: 'red'}, 30);
-                    new_item.dimensions_calculated = true;
+                    });
                 }
             }
+            frappe.show_alert({message: __("Sales order processed. {0} Items were added, {1} updated and {2} ignored (not present in PO)", [added_cnt, updated_cnt, ignored_cnt]), indicator: 'blue'}, 30);
         }
-        frappe.show_alert({message: __("Fetched {0} Items from {1}", [ref_doc.items.length, dt]), indicator: 'blue'});
         frm.refresh_field("items");
         // NOTE:
-        // The way we set Batch references here, Frappe doesn't fetch linked fields automatically. It would be possible to trigger this as follows:
+        // Even though we use frappe.model.set_value() to set Batch references here, Frappe doesn't fetch linked fields automatically. It would be possible to trigger this as follows:
         //   frm.refresh_field("items");
         //   frm.fields_dict.items.grid.grid_rows[0].open_row_at_index(new_item.idx);
         //   frm.fields_dict.items.grid.open_grid_row.fields_dict.batch.validate_and_set_in_model(new_item.batch);
@@ -255,7 +303,7 @@ function fetch_items_from_doc(frm, dt, dn) {
     });
 }
 
-
+// Update pallet details in line items when either the item/batch/qty or customer specs are changed
 function calculate_item_dimensions(frm, cdt, cdn) {
     let item_fields = [
         'pallet_length', 'pallet_width', 'pallet_base_height', 'pallet_tare',
@@ -264,6 +312,7 @@ function calculate_item_dimensions(frm, cdt, cdn) {
         'shipment_net_weight', 'shipment_gross_weight'
     ];
     let row = locals[cdt][cdn];
+    row.dimensions_calculated = false;
     if(!row.batch) {
         row.dimensions_calculated = true;
         generate_pallets_list_when_ready(frm);
@@ -290,7 +339,7 @@ function calculate_item_dimensions(frm, cdt, cdn) {
             if(customer_pallet_types.length > 0 && pallet_details.pallet_type && !customer_pallet_types.includes(pallet_details.pallet_type)) {
                 frappe.show_alert({message: __("Row #{0}: Pallet type '{1}' is not accepted by the customer", [row.idx, pallet_details.pallet_type]), indicator: 'red'}, 30);
             } else {
-                frappe.show_alert({message: __("Row #{0}: Updated pallet details", [row.idx]), indicator: 'blue'});
+                //frappe.show_alert({message: __("Row #{0}: Updated pallet details", [row.idx]), indicator: 'blue'}, 30);
             }
             row.dimensions_calculated = true;
             generate_pallets_list_when_ready(frm);
@@ -428,7 +477,7 @@ function generate_pallets_list(frm) {
             }
         }
     }
-    frappe.show_alert({message: __("Created a pallet list with a total of {0} full pallets and {1} merged rest pallets", [total_full_pallets, total_rest_pallets]), indicator: 'blue'});
+    //frappe.show_alert({message: __("Created a pallet list with a total of {0} full pallets and {1} merged rest pallets", [total_full_pallets, total_rest_pallets]), indicator: 'blue'}, 30);
     frm.refresh_field("pallets");
     update_total_weights(frm);
 }
@@ -510,4 +559,22 @@ function pack_into_bins(items, B, H) {
 
   dfs(0);
   return { feasible: found, assignment: solutionAssign ? solutionAssign.assignment : null, bins: solutionAssign ? solutionAssign.bins : null };
+}
+
+
+// Create a child table item from a SO-Item or PO-Item dataset
+function get_new_child_table_item(frm, item) {
+    let new_item = frm.add_child("items");
+    new_item.item_code = item.item_code;
+    new_item.required_by = item.required_by;
+    new_item.item_name = item.item_name;
+    new_item.quantity = item.qty;
+    new_item.uom = item.uom;
+    new_item.rate = item.rate;
+    new_item.amount = item.amount;
+    new_item.batch = item.batch_no;
+    if(item.doctype == "Sales Order Item") {
+        new_item.sales_order_item = item.name;
+    }
+    return new_item;
 }

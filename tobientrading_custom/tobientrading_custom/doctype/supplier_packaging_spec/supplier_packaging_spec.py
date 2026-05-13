@@ -56,7 +56,7 @@ def get_pallet_details_for_batch(batch, qty, customer_max_pallet_height=0):
     details.pallet_base_height = batch_doc.pallet_base_height
     details.pallet_tare = batch_doc.pallet_tare
     # Calculate extra details from Batch specs and quantity
-    details.num_packages = ceil(int(qty) / batch_doc.package_weight) if batch_doc.package_weight > 0 else 0
+    details.num_packages = ceil(float(qty) / batch_doc.package_weight) if batch_doc.package_weight > 0 else 0
     details.num_full_pallets = floor(details.num_packages / details.packages_per_pallet) if details.packages_per_pallet > 0 else 0
     details.full_pallet_height = batch_doc.pallet_base_height + details.layers_per_pallet * batch_doc.package_height
     details.full_pallet_net_weight = details.packages_per_pallet * batch_doc.package_weight
@@ -67,7 +67,7 @@ def get_pallet_details_for_batch(batch, qty, customer_max_pallet_height=0):
         details.rest_pallet_packages = details.num_packages - details.num_full_pallets * details.packages_per_pallet
         details.rest_pallet_layers = ceil(details.rest_pallet_packages / details.packages_per_layer) if details.packages_per_layer > 0 else 0
         details.rest_pallet_height = batch_doc.pallet_base_height + details.rest_pallet_layers * batch_doc.package_height
-        details.rest_pallet_net_weight = int(qty) - details.num_full_pallets * details.full_pallet_net_weight
+        details.rest_pallet_net_weight = float(qty) - details.num_full_pallets * details.full_pallet_net_weight
         details.rest_pallet_gross_weight = details.rest_pallet_net_weight + batch_doc.pallet_tare + details.rest_pallet_packages * batch_doc.package_tare
     else:
         details.has_rest_pallet = 0
