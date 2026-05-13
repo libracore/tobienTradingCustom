@@ -201,13 +201,15 @@ def get_batch_info(item_code):
           `batches`.`batch_no`,
           `batches`.`qty`,
           `batches`.`stock_uom`,
+          `batches`.`first_transaction_date`,
           `tabBatch`.`pallet_length`, `tabBatch`.`pallet_width`, `tabBatch`.`pallet_base_height`, `tabBatch`.`pallet_max_height`,
           `tabBatch`.`package_length`, `tabBatch`.`package_width`, `tabBatch`.`package_height`, `tabBatch`.`package_weight`
         FROM (
-          SELECT `item_code`, IFNULL(`batch_no`, 'None') AS `batch_no`, SUM(`actual_qty`) AS `qty`, `stock_uom`
+          SELECT `item_code`, IFNULL(`batch_no`, 'None') AS `batch_no`, SUM(`actual_qty`) AS `qty`, `stock_uom`, MIN(`posting_date`) AS `first_transaction_date`
           FROM `tabStock Ledger Entry`
           WHERE `item_code` = '{item_code}'
           GROUP BY `batch_no`
+          ORDER BY `first_transaction_date`
         ) AS `batches`
         INNER JOIN `tabBatch` ON `batches`.`batch_no` = `tabBatch`.`name`
         WHERE `qty` != 0;""".format(item_code=item_code)

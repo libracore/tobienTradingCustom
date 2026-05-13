@@ -45,7 +45,7 @@ frappe.ui.form.on('Transport Order', {
         }
     },
     sales_order(frm) {
-        if(frm.doc.sales_order && !frm.doc.purchase_order) {
+        if(frm.doc.sales_order) {
             fetch_items_from_doc(frm, "Sales Order", frm.doc.sales_order);
         }
     },
@@ -160,46 +160,87 @@ function fetch_items_from_doc(frm, dt, dn) {
     frappe.db.get_doc(dt, dn).then(ref_doc => {
         // Sales Order: Fetch allowed pallet types as well
         if(dt == "Sales Order" && ref_doc.customer_pallet_types) {
-            ref_doc.customer_pallet_types.forEach(pt => {
-                new_cpt = frm.add_child("customer_pallet_types");
-                new_cpt.pallet_type = pt.pallet_type;
+            frm.fields_dict.customer_pallet_types.set_value([]).then(() => {
+                ref_doc.customer_pallet_types.forEach(pt => {
+                    new_cpt = frm.add_child("customer_pallet_types");
+                    new_cpt.pallet_type = pt.pallet_type;
+                });
+                frm.refresh_field("customer_pallet_types");
             });
-            frm.refresh_field("customer_pallet_types");
         }
 
         // Clear item table and add items from reference doc
-        frm.set_value("items",[]);
-        for(var item of ref_doc.items) {
-            let new_item = frm.add_child("items");
-            new_item.item_code = item.item_code;
-            new_item.required_by = item.required_by;
-            new_item.item_name = item.item_name;
-            new_item.quantity = item.qty;
-            new_item.uom = item.uom;
-            new_item.rate = item.rate;
-            new_item.amount = item.amount;
-            new_item.batch = item.batch_no;
-            new_item.dimensions_calculated = false;
-            // If no Batch is given in the reference doc, check if a matching batch by the name of the PO exists
-            if(dt == "Purchase Order" && !new_item.batch) {
-                frappe.db.get_value("Batch", {name: ref_doc.name, item: new_item.item_code}, "name").then(val => {
-                    if(val.length > 0) {
-                        frappe.model.set_value(new_item.doctype, new_item.name, "batch", ref_doc.name);
-                        frappe.show_alert({message: __("Row #{0}: Batch not linked in PO. Matching batch '{1}' found.", [new_item.idx, ref_doc.name]), indicator: 'blue'});
-                    }
-                    else {
-                        frappe.show_alert({message: __("Row #{0}: Batch not linked in PO and no matching Batch found. Please set Batch in PO to proceed.", [new_item.idx]), indicator: 'red'});
-                    }
+        // (Only fetch items from SO if no PO selected)
+        if(dt == "Purchase Order" || !frm.doc.purchase_order) {
+            frm.set_value("items",[]);
+            for(var item of ref_doc.items) {
+                let new_item = frm.add_child("items");
+                new_item.item_code = item.item_code;
+                new_item.required_by = item.required_by;
+                new_item.item_name = item.item_name;
+                new_item.quantity = item.qty;
+                new_item.uom = item.uom;
+                new_item.rate = item.rate;
+                new_item.amount = item.amount;
+                new_item.batch = item.batch_no;
+                new_item.dimensions_calculated = false;
+                // If no Batch is given in the reference doc, check if a matching batch by the name of the PO exists
+                if(dt == "Purchase Order" && !new_item.batch) {
+                    frappe.db.get_value("Batch", {name: ref_doc.name, item: new_item.item_code}, "name").then(val => {
+                        if(val.length > 0) {
+                            frappe.model.set_value(new_item.doctype, new_item.name, "batch", ref_doc.name);
+                            frappe.show_alert({message: __("Row #{0}: Batch not linked in PO. Matching batch '{1}' found.", [new_item.idx, ref_doc.name]), indicator: 'blue'});
+                        }
+                        else {
+                            frappe.show_alert({message: __("Row #{0}: Batch not linked in PO and no matching Batch found. Please set Batch in PO to proceed.", [new_item.idx]), indicator: 'red'}, 30);
+                        }
+                        calculate_item_dimensions(frm, new_item.doctype, new_item.name);
+                    });
+                } else if(new_item.batch) {
                     calculate_item_dimensions(frm, new_item.doctype, new_item.name);
-                });
-            } else if(new_item.batch) {
-                calculate_item_dimensions(frm, new_item.doctype, new_item.name);
-            } else {
-                frappe.show_alert({message: __("Row #{0}: Batch not linked in {1}. Please set Batch in {1} to proceed.", [new_item.idx, ref_doc.doctype]), indicator: 'red'});
-                new_item.dimensions_calculated = true;
+                } else {
+                    // dt == "Sales Order", kein Batch hinterlegt => Batches nach FIFO-Prinzip zuordnen
+                    frappe.call({
+                        method: 'tobientrading_custom.tobientrading_custom.doctype.transport_order.transport_order.get_matching_batches',
+                        args: {
+                            sales_order: dn,
+                            sales_order_item: item.name,
+                        },
+                        callback: function(r) {
+                            if(!r.message || !r.message.batches){
+                                return;
+                            }
+                            if(r.message.status != 'OK') {
+                                frappe.show_alert({message: __("Row #{0}: "+r.message.status, [new_item.idx]), indicator: 'orange'}, 30);
+                            }
+                            let batches = r.message.batches;
+                            if(batches.length == 0) {
+                                frappe.show_alert({message: __("Row #{0}: No matching batches in stock", [new_item.idx]), indicator: 'red'}, 30);
+                            } else {
+                                new_item.batch = batches[0].batch_no;
+                                new_item.quantity = batches[0].qty;
+                                new_item.uom = batches[0].uom; // TODO - adapt rate to new UOM here if needed
+                                new_item.amount = new_item.rate * batches[0].qty;
+                                for(var i=1; i<batches.length; i++) {
+                                    let extra_line_item = frm.add_child("items");
+                                    extra_line_item.item_code = new_item.item_code;
+                                    extra_line_item.required_by = new_item.required_by;
+                                    extra_line_item.item_name = new_item.item_name;
+                                    extra_line_item.quantity = batches[i].qty;
+                                    extra_line_item.uom = batches[i].uom;
+                                    extra_line_item.rate = new_item.rate; // TODO - adapt rate to new UOM here if needed
+                                    extra_line_item.amount = new_item.rate * batches[i].qty;
+                                    extra_line_item.batch = batches[i].batch_no;
+                                    extra_line_item.dimensions_calculated = false;
+                                }
+                            }
+                        }
+                    );
+
+                    frappe.show_alert({message: __("Row #{0}: Batch not linked in {1}. Please set Batch in {1} to proceed.", [new_item.idx, ref_doc.doctype]), indicator: 'red'}, 30);
+                    new_item.dimensions_calculated = true;
+                }
             }
-            // TODO - if no PO is given, we could check for a Batch with sufficient qty in stock, or even make multiple entries if none is available (follow FIFO policy)
-            //      - if we do that, we should determine whether mixed-batch pallets are allowed by the customer
         }
         frappe.show_alert({message: __("Fetched {0} Items from {1}", [ref_doc.items.length, dt]), indicator: 'blue'});
         frm.refresh_field("items");
@@ -231,7 +272,7 @@ function calculate_item_dimensions(frm, cdt, cdn) {
     let customer_pallet_types = frm.doc.customer_pallet_types.map(t => t.pallet_type);
 
     if(row.uom != 'kg') {
-        frappe.show_alert({message: __("Row #{0}: Unsupported UOM for pallet calculations: {1}", [row.idx, row.uom]), indicator: 'orange'});
+        frappe.show_alert({message: __("Row #{0}: Unsupported UOM for pallet calculations: {1}", [row.idx, row.uom]), indicator: 'orange'}, 30);
         return;
     }
     frappe.call({
@@ -247,7 +288,7 @@ function calculate_item_dimensions(frm, cdt, cdn) {
                 frappe.model.set_value(cdt, cdn, field, pallet_details[field]);
             });
             if(customer_pallet_types.length > 0 && pallet_details.pallet_type && !customer_pallet_types.includes(pallet_details.pallet_type)) {
-                frappe.show_alert({message: __("Row #{0}: Pallet type '{1}' is not accepted by the customer", [row.idx, pallet_details.pallet_type]), indicator: 'red'});
+                frappe.show_alert({message: __("Row #{0}: Pallet type '{1}' is not accepted by the customer", [row.idx, pallet_details.pallet_type]), indicator: 'red'}, 30);
             } else {
                 frappe.show_alert({message: __("Row #{0}: Updated pallet details", [row.idx]), indicator: 'blue'});
             }
@@ -268,6 +309,7 @@ function generate_pallets_list_when_ready(frm) {
 
 
 function generate_pallets_list(frm) {
+    // TODO - check if mixed-batch / mixed-item pallets are allowed
     frm.set_value("pallets", []);
     let used_items = [];
     let total_full_pallets = 0;
