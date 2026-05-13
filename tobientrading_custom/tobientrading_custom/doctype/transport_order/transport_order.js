@@ -63,12 +63,27 @@ Gross weight per pallet: ${(pal.pallet_gross_weight || 0)} kg`;
         frm.set_value("goods", goods_desc);
     },
     customer_max_pallet_height(frm) {
-        console.log('HeightX'); //TODO remove
-        generate_pallets_list(frm);
+        if(!frm.fetching_items && frm.doc.sales_order == frm.fields_dict.sales_order.input.value) {
+            console.log('HeightX'); //TODO remove
+            for(i of frm.doc.items) {
+                // Recalculate for ALL items, as we cannot know which ones were previously and which ones are now affected by the max height
+                calculate_item_dimensions(frm, i.doctype, i.name);
+            }
+        }
     },
     customer_pallet_types(frm) {
-        console.log('PAllTX'); // TODO remove
-        generate_pallets_list(frm);
+        if(!frm.fetching_items && frm.doc.sales_order == frm.fields_dict.sales_order.input.value) {
+            console.log('PallTX'); //TODO remove
+            let allowed_types = frm.doc.customer_pallet_types.map(t => t.pallet_type);
+            if(allowed_types.length > 0) {
+                for(i of frm.doc.items) {
+                    if(!allowed_types.includes(i.pallet_type)) {
+                        // TODO - what to do here? we have to repack to a different pallet type, right? perhaps just show a warning now. likely it's enough to handle this at validate/save time.
+                        //calculate_item_dimensions(frm, i.doctype, i.name);
+                    }
+                }
+            }
+        }
     }
 });
 
@@ -187,10 +202,16 @@ function fetch_shipping_address_details(frm) {
 
 
 function fetch_items_from_doc(frm, dt, dn) {
-    frappe.db.get_doc(dt, dn).then(ref_doc => {
+    frm.fetching_items = true;
+    let promises = [];
+    let fetch_ref_doc = frappe.db.get_doc(dt, dn);
+    promises.push(fetch_ref_doc);
+    fetch_ref_doc.then(ref_doc => {
         // Sales Order: Fetch allowed pallet types as well (the other customer specs are fetched automatically by "fetch_from")
         if(dt == "Sales Order" && ref_doc.customer_pallet_types) {
-            frm.fields_dict.customer_pallet_types.set_value([]).then(() => {
+            let clear_pallet_types = frm.fields_dict.customer_pallet_types.set_value([]);
+            promises.push(clear_pallet_types);
+            clear_pallet_types.then(() => {
                 ref_doc.customer_pallet_types.forEach(pt => {
                     new_cpt = frm.add_child("customer_pallet_types");
                     new_cpt.pallet_type = pt.pallet_type;
@@ -211,12 +232,14 @@ function fetch_items_from_doc(frm, dt, dn) {
 
                 if(new_item.batch) {
                     // Trigger recalculation of item dimensions if batch already given
-                    frappe.model.set_value(new_item.doctype, new_item.name, "batch", new_item.batch);
+                    promises.push(frappe.model.set_value(new_item.doctype, new_item.name, "batch", new_item.batch));
                 } else {
                     // If no Batch is given in the reference doc, check if a matching batch by the name of the PO (-Item) exists
-                    frappe.db.get_value("Batch", {name: ['IN',[ref_doc.name,ref_doc.name+'-'+item.idx]], item: new_item.item_code}, "name").then(r => {
+                    let find_matching_batch = frappe.db.get_value("Batch", {name: ['IN',[ref_doc.name,ref_doc.name+'-'+item.idx]], item: new_item.item_code}, "name");
+                    promises.push(find_matching_batch);
+                    find_matching_batch.then(r => {
                         if(r.message && r.message.name) {
-                            frappe.model.set_value(new_item.doctype, new_item.name, "batch", r.message.name);
+                            promises.push(frappe.model.set_value(new_item.doctype, new_item.name, "batch", r.message.name));
                             frappe.show_alert({message: __("Row #{0}: Batch not linked in PO. Matching batch '{1}' found.", [new_item.idx, r.message.name]), indicator: 'blue'}, 30);
                         }
                         else {
@@ -239,7 +262,7 @@ function fetch_items_from_doc(frm, dt, dn) {
                     // Item already in table: Just set a reference to Sales Order Item
                     my_item = existing_items[0];
                     updated_cnt++;
-                    frappe.model.set_value(my_item.doctype, my_item.name, "sales_order_item", item.name);
+                    promises.push(frappe.model.set_value(my_item.doctype, my_item.name, "sales_order_item", item.name));
                 } else if(!frm.doc.purchase_order) {
                     // Item not there yet and no PO given: Create new row
                     my_item = get_new_child_table_item(frm, item);
@@ -251,7 +274,7 @@ function fetch_items_from_doc(frm, dt, dn) {
 
                 if(my_item.batch) {
                     // Trigger recalculation of item dimensions if batch already given
-                    frappe.model.set_value(my_item.doctype, my_item.name, "batch", my_item.batch);
+                    promises.push(frappe.model.set_value(my_item.doctype, my_item.name, "batch", my_item.batch));
                 } else if(!frm.doc.purchase_order) {
                     // No Batch given: Assign batches by FIFO principle, split quantity over several batches if needed
                     // (Except if PO given - in that case we only want to ship batches from that PO)
@@ -275,14 +298,13 @@ function fetch_items_from_doc(frm, dt, dn) {
                                 my_item.quantity = batches[0].qty;
                                 my_item.uom = batches[0].uom; // TODO - adapt rate to new UOM here if needed
                                 my_item.amount = my_item.rate * batches[0].qty;
-                                frappe.model.set_value(my_item.doctype, my_item.name, "batch", batches[0].batch_no);
+                                promises.push(frappe.model.set_value(my_item.doctype, my_item.name, "batch", batches[0].batch_no));
                                 for(var i=1; i<batches.length; i++) {
                                     let extra_item = get_new_child_table_item(frm, my_item);
                                     extra_item.quantity = batches[i].qty;
                                     extra_item.uom = batches[i].uom;
                                     extra_item.amount = my_item.rate * batches[i].qty;
-                                    frappe.model.set_value(extra_item.doctype, extra_item.name, "batch", batches[i].batch_no);
-                                    frm.refresh_field("items");
+                                    promises.push(frappe.model.set_value(extra_item.doctype, extra_item.name, "batch", batches[i].batch_no));
                                 }
                             }
                         }
@@ -291,7 +313,12 @@ function fetch_items_from_doc(frm, dt, dn) {
             }
             frappe.show_alert({message: __("Sales order processed. {0} Items were added, {1} updated and {2} ignored (not present in PO)", [added_cnt, updated_cnt, ignored_cnt]), indicator: 'blue'}, 30);
         }
-        frm.refresh_field("items");
+
+        Promise.all(promises).finally(() => {
+            console.log("finally"); // TODO - remove
+            frm.refresh_field("items");
+            frm.fetching_items = false;
+        });
         // NOTE:
         // Even though we use frappe.model.set_value() to set Batch references here, Frappe doesn't fetch linked fields automatically. It would be possible to trigger this as follows:
         //   frm.refresh_field("items");

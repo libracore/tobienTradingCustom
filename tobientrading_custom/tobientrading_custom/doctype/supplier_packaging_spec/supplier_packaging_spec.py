@@ -36,7 +36,7 @@ def get_pallet_details(pallet_length, pallet_width, pallet_base_height, pallet_m
 @frappe.whitelist()
 def get_pallet_details_for_batch(batch, qty, customer_max_pallet_height=0):
     batch_doc = frappe.get_doc("Batch", batch)
-    customer_max_pallet_height = int(customer_max_pallet_height)
+    customer_max_pallet_height = int(customer_max_pallet_height or 0)
     if customer_max_pallet_height == 0:
         customer_max_pallet_height = batch_doc.pallet_max_height
     max_pallet_height = min(batch_doc.pallet_max_height, customer_max_pallet_height)
