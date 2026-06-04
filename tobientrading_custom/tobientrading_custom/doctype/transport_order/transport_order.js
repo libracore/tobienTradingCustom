@@ -19,6 +19,9 @@ frappe.ui.form.on('Transport Order', {
             };
         });
     },
+    validate(frm) {
+        check_allowed_pallet_types(frm);
+    },
     loading_address(frm) {
         if(frm.doc.loading_address) {
             fetch_loading_address_details(frm);
