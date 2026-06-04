@@ -64,7 +64,6 @@ Gross weight per pallet: ${(pal.pallet_gross_weight || 0)} kg`;
     },
     customer_max_pallet_height(frm) {
         if(!frm.fetching_items && frm.doc.sales_order == frm.fields_dict.sales_order.input.value) {
-            console.log('HeightX'); //TODO remove
             for(i of frm.doc.items) {
                 // Recalculate for ALL items, as we cannot know which ones were previously and which ones are now affected by the max height
                 calculate_item_dimensions(frm, i.doctype, i.name);
@@ -73,16 +72,7 @@ Gross weight per pallet: ${(pal.pallet_gross_weight || 0)} kg`;
     },
     customer_pallet_types(frm) {
         if(!frm.fetching_items && frm.doc.sales_order == frm.fields_dict.sales_order.input.value) {
-            console.log('PallTX'); //TODO remove
-            let allowed_types = frm.doc.customer_pallet_types.map(t => t.pallet_type);
-            if(allowed_types.length > 0) {
-                for(i of frm.doc.items) {
-                    if(!allowed_types.includes(i.pallet_type)) {
-                        // TODO - what to do here? we have to repack to a different pallet type, right? perhaps just show a warning now. likely it's enough to handle this at validate/save time.
-                        //calculate_item_dimensions(frm, i.doctype, i.name);
-                    }
-                }
-            }
+            check_allowed_pallet_types(frm);
         }
     }
 });
@@ -91,25 +81,31 @@ Gross weight per pallet: ${(pal.pallet_gross_weight || 0)} kg`;
 frappe.ui.form.on('Transport Table Item', {
     // items_add: probably nothing to do, usually item is empty when being added
     items_remove(frm, cdt, cdn) {
-        console.log("AddX"); // TODO remove me
         generate_pallets_list(frm);
     },
     item_code(frm, cdt, cdn) {
-        console.log("ItemX"); // TODO remove me
         calculate_item_dimensions(frm, cdt, cdn);
     },
     uom(frm, cdt, cdn) {
-        console.log("UomX"); // TODO remove me
         calculate_item_dimensions(frm, cdt, cdn);
     },
     batch(frm, cdt, cdn) {
-        console.log("BatchX"); // TODO remove me
-        calculate_item_dimensions(frm, cdt, cdn);
+        // Override pallet type when selecting a new Batch
+        calculate_item_dimensions(frm, cdt, cdn, true);
     },
     quantity(frm, cdt, cdn) {
-        console.log("QtyX"); // TODO remove me
+        frappe.model.set_value(cdt, cdn, "amount", locals[cdt][cdn].rate * locals[cdt][cdn].quantity);
         calculate_item_dimensions(frm, cdt, cdn);
     },
+    pallet_type(frm, cdt, cdn) {
+        // No need to run check_allowed_pallet_types() here as that check is included in calculate_item_dimensions()
+        if(locals[cdt][cdn].dimensions_calculated !== false) {
+            calculate_item_dimensions(frm, cdt, cdn);
+        }
+    },
+    rate(frm, cdt, cdn) {
+        frappe.model.set_value(cdt, cdn, "amount", locals[cdt][cdn].rate * locals[cdt][cdn].quantity);
+    }
 });
 
 
@@ -236,14 +232,15 @@ function fetch_items_from_doc(frm, dt, dn) {
 
                 if(new_item && new_item.batch) {
                     // Trigger recalculation of item dimensions if batch already given
-                    promises.push(frappe.model.set_value(new_item.doctype, new_item.name, "batch", new_item.batch));
-                } else if(new_item) {
+                    calculate_item_dimensions(frm, new_item.doctype, new_item.name);
+                } else if(new_item && !new_item.batch) {
                     // If no Batch is given in the reference doc, check if a matching batch by the name of the PO (-Item) exists
                     let find_matching_batch = frappe.db.get_value("Batch", {name: ['IN',[ref_doc.name,ref_doc.name+'-'+item.idx]], item: new_item.item_code}, "name");
                     promises.push(find_matching_batch);
                     find_matching_batch.then(r => {
                         if(r.message && r.message.name) {
-                            promises.push(frappe.model.set_value(new_item.doctype, new_item.name, "batch", r.message.name));
+                            new_item.batch = r.message.name;
+                            calculate_item_dimensions(frm, new_item.doctype, new_item.name);
                             frappe.show_alert({message: __("Row #{0}: Batch not linked in PO. Matching batch '{1}' found.", [new_item.idx, r.message.name]), indicator: 'blue'}, 30);
                         }
                         else {
@@ -273,6 +270,7 @@ function fetch_items_from_doc(frm, dt, dn) {
                     if(my_item) {
                         added_cnt++;
                     } else {
+                        ignored_cnt++;
                         continue;
                     }
                 } else {
@@ -282,7 +280,7 @@ function fetch_items_from_doc(frm, dt, dn) {
 
                 if(my_item.batch) {
                     // Trigger recalculation of item dimensions if batch already given
-                    promises.push(frappe.model.set_value(my_item.doctype, my_item.name, "batch", my_item.batch));
+                    calculate_item_dimensions(frm, new_item.doctype, new_item.name);
                 } else if(!frm.doc.purchase_order) {
                     // No Batch given: Assign batches by FIFO principle, split quantity over several batches if needed
                     // (Except if PO given - in that case we only want to ship batches from that PO)
@@ -312,18 +310,18 @@ function fetch_items_from_doc(frm, dt, dn) {
                                     extra_item.quantity = batches[i].qty;
                                     extra_item.uom = batches[i].uom;
                                     extra_item.amount = my_item.rate * batches[i].qty;
-                                    promises.push(frappe.model.set_value(extra_item.doctype, extra_item.name, "batch", batches[i].batch_no));
+                                    extra_item.batch = batches[i].batch_no;
+                                    calculate_item_dimensions(frm, extra_item.doctype, extra_item.name);
                                 }
                             }
                         }
                     });
                 }
             }
-            frappe.show_alert({message: __("Sales order processed. {0} Items were added, {1} updated and {2} ignored (not present in PO)", [added_cnt, updated_cnt, ignored_cnt]), indicator: 'blue'}, 30);
+            frappe.show_alert({message: __("Sales order processed. {0} Items were added, {1} updated and {2} ignored (already shipped or not present in PO)", [added_cnt, updated_cnt, ignored_cnt]), indicator: 'blue'}, 30);
         }
 
         Promise.all(promises).finally(() => {
-            console.log("finally"); // TODO - remove
             frm.refresh_field("items");
             frm.fetching_items = false;
         });
@@ -339,13 +337,16 @@ function fetch_items_from_doc(frm, dt, dn) {
 }
 
 // Update pallet details in line items when either the item/batch/qty or customer specs are changed
-function calculate_item_dimensions(frm, cdt, cdn) {
+function calculate_item_dimensions(frm, cdt, cdn, override_pallet_type=false) {
     let item_fields = [
-        'pallet_length', 'pallet_width', 'pallet_base_height', 'pallet_tare',
         'num_full_pallets', 'full_pallet_height', 'full_pallet_net_weight', 'full_pallet_gross_weight',
         'has_rest_pallet', 'rest_pallet_height',  'rest_pallet_net_weight', 'rest_pallet_gross_weight',
         'shipment_net_weight', 'shipment_gross_weight'
     ];
+    if(override_pallet_type || !locals[cdt][cdn].pallet_type) {
+        // Load pallet specs from Batch unless a pallet type is specified
+        item_fields = ['pallet_type', 'pallet_length', 'pallet_width', 'pallet_base_height', 'pallet_tare'].concat(item_fields);
+    }
     let row = locals[cdt][cdn];
     row.dimensions_calculated = false;
     if(!row.batch) {
@@ -368,19 +369,23 @@ function calculate_item_dimensions(frm, cdt, cdn) {
             batch: row.batch,
             qty: row.quantity,
             customer_max_pallet_height: frm.doc.customer_max_pallet_height,
+            custom_pallet_type: override_pallet_type ? '' : locals[cdt][cdn].pallet_type
         },
         callback: function(r) {
             let pallet_details = r.message;
+            let model_promises =  [];
             item_fields.forEach(field => {
-                frappe.model.set_value(cdt, cdn, field, pallet_details[field]);
+                model_promises.push(frappe.model.set_value(cdt, cdn, field, pallet_details[field]));
             });
             if(customer_pallet_types.length > 0 && pallet_details.pallet_type && !customer_pallet_types.includes(pallet_details.pallet_type)) {
                 frappe.show_alert({message: __("Row #{0}: Pallet type '{1}' is not accepted by the customer", [row.idx, pallet_details.pallet_type]), indicator: 'red'}, 30);
             } else {
                 //frappe.show_alert({message: __("Row #{0}: Updated pallet details", [row.idx]), indicator: 'blue'}, 30);
             }
-            row.dimensions_calculated = true;
-            generate_pallets_list_when_ready(frm);
+            Promise.all(model_promises).then(() => {
+                row.dimensions_calculated = true;
+                generate_pallets_list_when_ready(frm);
+            });
         }
     });
 }
@@ -622,4 +627,27 @@ function get_new_child_table_item(frm, item, ignore_zero_qty = false) {
         new_item.sales_order_item = item.name;
     }
     return new_item;
+}
+
+
+function check_allowed_pallet_types(frm, idx=0) {
+    let allowed_types = frm.doc.customer_pallet_types.map(t => t.pallet_type);
+    let illegal_types = new Set();
+    if(allowed_types.length > 0) {
+        let scope = frm.doc.items;
+        if(idx){
+            scope = [scope[idx-1]];
+        }
+        for(i of scope) {
+            if(!allowed_types.includes(i.pallet_type)) {
+                illegal_types.add(i.pallet_type);
+                // TODO: Possibly auto-repack to a suitable pallet type here in the future?
+            }
+        }
+        if(illegal_types.size > 0) {
+            let types_str = Array.from(illegal_types).join(", ");
+            frappe.show_alert({message: __("The following pallet types are not accepted by the customer and must be repacked: {0}", [types_str]), indicator: 'red'}, 30);
+            frappe.validated = false;
+        }
+    }
 }

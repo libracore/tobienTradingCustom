@@ -34,27 +34,39 @@ def get_pallet_details(pallet_length, pallet_width, pallet_base_height, pallet_m
 
 
 @frappe.whitelist()
-def get_pallet_details_for_batch(batch, qty, customer_max_pallet_height=0):
+def get_pallet_details_for_batch(batch, qty, customer_max_pallet_height=0, custom_pallet_type=None):
     batch_doc = frappe.get_doc("Batch", batch)
     customer_max_pallet_height = int(customer_max_pallet_height or 0)
     if customer_max_pallet_height == 0:
         customer_max_pallet_height = batch_doc.pallet_max_height
     max_pallet_height = min(batch_doc.pallet_max_height, customer_max_pallet_height)
-    details = frappe._dict(get_pallet_details(
-        batch_doc.pallet_length,
-        batch_doc.pallet_width,
-        batch_doc.pallet_base_height,
-        max_pallet_height,
-        batch_doc.package_length,
-        batch_doc.package_width,
-        batch_doc.package_height
-    ))
-    # Return basic pallet specs along with the calculations as these aren't fetched automatically from Batch
-    details.pallet_type = batch_doc.pallet_type
-    details.pallet_length = batch_doc.pallet_length
-    details.pallet_width = batch_doc.pallet_width
-    details.pallet_base_height = batch_doc.pallet_base_height
-    details.pallet_tare = batch_doc.pallet_tare
+    if custom_pallet_type and custom_pallet_type != batch_doc.pallet_type:
+        pt_doc = frappe.get_doc("Pallet Type", custom_pallet_type)
+        details = frappe._dict(get_pallet_details(
+            pt_doc.length,
+            pt_doc.width,
+            pt_doc.height,
+            max_pallet_height,
+            batch_doc.package_length,
+            batch_doc.package_width,
+            batch_doc.package_height
+        ))
+    else:
+        details = frappe._dict(get_pallet_details(
+            batch_doc.pallet_length,
+            batch_doc.pallet_width,
+            batch_doc.pallet_base_height,
+            max_pallet_height,
+            batch_doc.package_length,
+            batch_doc.package_width,
+            batch_doc.package_height
+        ))
+        # Return basic pallet specs along with the calculations as these aren't fetched automatically from Batch
+        details.pallet_type = batch_doc.pallet_type
+        details.pallet_length = batch_doc.pallet_length
+        details.pallet_width = batch_doc.pallet_width
+        details.pallet_base_height = batch_doc.pallet_base_height
+        details.pallet_tare = batch_doc.pallet_tare
     # Calculate extra details from Batch specs and quantity
     details.num_packages = ceil(float(qty) / batch_doc.package_weight) if batch_doc.package_weight > 0 else 0
     details.num_full_pallets = floor(details.num_packages / details.packages_per_pallet) if details.packages_per_pallet > 0 else 0
