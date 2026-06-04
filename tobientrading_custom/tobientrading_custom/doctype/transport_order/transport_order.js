@@ -98,14 +98,18 @@ frappe.ui.form.on('Transport Table Item', {
         console.log("ItemX"); // TODO remove me
         calculate_item_dimensions(frm, cdt, cdn);
     },
+    uom(frm, cdt, cdn) {
+        console.log("UomX"); // TODO remove me
+        calculate_item_dimensions(frm, cdt, cdn);
+    },
     batch(frm, cdt, cdn) {
         console.log("BatchX"); // TODO remove me
         calculate_item_dimensions(frm, cdt, cdn);
     },
-    qty(frm, cdt, cdn) {
+    quantity(frm, cdt, cdn) {
         console.log("QtyX"); // TODO remove me
         calculate_item_dimensions(frm, cdt, cdn);
-    }
+    },
 });
 
 
@@ -230,10 +234,10 @@ function fetch_items_from_doc(frm, dt, dn) {
             for(var item of ref_doc.items) {
                 let new_item = get_new_child_table_item(frm, item);
 
-                if(new_item.batch) {
+                if(new_item && new_item.batch) {
                     // Trigger recalculation of item dimensions if batch already given
                     promises.push(frappe.model.set_value(new_item.doctype, new_item.name, "batch", new_item.batch));
-                } else {
+                } else if(new_item) {
                     // If no Batch is given in the reference doc, check if a matching batch by the name of the PO (-Item) exists
                     let find_matching_batch = frappe.db.get_value("Batch", {name: ['IN',[ref_doc.name,ref_doc.name+'-'+item.idx]], item: new_item.item_code}, "name");
                     promises.push(find_matching_batch);
@@ -266,7 +270,11 @@ function fetch_items_from_doc(frm, dt, dn) {
                 } else if(!frm.doc.purchase_order) {
                     // Item not there yet and no PO given: Create new row
                     my_item = get_new_child_table_item(frm, item);
-                    added_cnt++;
+                    if(my_item) {
+                        added_cnt++;
+                    } else {
+                        continue;
+                    }
                 } else {
                     ignored_cnt++;
                     continue;
@@ -300,7 +308,7 @@ function fetch_items_from_doc(frm, dt, dn) {
                                 my_item.amount = my_item.rate * batches[0].qty;
                                 promises.push(frappe.model.set_value(my_item.doctype, my_item.name, "batch", batches[0].batch_no));
                                 for(var i=1; i<batches.length; i++) {
-                                    let extra_item = get_new_child_table_item(frm, my_item);
+                                    let extra_item = get_new_child_table_item(frm, my_item, true);
                                     extra_item.quantity = batches[i].qty;
                                     extra_item.uom = batches[i].uom;
                                     extra_item.amount = my_item.rate * batches[i].qty;
@@ -347,8 +355,11 @@ function calculate_item_dimensions(frm, cdt, cdn) {
     }
     let customer_pallet_types = frm.doc.customer_pallet_types.map(t => t.pallet_type);
 
+    if(!row.quantity) {
+        return; // Quantity is mandatory, so we can fail silently here
+    }
     if(row.uom != 'kg') {
-        frappe.show_alert({message: __("Row #{0}: Unsupported UOM for pallet calculations: {1}", [row.idx, row.uom]), indicator: 'orange'}, 30);
+        frappe.show_alert({message: __("Row #{0}: Unsupported UOM for pallet calculations: {1}", [row.idx, row.uom||'None']), indicator: 'orange'}, 30);
         return;
     }
     frappe.call({
@@ -590,15 +601,22 @@ function pack_into_bins(items, B, H) {
 
 
 // Create a child table item from a SO-Item or PO-Item dataset
-function get_new_child_table_item(frm, item) {
+function get_new_child_table_item(frm, item, ignore_zero_qty = false) {
+    // Deduct quantity already received/delivered (depending on source doctype)
+    // => See erpnext.selling.doctype.sales_order.sales_order.make_delivery_note
+    let qty = item.qty - (item.received_qty || 0) - (item.delivered_qty || 0);
+    if(qty == 0 && !ignore_zero_qty) {
+        return false;
+    }
     let new_item = frm.add_child("items");
     new_item.item_code = item.item_code;
     new_item.required_by = item.required_by;
     new_item.item_name = item.item_name;
-    new_item.quantity = item.qty;
+    new_item.quantity = qty;
     new_item.uom = item.uom;
     new_item.rate = item.rate;
-    new_item.amount = item.amount;
+    // Calculate amount to match the quantity
+    new_item.amount = new_item.rate * new_item.quantity;
     new_item.batch = item.batch_no;
     if(item.doctype == "Sales Order Item") {
         new_item.sales_order_item = item.name;
