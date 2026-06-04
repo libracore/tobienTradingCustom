@@ -10,7 +10,8 @@
   "item_name",
   "column_break_ubtd",
   "nominal_package_weight",
-  "batch_specific_package_weight"
+  "batch_specific_package_weight",
+  "nominal_net_weight_per_pallet"
  ],
  "fields": [
   {
@@ -46,13 +47,20 @@
   {
    "fieldname": "column_break_ubtd",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "nominal_net_weight_per_pallet",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Nominal net weight per pallet [kg]",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-04-27 08:04:23.575932",
+ "modified": "2026-06-04 12:01:39.404640",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Supplier Packaging Item Assignment",

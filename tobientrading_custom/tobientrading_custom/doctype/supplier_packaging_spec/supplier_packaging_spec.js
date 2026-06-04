@@ -34,6 +34,12 @@ frappe.ui.form.on("Supplier Packaging Spec", {
     },
 });
 
+frappe.ui.form.on("Supplier Packaging Item Assignment", {
+    nominal_package_weight(frm, cdt, cdn) {
+        update_pallet_net_weights(frm, locals[cdt][cdn].idx);
+    },
+});
+
 
 function update_calculations(frm) {
 
@@ -64,6 +70,7 @@ function update_calculations(frm) {
                 frm.set_value("layers_per_pallet", pallet_details.layers_per_pallet);
                 frm.set_value("packages_per_pallet", pallet_details.packages_per_pallet);
                 update_description(frm);
+                update_pallet_net_weights(frm);
             }
         });
     }
@@ -74,4 +81,14 @@ function update_description(frm) {
     // e.g. "SUP-00043 - Europallet with 5 layers of 8 Carton with Inliner 40x30x35cm"
     let description = `${frm.doc.supplier} - ${frm.doc.pallet_type} with ${frm.doc.layers_per_pallet} layers of ${frm.doc.packaging_type} ${frm.doc.package_length}×${frm.doc.package_width}×${frm.doc.package_height} cm`;
     frm.set_value("description", description);
+}
+
+function update_pallet_net_weights(frm, idx=0){
+    let rows = frm.doc.items;
+    if(idx) {
+        rows = [rows[idx-1]];
+    }
+    for(r of rows) {
+        frappe.model.set_value(r.doctype, r.name, "nominal_net_weight_per_pallet", r.nominal_package_weight * frm.doc.packages_per_pallet);
+    }
 }

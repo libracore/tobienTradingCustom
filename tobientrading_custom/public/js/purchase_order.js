@@ -85,8 +85,11 @@ frappe.ui.form.on('Purchase Order Item', {
                 }
             });
         }
-    }
+    },
 
+    package_weight(frm, cdt, cdn) {
+        update_pallet_weight(frm, cdt, cdn);
+    }
 });
 
 function fetch_tax_category(frm) {
@@ -100,6 +103,14 @@ function fetch_tax_category(frm) {
         "callback": function(response) {
             var address = response.message;
             frm.set_value("tax_category", address.tax_category_purchase);
+        }
+    });
+}
+
+function update_pallet_weight(frm, cdt, cdn) {
+    frappe.db.get_value("Supplier Packaging Spec", locals[cdt][cdn].packaging_spec, "packages_per_pallet").then(r => {
+        if(r.message) {
+            frappe.model.set_value(cdt, cdn, "net_weight_per_pallet", r.message.packages_per_pallet * locals[cdt][cdn].package_weight);
         }
     });
 }
