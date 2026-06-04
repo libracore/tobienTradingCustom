@@ -41,7 +41,10 @@ frappe.ui.form.on('Purchase Order', {
         });
         frm.set_query('packaging_spec', "items", function(doc, cdt, cdn) {
             return {
-                filters: { supplier: doc.supplier }
+                filters: [
+                    ["supplier","=", cur_frm.doc.supplier],
+                    ["Supplier Packaging Item Assignment", "item", "=", locals[cdt][cdn].item_code]
+                ]
             };
         });
 
@@ -66,6 +69,20 @@ frappe.ui.form.on('Purchase Order', {
 });
 
 frappe.ui.form.on('Purchase Order Item', {
+    item_code(frm, cdt, cdn) {
+        frappe.db.get_list("Supplier Packaging Spec", {
+            filters: [
+                ["supplier","=", frm.doc.supplier],
+                ["Supplier Packaging Item Assignment", "item", "=", locals[cdt][cdn].item_code]
+            ],
+            limit: 2
+        }).then(specs => {
+            if(specs.length == 1) {
+                frappe.model.set_value(cdt, cdn, "packaging_spec", specs[0].name);
+            }
+        });
+    },
+
     packaging_spec(frm, cdt, cdn) {
         if(locals[cdt][cdn].packaging_spec) {
             frappe.db.get_doc("Supplier Packaging Spec", locals[cdt][cdn].packaging_spec).then(pspec_doc => {

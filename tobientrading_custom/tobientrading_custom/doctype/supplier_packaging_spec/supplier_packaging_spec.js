@@ -3,6 +3,18 @@
 
 frappe.ui.form.on("Supplier Packaging Spec", {
     refresh(frm) {
+        frm.set_query('supplier', function(doc) {
+            return {
+                filters: {
+                    'disabled': 0
+                }
+            };
+        });
+        frm.set_query("item", "items", () => {
+            return {
+                filters: {has_variants: 0}
+            };
+        });
     },
 
     pallet_type(frm) {
