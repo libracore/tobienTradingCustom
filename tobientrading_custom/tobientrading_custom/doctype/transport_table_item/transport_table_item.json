@@ -1,0 +1,276 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-03-30 17:35:05.683396",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_name",
+  "batch",
+  "column_break_2",
+  "required_by",
+  "quantity",
+  "uom",
+  "reference_section",
+  "sales_order_item",
+  "mengen_und_einheit_section",
+  "rate",
+  "column_break_qxwz",
+  "amount",
+  "pallet_properties_section",
+  "pallet_type",
+  "pallet_length",
+  "pallet_width",
+  "column_break_ydtu",
+  "pallet_base_height",
+  "pallet_tare",
+  "calculated_dimensions_section",
+  "num_full_pallets",
+  "full_pallet_height",
+  "full_pallet_net_weight",
+  "full_pallet_gross_weight",
+  "column_break_zqlh",
+  "has_rest_pallet",
+  "rest_pallet_height",
+  "rest_pallet_net_weight",
+  "rest_pallet_gross_weight",
+  "total_weight_section",
+  "column_break_zyzh",
+  "shipment_net_weight",
+  "column_break_rwfi",
+  "shipment_gross_weight"
+ ],
+ "fields": [
+  {
+   "columns": 3,
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "batch",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Batch",
+   "options": "Batch",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "required_by",
+   "fieldtype": "Date",
+   "label": "Required by"
+  },
+  {
+   "columns": 1,
+   "fieldname": "quantity",
+   "fieldtype": "Data",
+   "label": "Quantity",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "default": "kg",
+   "fetch_from": "item_code.stock_uom",
+   "fetch_if_empty": 1,
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM",
+   "reqd": 1
+  },
+  {
+   "fieldname": "reference_section",
+   "fieldtype": "Section Break",
+   "label": "Reference"
+  },
+  {
+   "fieldname": "sales_order_item",
+   "fieldtype": "Link",
+   "label": "Sales Order Item",
+   "options": "Sales Order Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "mengen_und_einheit_section",
+   "fieldtype": "Section Break",
+   "label": "Pricing"
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "label": "Rate"
+  },
+  {
+   "fieldname": "column_break_qxwz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pallet_properties_section",
+   "fieldtype": "Section Break",
+   "label": "Pallet Properties"
+  },
+  {
+   "fieldname": "pallet_type",
+   "fieldtype": "Link",
+   "label": "Pallet type",
+   "options": "Pallet Type"
+  },
+  {
+   "fetch_from": "pallet_type.length",
+   "fieldname": "pallet_length",
+   "fieldtype": "Int",
+   "label": "Pallet length [cm]",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "pallet_type.width",
+   "fieldname": "pallet_width",
+   "fieldtype": "Int",
+   "label": "Pallet width [cm]",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_ydtu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "pallet_type.height",
+   "fieldname": "pallet_base_height",
+   "fieldtype": "Int",
+   "label": "Pallet base height [cm]",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "pallet_type.tare",
+   "fieldname": "pallet_tare",
+   "fieldtype": "Float",
+   "label": "Pallet tare [kg]",
+   "read_only": 1
+  },
+  {
+   "fieldname": "calculated_dimensions_section",
+   "fieldtype": "Section Break",
+   "label": "Calculated Dimensions"
+  },
+  {
+   "columns": 1,
+   "fieldname": "num_full_pallets",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Number of full pallets",
+   "read_only": 1
+  },
+  {
+   "fieldname": "full_pallet_height",
+   "fieldtype": "Int",
+   "label": "Full pallets: Height [cm]",
+   "read_only": 1
+  },
+  {
+   "fieldname": "full_pallet_net_weight",
+   "fieldtype": "Float",
+   "label": "Full pallets: Net weight [kg]",
+   "read_only": 1
+  },
+  {
+   "fieldname": "full_pallet_gross_weight",
+   "fieldtype": "Float",
+   "label": "Full pallets: Gross weight [kg]",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_zqlh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "has_rest_pallet",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Has rest pallet",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rest_pallet_height",
+   "fieldtype": "Int",
+   "label": "Rest pallet: Height [cm]",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rest_pallet_net_weight",
+   "fieldtype": "Float",
+   "label": "Rest pallet: Net weight [kg]",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rest_pallet_gross_weight",
+   "fieldtype": "Float",
+   "label": "Rest pallet: Gross weight [kg]",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_weight_section",
+   "fieldtype": "Section Break",
+   "label": "Total Weight"
+  },
+  {
+   "fieldname": "column_break_zyzh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 2,
+   "fieldname": "shipment_net_weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Entire shipment: Net weight [kg]",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_rwfi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "shipment_gross_weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Entire shipment: Gross weight [kg]",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-06-08 14:17:45.012760",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Transport Table Item",
+ "owner": "m.widmann@widmanndesign.net",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
