@@ -213,6 +213,7 @@ def get_batch_info(item_code):
             SELECT `item_code`, IFNULL(`batch_no`, 'None') AS `batch_no`, `actual_qty`, `stock_uom`, `posting_date`
             FROM `tabStock Ledger Entry`
             WHERE `item_code` = %(item_code)s
+              AND `is_cancelled` = 0
               AND (`serial_and_batch_bundle` IS NULL OR `serial_and_batch_bundle` = '')
 
             UNION ALL
@@ -222,6 +223,7 @@ def get_batch_info(item_code):
             FROM `tabStock Ledger Entry` AS `sle`
             INNER JOIN `tabSerial and Batch Entry` AS `sbe` ON `sbe`.`parent` = `sle`.`serial_and_batch_bundle`
             WHERE `sle`.`item_code` = %(item_code)s
+              AND `sle`.`is_cancelled` = 0
               AND `sle`.`serial_and_batch_bundle` IS NOT NULL AND `sle`.`serial_and_batch_bundle` != ''
           ) AS `ledger`
           GROUP BY `batch_no`

@@ -310,13 +310,13 @@ function fetch_items_from_doc(frm, dt, dn) {
                             if(!r.message || !r.message.batches){
                                 return;
                             }
-                            if(r.message.status != 'OK') {
-                                frappe.show_alert({message: __("Row #{0}: "+r.message.status, [my_item.idx]), indicator: 'orange'}, 30);
-                            }
                             let batches = r.message.batches;
                             if(batches.length == 0) {
                                 frappe.show_alert({message: __("Row #{0}: No matching batches in stock", [my_item.idx]), indicator: 'red'}, 30);
                             } else {
+                                if(r.message.status != 'OK') {
+                                    frappe.show_alert({message: __("Row #{0}: "+r.message.status, [my_item.idx]), indicator: 'orange'}, 30);
+                                }
                                 my_item.quantity = batches[0].qty;
                                 my_item.uom = batches[0].uom; // TODO - adapt rate to new UOM here if needed
                                 my_item.amount = my_item.rate * batches[0].qty;
