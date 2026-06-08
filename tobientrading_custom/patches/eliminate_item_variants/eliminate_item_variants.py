@@ -13,6 +13,10 @@
 #
 # "In stock" = SUM of `tabBin.actual_qty` > 0.
 #
+# The variant name suffix (e.g. "-25") is a package weight in kg. Before a
+# variant's batches are relabelled onto the template, that weight is written into
+# the `package_weight` field of all of the variant's batches.
+#
 # History is moved by re-pointing every "Item" link from the variant(s) to the
 # template DIRECTLY IN THE DATABASE. We deliberately do NOT use
 # `frappe.rename_doc(..., merge=True)`: that triggers a stock valuation repost
@@ -36,6 +40,7 @@
 # back and reported) instead of being silently orphaned.
 
 import json
+import re
 
 import frappe
 
@@ -67,6 +72,7 @@ def execute():
     converted_empty = []
     skipped_blocked = []
     failed = []
+    weight_stats = {"batches": 0, "unparseable": []}
 
     for template in templates:
         variants = frappe.get_all("Item", filters={"variant_of": template}, pluck="name")
@@ -94,6 +100,10 @@ def execute():
             len(variants), template, ", ".join(variants)))
         try:
             for variant in variants:
+                # the variant name suffix (e.g. "-25") is the package weight in
+                # kg -> store it on all the variant's batches before they are
+                # relabelled onto the template
+                tag_package_weight(template, variant, weight_stats)
                 reassign_item_links(link_fields, variant, template)
             convert_template_to_item(template)
             merge_stock(template, variants)
@@ -108,7 +118,7 @@ def execute():
             failed.append((template, list(variants), str(err)))
             print("   ! FAILED for '{0}': {1}".format(template, err))
 
-    _print_summary(converted, converted_empty, skipped_blocked, failed)
+    _print_summary(converted, converted_empty, skipped_blocked, failed, weight_stats)
 
 
 # ----------------------------------------------------------------------------- helpers
@@ -162,6 +172,37 @@ def reassign_item_links(link_fields, variant, template):
                 {"template": template, "variant": variant})
         except Exception as err:
             print("   ! could not move {0}.{1}: {2}".format(doctype, fieldname, err))
+
+
+def package_weight_from_name(template, variant):
+    """The variant name suffix is a package weight in kg, e.g. 'A00450-25' -> 25,
+    'A00xxx-0.5' -> 0.5, 'A00xxx-15-ORGANIC' -> 15. Returns a float or None."""
+    if variant.startswith(template + "-"):
+        suffix = variant[len(template) + 1:]
+    else:
+        suffix = variant.rsplit("-", 1)[-1]
+    match = re.match(r"\s*(\d+(?:\.\d+)?)", suffix)
+    return float(match.group(1)) if match else None
+
+
+def tag_package_weight(template, variant, weight_stats):
+    """Write the package weight (from the variant name) onto ALL of the variant's
+    batches (in stock or not - this enriches the historical data). Must run
+    BEFORE the batches are relabelled onto the template (while `Batch.item` still
+    equals the variant)."""
+    weight = package_weight_from_name(template, variant)
+    if weight is None:
+        weight_stats["unparseable"].append(variant)
+        return
+
+    batches = frappe.get_all("Batch", filters={"item": variant}, pluck="name")
+    if not batches:
+        return
+    frappe.db.sql(
+        "UPDATE `tabBatch` SET package_weight = %s WHERE name IN ({ph})".format(
+            ph=", ".join(["%s"] * len(batches))),
+        [weight] + batches)
+    weight_stats["batches"] += len(batches)
 
 
 def convert_template_to_item(template):
@@ -327,7 +368,7 @@ def rebuild_bins(template, variants):
                   projected=projected, name=bin_doc.name))
 
 
-def _print_summary(converted, converted_empty, skipped_blocked, failed):
+def _print_summary(converted, converted_empty, skipped_blocked, failed, weight_stats):
     print("\n--- Eliminate item variants: summary ---")
     print("Converted templates (variants merged in): {0}".format(len(converted)))
     for template, variants in converted:
@@ -343,4 +384,8 @@ def _print_summary(converted, converted_empty, skipped_blocked, failed):
         print("Failed (rolled back, handle manually): {0}".format(len(failed)))
         for template, variants, err in failed:
             print("   {0}  <=  {1}  :: {2}".format(template, ", ".join(variants), err))
+    print("Package weight written onto {0} batch(es).".format(weight_stats["batches"]))
+    if weight_stats["unparseable"]:
+        print("Could not read a package weight from {0} variant name(s): {1}".format(
+            len(weight_stats["unparseable"]), ", ".join(weight_stats["unparseable"])))
     print("Eliminate item variants done. 🚀")
