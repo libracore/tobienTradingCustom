@@ -195,6 +195,8 @@ def create_batches_from_po(po_no):
 
 @frappe.whitelist()
 def get_batch_info(item_code):
+    # NOTE: Newer Stock Ledger Entries store their batch via a "Serial and Batch
+    #       Bundle" instead of the SLE's own `batch_no` column (which is then NULL)
     sql_query = """
         SELECT
           `batches`.`item_code`,
@@ -205,15 +207,29 @@ def get_batch_info(item_code):
           `tabBatch`.`pallet_length`, `tabBatch`.`pallet_width`, `tabBatch`.`pallet_base_height`, `tabBatch`.`pallet_max_height`,
           `tabBatch`.`package_length`, `tabBatch`.`package_width`, `tabBatch`.`package_height`, `tabBatch`.`package_weight`
         FROM (
-          SELECT `item_code`, IFNULL(`batch_no`, 'None') AS `batch_no`, SUM(`actual_qty`) AS `qty`, `stock_uom`, MIN(`posting_date`) AS `first_transaction_date`
-          FROM `tabStock Ledger Entry`
-          WHERE `item_code` = '{item_code}'
+          SELECT `item_code`, `batch_no`, SUM(`actual_qty`) AS `qty`, `stock_uom`, MIN(`posting_date`) AS `first_transaction_date`
+          FROM (
+            -- Legacy / direct entries: batch is stored on the Stock Ledger Entry itself
+            SELECT `item_code`, IFNULL(`batch_no`, 'None') AS `batch_no`, `actual_qty`, `stock_uom`, `posting_date`
+            FROM `tabStock Ledger Entry`
+            WHERE `item_code` = %(item_code)s
+              AND (`serial_and_batch_bundle` IS NULL OR `serial_and_batch_bundle` = '')
+
+            UNION ALL
+
+            -- Bundle entries: batch + (signed) qty live in the Serial and Batch Bundle
+            SELECT `sle`.`item_code`, IFNULL(`sbe`.`batch_no`, 'None') AS `batch_no`, `sbe`.`qty` AS `actual_qty`, `sle`.`stock_uom`, `sle`.`posting_date`
+            FROM `tabStock Ledger Entry` AS `sle`
+            INNER JOIN `tabSerial and Batch Entry` AS `sbe` ON `sbe`.`parent` = `sle`.`serial_and_batch_bundle`
+            WHERE `sle`.`item_code` = %(item_code)s
+              AND `sle`.`serial_and_batch_bundle` IS NOT NULL AND `sle`.`serial_and_batch_bundle` != ''
+          ) AS `ledger`
           GROUP BY `batch_no`
           ORDER BY `first_transaction_date`
         ) AS `batches`
         INNER JOIN `tabBatch` ON `batches`.`batch_no` = `tabBatch`.`name`
-        WHERE `qty` != 0;""".format(item_code=item_code)
-    data = frappe.db.sql(sql_query, as_dict=1)
+        WHERE `qty` != 0;"""
+    data = frappe.db.sql(sql_query, {'item_code': item_code}, as_dict=1)
     for row in data:
         pallet_details = get_pallet_details(row.pallet_length, row.pallet_width, row.pallet_base_height, row.pallet_max_height, row.package_length, row.package_width, row.package_height)
         row.update(pallet_details)
