@@ -7,14 +7,14 @@ frappe.ui.form.on('Transport Order', {
         frm.set_query("purchase_order", function() {
             return {
                 filters: [
-                    ["Purchase Order","status", "in", ["Draft", "To Receive and Bill", "To Bill"]]
+                    ["Purchase Order","status", "in", ["To Receive and Bill", "To Bill"]]
                 ]
             };
         });
         frm.set_query("sales_order", function() {
             return {
                 filters: [
-                    ["Sales Order","status", "in", ["Draft", "To Deliver and Bill", "To Bill"]]
+                    ["Sales Order","status", "in", ["To Deliver and Bill", "To Bill"]]
                 ]
             };
         });
