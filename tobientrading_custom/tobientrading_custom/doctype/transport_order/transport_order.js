@@ -19,6 +19,11 @@ frappe.ui.form.on('Transport Order', {
             };
         });
     },
+    refresh(frm) {
+        if(frm.doc.docstatus == 1 && frm.doc.sales_order) {
+            frm.add_custom_button(__("Lieferschein erstellen"), () => { create_delivery_note(frm); });
+        }
+    },
     validate(frm) {
         check_allowed_pallet_types(frm);
     },
@@ -671,4 +676,22 @@ function check_allowed_pallet_types(frm, idx=0) {
             frappe.validated = false;
         }
     }
+}
+
+
+function create_delivery_note(frm) {
+    frappe.call({
+        method: 'tobientrading_custom.tobientrading_custom.doctype.transport_order.transport_order.create_delivery_note',
+        args: {
+            transport_order: frm.doc.name
+        },
+        freeze: true,
+        freeze_message: __("Creating Delivery Note..."),
+        callback(r) {
+            if(r.message) {
+                frappe.show_alert({message: __("Delivery Note {0} created", [r.message]), indicator: 'green'}, 10);
+                frappe.set_route("Form", "Delivery Note", r.message);
+            }
+        }
+    });
 }
