@@ -35,6 +35,7 @@ def ensure_item_suppliers(spec):
         item_doc = frappe.get_doc("Item", row.item)
         item_doc.append("supplier_items", {
             "supplier": spec.supplier,
+            "full_supplier_name": spec.supplier_name,
             "supplier_part_no": "",
         })
         item_doc.save(ignore_permissions=True)
