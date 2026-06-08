@@ -51,6 +51,12 @@ def get_pallet_details_for_batch(batch, qty, customer_max_pallet_height=0, custo
             batch_doc.package_width,
             batch_doc.package_height
         ))
+        # Return basic pallet specs along with the calculations as these aren't fetched automatically from Batch
+        details.pallet_type = custom_pallet_type
+        details.pallet_length = pt_doc.length
+        details.pallet_width = pt_doc.width
+        details.pallet_base_height = pt_doc.height
+        details.pallet_tare = pt_doc.tare
     else:
         details = frappe._dict(get_pallet_details(
             batch_doc.pallet_length,
@@ -67,6 +73,8 @@ def get_pallet_details_for_batch(batch, qty, customer_max_pallet_height=0, custo
         details.pallet_width = batch_doc.pallet_width
         details.pallet_base_height = batch_doc.pallet_base_height
         details.pallet_tare = batch_doc.pallet_tare
+    details.package_weight = batch_doc.package_weight
+    details.packaging_spec = batch_doc.packaging_spec
     # Calculate extra details from Batch specs and quantity
     details.num_packages = ceil(float(qty) / batch_doc.package_weight) if batch_doc.package_weight > 0 else 0
     details.num_full_pallets = floor(details.num_packages / details.packages_per_pallet) if details.packages_per_pallet > 0 else 0

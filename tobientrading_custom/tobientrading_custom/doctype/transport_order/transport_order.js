@@ -73,6 +73,10 @@ Gross weight per pallet: ${(pal.pallet_gross_weight || 0)} kg`;
             }
         }
     },
+    customer_palletize_by_batch(frm) {
+        // This parameter affects only the consolidated pallets list, not the item table
+        generate_pallets_list(frm);
+    },
     customer_pallet_types(frm) {
         if(!frm.fetching_items && frm.doc.sales_order == frm.fields_dict.sales_order.input.value) {
             check_allowed_pallet_types(frm);
@@ -221,6 +225,10 @@ function fetch_items_from_doc(frm, dt, dn) {
                 });
                 frm.refresh_field("customer_pallet_types");
             });
+        }
+        // palletize_by_batch field: Fetch manually to avoid overwriting on every save
+        if(dt == "Sales Order" && ref_doc.palletize_by_batch) {
+            frm.set_value("customer_palletize_by_batch", ref_doc.palletize_by_batch);
         }
 
         // PO: Clear item table and add items from reference doc. Populate Batch by looking for a batch no matching the PO.
@@ -382,8 +390,9 @@ function calculate_item_dimensions(frm, cdt, cdn, override_pallet_type=false) {
             });
             if(customer_pallet_types.length > 0 && pallet_details.pallet_type && !customer_pallet_types.includes(pallet_details.pallet_type)) {
                 frappe.show_alert({message: __("Row #{0}: Pallet type '{1}' is not accepted by the customer", [row.idx, pallet_details.pallet_type]), indicator: 'red'}, 30);
-            } else {
-                //frappe.show_alert({message: __("Row #{0}: Updated pallet details", [row.idx]), indicator: 'blue'}, 30);
+            } else if(pallet_details.package_weight == 0 || !pallet_details.packaging_spec) {
+                let batch_link = `<a href="/app/batch/${row.batch}">${row.batch}</a>`;
+                frappe.show_alert({message: __("Row #{0}: Batch {1} has incomplete packaging details. Please update the batch, then reselect the sales order to proceed.", [row.idx, batch_link]), indicator: 'orange'}, 30);
             }
             Promise.all(model_promises).then(() => {
                 row.dimensions_calculated = true;
@@ -404,7 +413,6 @@ function generate_pallets_list_when_ready(frm) {
 
 
 function generate_pallets_list(frm) {
-    // TODO - check if mixed-batch / mixed-item pallets are allowed
     frm.set_value("pallets", []);
     let used_items = [];
     let total_full_pallets = 0;
@@ -465,12 +473,22 @@ function generate_pallets_list(frm) {
             rest_item_heights = compatible_rest_items.map(i => i.rest_pallet_height - i.pallet_base_height);
 
             // Pack rest items onto pallets
-            // TODO: For now we just do a 1D optimization of layer heights onto pallets.
-            //       We could use a 3D packing library such as https://github.com/olragon/binpackingjs instead.
-            let rest_pallet_packing = pack_into_bins(rest_item_heights, compatible_rest_items.length, height_limit - item.pallet_base_height);
-            if(!rest_pallet_packing.feasible) {
-                frappe.msgprint(__("Error: No packing found for rest pallets"));
-                continue;
+
+            let rest_pallet_packing;
+            if(!frm.doc.customer_palletize_by_batch) {
+                // Put different items/batches together
+                // TODO: For now we just do a 1D optimization of layer heights onto pallets.
+                //       We could use a 3D packing library such as https://github.com/olragon/binpackingjs instead.
+                rest_pallet_packing = pack_into_bins(rest_item_heights, compatible_rest_items.length, height_limit - item.pallet_base_height);
+                if(!rest_pallet_packing.feasible) {
+                    frappe.msgprint(__("Error: No packing found for rest pallets"));
+                    continue;
+                }
+            } else {
+                // Palletize batches individually => Use a trivial solution (one bin per item)
+                rest_pallet_packing = {
+                    bins: Object.keys(compatible_rest_items)
+                }
             }
 
             // Calculate specs of each rest pallet

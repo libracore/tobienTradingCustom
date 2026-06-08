@@ -40,6 +40,7 @@
   "customer_requirements_section",
   "customer_max_pallet_height",
   "customer_pallet_types",
+  "customer_palletize_by_batch",
   "column_break_vrot",
   "customer_labelling_specs",
   "artikel_section",
@@ -465,13 +466,19 @@
   {
    "fieldname": "section_break_pznu",
    "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "customer_palletize_by_batch",
+   "fieldtype": "Check",
+   "label": "Palletize batches individually"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-13 17:08:11.571645",
+ "modified": "2026-06-08 10:39:25.782249",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Transport Order",
