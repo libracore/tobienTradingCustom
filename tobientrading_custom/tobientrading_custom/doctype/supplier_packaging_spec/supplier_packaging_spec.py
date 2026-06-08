@@ -7,12 +7,37 @@ from frappe.model.rename_doc import rename_doc
 from math import floor, ceil
 
 class SupplierPackagingSpec(Document):
-    pass
+    def on_update(self):
+        ensure_item_suppliers(self)
+
     # Finally not implementing auto-renaming, instead just use a random name, include the supplier in the description and set the description as title field
     #def on_update(self):
     #    name = f"{self.supplier} - {self.description}"
     #    if self.name != name:
     #        rename_doc(doc=self, new=name)
+
+
+def ensure_item_suppliers(spec):
+    """For every item assigned in the packaging spec, make sure an "Item Supplier" entry
+    exists on the Item for the spec's supplier. Missing entries are created with a blank
+    supplier part number."""
+    if not spec.supplier:
+        return
+    for row in spec.items:
+        if not row.item:
+            continue
+        if frappe.db.exists("Item Supplier", {
+            "parenttype": "Item",
+            "parent": row.item,
+            "supplier": spec.supplier,
+        }):
+            continue
+        item_doc = frappe.get_doc("Item", row.item)
+        item_doc.append("supplier_items", {
+            "supplier": spec.supplier,
+            "supplier_part_no": "",
+        })
+        item_doc.save(ignore_permissions=True)
 
 import math
 from dataclasses import dataclass
