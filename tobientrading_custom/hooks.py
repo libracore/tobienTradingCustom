@@ -183,6 +183,19 @@ doc_events = {
 # 	"Task": "tobientrading_custom.task.get_dashboard_data"
 # }
 
+# Allow third-party (Streckengeschaeft) loading/shipping addresses without
+# enabling drop-ship. See overrides/third_party_address.py.
+override_doctype_class = {
+    "Quotation":          "tobientrading_custom.overrides.third_party_address.CustomQuotation",
+    "Sales Order":        "tobientrading_custom.overrides.third_party_address.CustomSalesOrder",
+    "Delivery Note":      "tobientrading_custom.overrides.third_party_address.CustomDeliveryNote",
+    "Sales Invoice":      "tobientrading_custom.overrides.third_party_address.CustomSalesInvoice",
+    "Purchase Order":     "tobientrading_custom.overrides.third_party_address.CustomPurchaseOrder",
+    "Purchase Receipt":   "tobientrading_custom.overrides.third_party_address.CustomPurchaseReceipt",
+    "Purchase Invoice":   "tobientrading_custom.overrides.third_party_address.CustomPurchaseInvoice",
+    "Supplier Quotation": "tobientrading_custom.overrides.third_party_address.CustomSupplierQuotation",
+}
+
 fixtures = [{
     'doctype': 'Print Format',
     'filters': [['name', 'in', [
