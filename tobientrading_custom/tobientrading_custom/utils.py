@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 import json
 import erpnextswiss.erpnextswiss.attach_pdf
 from tobientrading_custom.tobientrading_custom.doctype.supplier_packaging_spec.supplier_packaging_spec import get_pallet_details
@@ -126,47 +127,24 @@ def create_batches_from_po(po_no):
             frappe.throw("Please set 'Country of Origin' for Item " + item.item_code)
 
         try:
-            # Fetch expiry-related settings from Item
-            item_doc = frappe.get_doc("Item", item.item_code)
-            manufacturing_date = today
-            expiry_date = None
-
-            if item_doc.has_expiry_date and item_doc.shelf_life_in_days and item_doc.shelf_life_in_days > 0:
-                expiry_date = frappe.utils.add_days(today, item_doc.shelf_life_in_days)
-            elif item_doc.has_expiry_date and item_doc.shelf_life_in_days == 0:
-                expiry_date = today
-
             # Prepare batch values
             batch_values = frappe._dict({
                 "doctype": "Batch",
                 "item": item.item_code,
                 "batch_id": batch_id,
                 "supplier": po.supplier,
-                "manufacturing_date": manufacturing_date,
+                "manufacturing_date": today,
                 "workflow_state": "Pending",
                 "country_of_origin": country_of_origin
             })
 
+            item_doc = frappe.get_doc("Item", item.item_code)
+            expiry_date = _get_batch_expiry_date(item_doc, today)
             if expiry_date:
                 batch_values.expiry_date = expiry_date
 
             if item.get('packaging_spec'):
-                pspec_doc = frappe.get_doc("Supplier Packaging Spec", item.packaging_spec)
-                batch_values.packaging_spec = item.packaging_spec
-                batch_values.package_weight = item.package_weight
-                batch_values.pallet_type = pspec_doc.pallet_type
-                batch_values.pallet_max_height = pspec_doc.pallet_max_height
-                batch_values.packaging_type = pspec_doc.packaging_type
-                batch_values.package_tare = pspec_doc.package_tare
-                batch_values.package_length = pspec_doc.package_length
-                batch_values.package_width = pspec_doc.package_width
-                batch_values.package_height = pspec_doc.package_height
-
-                pallet_doc = frappe.get_doc("Pallet Type", pspec_doc.pallet_type)
-                batch_values.pallet_tare = pallet_doc.tare
-                batch_values.pallet_length = pallet_doc.length
-                batch_values.pallet_width = pallet_doc.width
-                batch_values.pallet_base_height = pallet_doc.height
+                _apply_packaging_spec_to_batch(batch_values, item.packaging_spec, item.package_weight)
 
             batch = frappe.get_doc(batch_values)
             batch.insert()
@@ -191,6 +169,104 @@ def create_batches_from_po(po_no):
         message_parts.append(f"<br><hr><span style='color: red;'>Skipped existing/failed Batch ID(s): {', '.join(skipped_batches)}</span>")
 
     frappe.response['message'] = "".join(message_parts)
+
+
+def _get_batch_expiry_date(item_doc, reference_date):
+    """Return the batch expiry date for an item, or None if it does not expire."""
+    if not item_doc.has_expiry_date:
+        return None
+    if item_doc.shelf_life_in_days and item_doc.shelf_life_in_days > 0:
+        return frappe.utils.add_days(reference_date, item_doc.shelf_life_in_days)
+    if item_doc.shelf_life_in_days == 0:
+        return reference_date
+    return None
+
+
+def get_next_mo_batch_code():
+    """Return the next free batch id of the format 'MO-######' (6 digits)."""
+    last = frappe.db.sql("""
+        SELECT `batch_id`
+        FROM `tabBatch`
+        WHERE `batch_id` REGEXP '^MO-[0-9]{6}$'
+        ORDER BY CAST(SUBSTRING(`batch_id`, 4) AS UNSIGNED) DESC
+        LIMIT 1
+    """)
+    next_num = (int(last[0][0][3:]) + 1) if last else 1
+    return "MO-{:06d}".format(next_num)
+
+
+def _apply_packaging_spec_to_batch(batch_values, packaging_spec_name, package_weight):
+    """Copy pallet/package details from a Supplier Packaging Spec onto batch_values."""
+    pspec_doc = frappe.get_doc("Supplier Packaging Spec", packaging_spec_name)
+    batch_values.packaging_spec = packaging_spec_name
+    batch_values.package_weight = package_weight
+    # net weight per pallet = packages per pallet * package weight (cf. batch.js)
+    batch_values.net_weight_per_pallet = (pspec_doc.packages_per_pallet or 0) * (package_weight or 0)
+    batch_values.pallet_type = pspec_doc.pallet_type
+    batch_values.pallet_max_height = pspec_doc.pallet_max_height
+    batch_values.packaging_type = pspec_doc.packaging_type
+    batch_values.package_tare = pspec_doc.package_tare
+    batch_values.package_length = pspec_doc.package_length
+    batch_values.package_width = pspec_doc.package_width
+    batch_values.package_height = pspec_doc.package_height
+
+    pallet_doc = frappe.get_doc("Pallet Type", pspec_doc.pallet_type)
+    batch_values.pallet_tare = pallet_doc.tare
+    batch_values.pallet_length = pallet_doc.length
+    batch_values.pallet_width = pallet_doc.width
+    batch_values.pallet_base_height = pallet_doc.height
+
+
+@frappe.whitelist()
+def create_mo_batch(work_order, packaging_spec):
+    """Create a Batch for the manufactured item of a Work Order.
+
+    The batch id is the next free code of the format 'MO-######'. The package
+    weight is taken from the packaging spec's item assignment subtable.
+    """
+    wo = frappe.get_doc("Work Order", work_order)
+
+    if not wo.production_item:
+        frappe.throw(_("No production item set on this Work Order."))
+    if not wo.contract_processing_supplier:
+        frappe.throw(_("Please set the Contract Processing Supplier first."))
+
+    # Resolve the package weight from the spec's item assignment subtable
+    pspec_doc = frappe.get_doc("Supplier Packaging Spec", packaging_spec)
+    assignment = next((a for a in pspec_doc.items if a.item == wo.production_item), None)
+    if not assignment:
+        frappe.throw(_("The packaging spec {0} contains no details for item {1}.").format(
+            packaging_spec, wo.production_item))
+
+    today = frappe.utils.nowdate()
+    batch_id = get_next_mo_batch_code()
+
+    batch_values = frappe._dict({
+        "doctype": "Batch",
+        "item": wo.production_item,
+        "batch_id": batch_id,
+        "supplier": wo.contract_processing_supplier,
+        "manufacturing_date": today,
+        "workflow_state": "Pending",
+    })
+
+    country_of_origin = frappe.db.get_value("Item", wo.production_item, "country_of_origin")
+    if country_of_origin:
+        batch_values.country_of_origin = country_of_origin
+
+    item_doc = frappe.get_doc("Item", wo.production_item)
+    expiry_date = _get_batch_expiry_date(item_doc, today)
+    if expiry_date:
+        batch_values.expiry_date = expiry_date
+
+    _apply_packaging_spec_to_batch(batch_values, packaging_spec, assignment.nominal_package_weight)
+
+    batch = frappe.get_doc(batch_values)
+    batch.insert()
+    frappe.db.commit()
+
+    frappe.response['message'] = _("Batch created: ") + \
+        '<a href="/app/batch/{0}">{0}</a>'.format(batch.name)
 
 
 @frappe.whitelist()
