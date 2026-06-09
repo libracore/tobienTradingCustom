@@ -15,7 +15,10 @@
 #
 # The variant name suffix (e.g. "-25") is a package weight in kg. Before a
 # variant's batches are relabelled onto the template, that weight is written into
-# the `package_weight` field of all of the variant's batches.
+# the `package_weight` field of all of the variant's batches. That field ships as
+# a Customize Form customization (custom/batch.json) which `bench migrate` only
+# syncs AFTER the patches run, so the patch syncs it on demand first (see
+# ensure_batch_package_weight).
 #
 # History is moved by re-pointing every "Item" link from the variant(s) to the
 # template DIRECTLY IN THE DATABASE. We deliberately do NOT use
@@ -72,7 +75,9 @@ def execute():
     converted_empty = []
     skipped_blocked = []
     failed = []
-    weight_stats = {"batches": 0, "unparseable": []}
+    weight_stats = {"batches": 0, "unparseable": [], "enabled": ensure_batch_package_weight()}
+    if not weight_stats["enabled"]:
+        print("WARNING: Batch.package_weight is not available - package weight tagging is skipped.")
 
     for template in templates:
         variants = frappe.get_all("Item", filters={"variant_of": template}, pluck="name")
@@ -190,6 +195,8 @@ def tag_package_weight(template, variant, weight_stats):
     batches (in stock or not - this enriches the historical data). Must run
     BEFORE the batches are relabelled onto the template (while `Batch.item` still
     equals the variant)."""
+    if not weight_stats.get("enabled"):
+        return
     weight = package_weight_from_name(template, variant)
     if weight is None:
         weight_stats["unparseable"].append(variant)
@@ -366,6 +373,23 @@ def rebuild_bins(template, variants):
             WHERE name = %(name)s
         """, dict(values, actual=actual, vrate=valuation_rate, svalue=stock_value,
                   projected=projected, name=bin_doc.name))
+
+
+def ensure_batch_package_weight():
+    """The `package_weight` field on Batch ships as a Customize Form customization
+    (custom/batch.json). `bench migrate` only syncs customizations AFTER the
+    patches run, so on a fresh migrate the column would not yet exist when this
+    patch writes to it. Sync it here on demand. Returns True if the column is
+    available afterwards."""
+    if frappe.db.has_column("Batch", "package_weight"):
+        return True
+    try:
+        from frappe.modules.utils import sync_customizations
+        sync_customizations("tobientrading_custom")
+        frappe.db.commit()
+    except Exception as err:
+        print("   ! could not sync Batch customizations for package_weight: {0}".format(err))
+    return frappe.db.has_column("Batch", "package_weight")
 
 
 def _print_summary(converted, converted_empty, skipped_blocked, failed, weight_stats):
