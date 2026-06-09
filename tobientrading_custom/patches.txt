@@ -6,3 +6,4 @@ tobientrading_custom.patches.migrate_crm_notes_to_comments.migrate_crm_notes_to_
 # run after sync_all() so the app's own DocType schemas are current before we
 # migrate their data
 tobientrading_custom.patches.eliminate_item_variants.eliminate_item_variants
+tobientrading_custom.patches.delete_duplicated_client_scripts.delete_duplicated_client_scripts
