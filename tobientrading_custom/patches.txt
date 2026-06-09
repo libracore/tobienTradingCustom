@@ -7,3 +7,4 @@ tobientrading_custom.patches.migrate_crm_notes_to_comments.migrate_crm_notes_to_
 # migrate their data
 tobientrading_custom.patches.v0_4_0.eliminate_item_variants
 tobientrading_custom.patches.v0_4_0.delete_duplicated_client_scripts
+tobientrading_custom.patches.v0_4_0.delete_deprecated_tds_doctypes
