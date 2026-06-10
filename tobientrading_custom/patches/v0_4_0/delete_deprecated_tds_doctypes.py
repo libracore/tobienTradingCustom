@@ -12,7 +12,6 @@ import frappe
 
 # the SOURCE (deprecated) doctypes from v0_2_0.migrate_tds_childtables.table_map
 DEPRECATED_DOCTYPES = [
-    "Origins",
     "TDS Certificate Table",
     "MSDS Table",
     "Customs Tariff Table",
@@ -27,7 +26,11 @@ DEPRECATED_DOCTYPES = [
     "Heavy Metal Table",
     "Foreign Body Table",
     "Additional Information Table",
+    # Some other stale doctypes (not necessarily TDS related):
     "Country MultiSelect",
+    "Attachment Table",
+    "DE MwSt",
+    "General Information"
 ]
 
 
