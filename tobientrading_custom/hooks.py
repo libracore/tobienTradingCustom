@@ -198,7 +198,8 @@ override_doctype_class = {
 
 jinja = {
     'methods': [
-        "tobientrading_custom.tobientrading_custom.doctype.pallet_type.pallet_type.get_pallet_details_from_type"
+        "tobientrading_custom.tobientrading_custom.doctype.pallet_type.pallet_type.get_pallet_details_from_type",
+        "tobientrading_custom.tobientrading_custom.doctype.supplier_packaging_spec.supplier_packaging_spec.get_pallet_details"
     ]
 }
 
