@@ -80,6 +80,8 @@ def create_delivery_note(transport_order):
             dn_item.warehouse = so_item.warehouse
             dn_item.cost_center = so_item.cost_center
             dn_item.project = so_item.project
+            dn_item.weight_per_unit = so_item.weight_per_unit
+            dn_item.weight_uom = so_item.weight_uom
             # Preserve the description and the tax treatment agreed in the Sales Order,
             # rather than letting get_item_details re-derive them from the Item master.
             dn_item.description = so_item.description
