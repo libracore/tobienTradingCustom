@@ -7,7 +7,6 @@ import frappe
 from frappe import _
 import json
 import erpnextswiss.erpnextswiss.attach_pdf
-from tobientrading_custom.tobientrading_custom.doctype.supplier_packaging_spec.supplier_packaging_spec import get_pallet_details
 
 @frappe.whitelist()
 def apply_origins_to_variants(template_item_code, origins):
@@ -283,7 +282,9 @@ def get_batch_info(item_code):
           `batches`.`stock_uom`,
           `batches`.`first_transaction_date`,
           `tabBatch`.`pallet_length`, `tabBatch`.`pallet_width`, `tabBatch`.`pallet_base_height`, `tabBatch`.`pallet_max_height`,
-          `tabBatch`.`package_length`, `tabBatch`.`package_width`, `tabBatch`.`package_height`, `tabBatch`.`package_weight`
+          `tabBatch`.`package_length`, `tabBatch`.`package_width`, `tabBatch`.`package_height`, `tabBatch`.`package_weight`,
+          `tabBatch`.`packages_per_layer`, `tabBatch`.`layers_per_pallet`,
+          `tabBatch`.`packages_per_layer` * `tabBatch`.`layers_per_pallet` AS `packages_per_pallet`
         FROM (
           SELECT `item_code`, `batch_no`, SUM(`actual_qty`) AS `qty`, `stock_uom`, MIN(`posting_date`) AS `first_transaction_date`
           FROM (
@@ -310,9 +311,6 @@ def get_batch_info(item_code):
         INNER JOIN `tabBatch` ON `batches`.`batch_no` = `tabBatch`.`name`
         WHERE `qty` != 0;"""
     data = frappe.db.sql(sql_query, {'item_code': item_code}, as_dict=1)
-    for row in data:
-        pallet_details = get_pallet_details(row.pallet_length, row.pallet_width, row.pallet_base_height, row.pallet_max_height, row.package_length, row.package_width, row.package_height)
-        row.update(pallet_details)
     return data
 
 
