@@ -242,36 +242,42 @@ function fetch_items_from_doc(frm, dt, dn) {
         if(dt == "Purchase Order" || !frm.doc.purchase_order) {
             frm.set_value("items",[]);
         }
+
+        let added_cnt = 0;
+        let ignored_cnt = 0;
         if(dt == "Purchase Order") {
             for(var item of ref_doc.items) {
                 let new_item = get_new_child_table_item(frm, item);
 
-                if(new_item && new_item.batch) {
-                    // Trigger recalculation of item dimensions if batch already given
-                    calculate_item_dimensions(frm, new_item.doctype, new_item.name);
-                } else if(new_item && !new_item.batch) {
-                    // If no Batch is given in the reference doc, check if a matching batch by the name of the PO (-Item) exists
-                    let find_matching_batch = frappe.db.get_value("Batch", {name: ['IN',[ref_doc.name,ref_doc.name+'-'+item.idx]], item: new_item.item_code}, "name");
-                    promises.push(find_matching_batch);
-                    find_matching_batch.then(r => {
-                        if(r.message && r.message.name) {
-                            new_item.batch = r.message.name;
-                            calculate_item_dimensions(frm, new_item.doctype, new_item.name);
-                            frappe.show_alert({message: __("Row #{0}: Batch not linked in PO. Matching batch '{1}' found.", [new_item.idx, r.message.name]), indicator: 'blue'}, 30);
-                        }
-                        else {
-                            frappe.show_alert({message: __("Row #{0}: Batch not linked in PO and no matching Batch found. Please set Batch in PO to proceed.", [new_item.idx]), indicator: 'red'}, 30);
-                        }
-                    });
+                if(new_item){
+                    added_cnt++;
+                    if(new_item.batch) {
+                        // Trigger recalculation of item dimensions if batch already given
+                        calculate_item_dimensions(frm, new_item.doctype, new_item.name);
+                    } else {
+                        // If no Batch is given in the reference doc, check if a matching batch by the name of the PO (-Item) exists
+                        let find_matching_batch = frappe.db.get_value("Batch", {name: ['IN',[ref_doc.name,ref_doc.name+'-'+item.idx]], item: new_item.item_code}, "name");
+                        promises.push(find_matching_batch);
+                        find_matching_batch.then(r => {
+                            if(r.message && r.message.name) {
+                                new_item.batch = r.message.name;
+                                calculate_item_dimensions(frm, new_item.doctype, new_item.name);
+                                frappe.show_alert({message: __("Row #{0}: Batch not linked in PO. Matching batch '{1}' found.", [new_item.idx, r.message.name]), indicator: 'blue'}, 30);
+                            }
+                            else {
+                                frappe.show_alert({message: __("Row #{0}: Batch not linked in PO and no matching Batch found. Please set Batch in PO to proceed.", [new_item.idx]), indicator: 'red'}, 30);
+                            }
+                        });
+                    }
+                } else {
+                    ignored_cnt++;
                 }
             }
-            frappe.show_alert({message: __("Fetched {0} Items from {1}", [ref_doc.items.length, dt]), indicator: 'blue'}, 30);
+            frappe.show_alert({message: __("Purchase order processed. {0} Items were added and {1} ignored (goods already received)", [added_cnt, ignored_cnt]), indicator: 'blue'}, 30);
 
 
         } else { // dt == "Sales Order"
             let updated_cnt = 0;
-            let added_cnt = 0;
-            let ignored_cnt = 0;
             for(var item of ref_doc.items) {
                 let existing_items = frm.doc.items.filter(i => i.item_code == item.item_code && i.quantity == i.quantity);
                 let my_item = null;
