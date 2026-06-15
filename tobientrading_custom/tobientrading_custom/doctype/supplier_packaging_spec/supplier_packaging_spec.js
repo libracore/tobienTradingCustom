@@ -17,32 +17,24 @@ frappe.ui.form.on("Supplier Packaging Spec", {
         });
     },
 
-    pallet_type(frm) {
-        update_calculations(frm);
+    package_length(frm) {
+        ensure_length_width_order(frm);
     },
-    pallet_max_height(frm) {
-        update_calculations(frm);
+    package_width(frm) {
+        ensure_length_width_order(frm);
     },
-
     packaging_type(frm) {
         update_description(frm);
     },
-    package_length(frm) {
-        if(!frm.updating_calculations) {
-            update_calculations(frm);
-        }
-    },
-    package_width(frm) {
-        if(!frm.updating_calculations) {
-            update_calculations(frm);
-        }
-    },
-    package_height(frm) {
-        update_calculations(frm);
-    },
 
-    before_save(frm) {
-        update_calculations(frm);
+    btn_palletize(frm) {
+        set_optimal_pallet_details(frm);
+    },
+    packages_per_layer(frm) {
+        update_num_packages(frm);
+    },
+    layers_per_pallet(frm) {
+        update_num_packages(frm);
     },
 });
 
@@ -53,39 +45,46 @@ frappe.ui.form.on("Supplier Packaging Item Assignment", {
 });
 
 
-function update_calculations(frm) {
-
-    if(frm.doc.package_length && frm.doc.package_width && frm.doc.pallet_type && frm.doc.pallet_max_height && frm.doc.package_height) {
-
-        frm.updating_calculations = true;
-
+function ensure_length_width_order(frm) {
+    if(frm.doc.package_length && frm.doc.package_width) {
         // Ensure that package length >= package width
         let package_length = Math.max(frm.doc.package_length, frm.doc.package_width);
         let package_width = Math.min(frm.doc.package_length, frm.doc.package_width);
         frm.set_value("package_length", package_length);
         frm.set_value("package_width", package_width);
+    }
+}
 
-        frm.updating_calculations = false;
+function set_optimal_pallet_details(frm) {
 
+    if(frm.doc.package_length && frm.doc.package_width && frm.doc.pallet_type && frm.doc.pallet_max_height && frm.doc.package_height) {
         frappe.call({
             method: 'tobientrading_custom.tobientrading_custom.doctype.pallet_type.pallet_type.get_pallet_details_from_type',
             args: {
                 pallet_type: frm.doc.pallet_type,
                 pallet_max_height: frm.doc.pallet_max_height,
-                package_length: package_length,
-                package_width: package_width,
+                package_length: frm.doc.package_length,
+                package_width: frm.doc.package_width,
                 package_height: frm.doc.package_height
             },
             callback: function(r) {
                 let pallet_details = r.message;
                 frm.set_value("packages_per_layer", pallet_details.packages_per_layer);
                 frm.set_value("layers_per_pallet", pallet_details.layers_per_pallet);
-                frm.set_value("packages_per_pallet", pallet_details.packages_per_pallet);
+                update_num_packages(frm);
                 update_description(frm);
-                update_pallet_net_weights(frm);
             }
         });
+    } else {
+        frappe.msgprint(__("Please fill out all fields to proceed."),__("Incomplete data"));
     }
+}
+
+
+function update_num_packages(frm) {
+    frm.set_value("packages_per_pallet", frm.doc.packages_per_layer * frm.doc.layers_per_pallet).then(() => {
+        update_pallet_net_weights(frm);
+    });
 }
 
 

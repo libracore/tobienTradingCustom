@@ -22,10 +22,11 @@
   "package_width",
   "package_height",
   "calculations_section",
+  "btn_palletize",
+  "column_break_jsjo",
   "packages_per_layer",
   "layers_per_pallet",
   "packages_per_pallet",
-  "column_break_jsjo",
   "item_assignments_section",
   "items"
  ],
@@ -98,19 +99,17 @@
   {
    "fieldname": "calculations_section",
    "fieldtype": "Section Break",
-   "label": "Calculations"
+   "label": "Palletization"
   },
   {
    "fieldname": "packages_per_layer",
    "fieldtype": "Int",
-   "label": "Number of packages per layer",
-   "read_only": 1
+   "label": "Number of packages per layer"
   },
   {
    "fieldname": "layers_per_pallet",
    "fieldtype": "Int",
-   "label": "Number of layers",
-   "read_only": 1
+   "label": "Number of layers"
   },
   {
    "fieldname": "column_break_jsjo",
@@ -166,13 +165,18 @@
    "label": "Image",
    "options": "image",
    "print_hide": 1
+  },
+  {
+   "fieldname": "btn_palletize",
+   "fieldtype": "Button",
+   "label": "Calculate optimal values"
   }
  ],
  "grid_page_length": 50,
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-27 08:09:56.355817",
+ "modified": "2026-06-15 11:54:48.464051",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Supplier Packaging Spec",
