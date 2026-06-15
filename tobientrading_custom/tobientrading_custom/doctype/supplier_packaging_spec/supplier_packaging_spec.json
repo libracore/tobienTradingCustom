@@ -125,7 +125,8 @@
    "fieldname": "description",
    "fieldtype": "Data",
    "label": "Spec description",
-   "read_only": 1
+   "read_only": 1,
+   "unique": 1
   },
   {
    "fieldname": "supplier",
@@ -176,7 +177,7 @@
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-06-15 11:54:48.464051",
+ "modified": "2026-06-15 15:41:15.931721",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Supplier Packaging Spec",
