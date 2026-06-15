@@ -52,9 +52,14 @@ class Layout:
     total: int
 
 
-def get_pallet_details(pallet_length, pallet_width, pallet_base_height, pallet_max_height, package_length, package_width, package_height):
-    packages_per_layer = get_optimal_packages_per_layer(pallet_length, pallet_width, package_length, package_width)
-    layers_per_pallet = floor((pallet_max_height - pallet_base_height) / package_height) if package_height else 0
+def get_pallet_details(pallet_length, pallet_width, pallet_base_height, pallet_max_height, package_length, package_width, package_height, override_packages_per_layer=0, override_layers_per_pallet=0):
+    optimal_packages_per_layer = get_optimal_packages_per_layer(pallet_length, pallet_width, package_length, package_width)
+    packages_per_layer = override_packages_per_layer or optimal_packages_per_layer
+    optimal_layers_per_pallet = floor((pallet_max_height - pallet_base_height) / package_height) if package_height else 0
+    if optimal_layers_per_pallet and override_layers_per_pallet:
+        layers_per_pallet = min(layers_per_pallet, override_layers_per_pallet)
+    else:
+        layers_per_pallet = override_layers_per_pallet or optimal_layers_per_pallet
     packages_per_pallet = packages_per_layer * layers_per_pallet
     return {'packages_per_layer': packages_per_layer, 'layers_per_pallet': layers_per_pallet, 'packages_per_pallet': packages_per_pallet}
 
@@ -91,7 +96,9 @@ def get_pallet_details_for_batch(batch, qty, customer_max_pallet_height=0, custo
             max_pallet_height,
             batch_doc.package_length,
             batch_doc.package_width,
-            batch_doc.package_height
+            batch_doc.package_height,
+            batch_doc.packages_per_layer, # override auto-calculation
+            batch_doc.layers_per_pallet,  # override auto-calculation (except if limited by max_pallet_height)
         ))
         # Return basic pallet specs along with the calculations as these aren't fetched automatically from Batch
         details.pallet_type = batch_doc.pallet_type
