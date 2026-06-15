@@ -220,8 +220,16 @@ def get_optimal_packages_per_layer(pallet_length, pallet_width, package_length, 
     return best.total
 
 
-@frappe.whitelist()
 def get_available_package_sizes(item, supplier):
     data = frappe.get_all("Supplier Packaging Spec",["`tabSupplier Packaging Item Assignment`.nominal_package_weight"], [["Supplier Packaging Spec","supplier","=", supplier], ["item","=", item]])
     weights = [f"{row.nominal_package_weight} kg" for row in data]
     return ", ".join(weights)
+
+
+def set_supplier_package_sizes(doc, method=None):
+    """Item onload hook: fill the display-only `package_sizes` on each Item Supplier
+    row server-side, so the value is part of the loaded document and does not dirty
+    the form. Not persisted unless the document is explicitly saved."""
+    for row in doc.get("supplier_items") or []:
+        if row.supplier:
+            row.package_sizes = get_available_package_sizes(doc.item_code, row.supplier)

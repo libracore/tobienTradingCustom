@@ -54,19 +54,6 @@ frappe.ui.form.on('Item', {
             }
         }
 
-        frm.doc.supplier_items.forEach(sup_item => {
-            frappe.call({
-                method: 'tobientrading_custom.tobientrading_custom.doctype.supplier_packaging_spec.supplier_packaging_spec.get_available_package_sizes',
-                args: {
-                    item: frm.doc.item_code,
-                    supplier: sup_item.supplier
-                },
-                callback: function(r) {
-                    frappe.model.set_value("Item Supplier", sup_item.name, "package_sizes", r.message);
-                }
-            });
-        });
-
         if(!frm.doc.__islocal) {
             get_batch_info(frm);
         }

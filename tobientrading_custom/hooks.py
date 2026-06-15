@@ -105,6 +105,9 @@ doctype_list_js = {
 # Hook on document methods and events
 
 doc_events = {
+    "Item": {
+        "onload": "tobientrading_custom.tobientrading_custom.doctype.supplier_packaging_spec.supplier_packaging_spec.set_supplier_package_sizes"
+    },
     "Measurement Parameter": {
         "on_update": "tobientrading_custom.tobientrading_custom.doctype.certificate_of_analysis_result.certificate_of_analysis_result.update_test_type_and_subcategory"
     },
