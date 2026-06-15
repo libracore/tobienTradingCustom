@@ -57,7 +57,7 @@ def get_pallet_details(pallet_length, pallet_width, pallet_base_height, pallet_m
     packages_per_layer = override_packages_per_layer or optimal_packages_per_layer
     optimal_layers_per_pallet = floor((pallet_max_height - pallet_base_height) / package_height) if package_height else 0
     if optimal_layers_per_pallet and override_layers_per_pallet:
-        layers_per_pallet = min(layers_per_pallet, override_layers_per_pallet)
+        layers_per_pallet = min(optimal_layers_per_pallet, override_layers_per_pallet)
     else:
         layers_per_pallet = override_layers_per_pallet or optimal_layers_per_pallet
     packages_per_pallet = packages_per_layer * layers_per_pallet

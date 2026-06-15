@@ -302,7 +302,7 @@ function fetch_items_from_doc(frm, dt, dn) {
 
                 if(my_item.batch) {
                     // Trigger recalculation of item dimensions if batch already given
-                    calculate_item_dimensions(frm, new_item.doctype, new_item.name);
+                    calculate_item_dimensions(frm, my_item.doctype, my_item.name);
                 } else if(!frm.doc.purchase_order) {
                     // No Batch given: Assign batches by FIFO principle, split quantity over several batches if needed
                     // (Except if PO given - in that case we only want to ship batches from that PO)
