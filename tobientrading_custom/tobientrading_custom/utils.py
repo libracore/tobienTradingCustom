@@ -321,22 +321,27 @@ def set_batch_packaging_specs(batch, specs):
     if type(specs) == str:
         specs = json.loads(specs)
 
-    pallet_specs = {
-        'tare': specs.get('pallet_tare'),
-        'height': specs.get('pallet_base_height'),
-        'length': specs.get('pallet_length'),
-        'width': specs.get('pallet_width')
-    }
     packspecs =  {key: specs.get(key) for key in [
-        'pallet_type', 'pallet_max_height', 'packaging_type', 'package_length', 'package_width', 'package_height', 'package_tare',
+        'pallet_type', 'pallet_max_height', 'packaging_type', 'package_length', 'package_width', 'package_height', 'package_tare', 'packages_per_layer', 'layers_per_pallet'
     ]}
-    pallet_doc = frappe.get_doc("Pallet Type", specs['pallet_type'])
-    pallet_doc.update(pallet_specs)
-    pallet_doc.save()
-    packspec_doc = frappe.get_doc("Supplier Packaging Spec", specs['packaging_spec'])
-    packspec_doc.update(packspecs)
-    packspec_doc.save()
+    packages_per_pallet = specs.get('packages_per_layer', 0) * specs.get('layers_per_pallet', 0)
+    pallet_specs = {key: specs.get(key) for key in [
+        'pallet_tare', 'pallet_base_height', 'pallet_length', 'pallet_width'
+    ]}
+
+    # Update pallet spec if checkbox selected
+    if specs.get('update_packaging_spec'):
+        packspec_doc = frappe.get_doc("Supplier Packaging Spec", specs['packaging_spec'])
+        packspec_doc.update(packspecs)
+        packspec_doc.packages_per_pallet = packages_per_pallet
+        packspec_doc.save()
+    # NOTE - Pallet type is not updated here as this has an impact on other suppliers' packaging specs and therefore seems "risky" to do from a dialog
+
+    # Update batch data
     batch_doc = frappe.get_doc("Batch", batch)
-    batch_doc.update({'package_weight': specs.get('package_weight'), 'packaging_spec': specs['packaging_spec']})
+    batch_doc.update(packspecs)
+    batch_doc.update(pallet_specs)
+    net_weight_per_pallet = packages_per_pallet * specs.get('package_weight', 0)
+    batch_doc.update({'package_weight': specs.get('package_weight'), 'net_weight_per_pallet': net_weight_per_pallet, 'packaging_spec': specs['packaging_spec']})
     batch_doc.save()
     frappe.db.commit()

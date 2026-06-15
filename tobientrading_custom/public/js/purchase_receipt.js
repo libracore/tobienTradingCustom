@@ -110,15 +110,27 @@ function confirm_packspec_for_row(frm, row_no) {
                                     package_tare: ps.package_tare,
                                     package_length: ps.package_length,
                                     package_width: ps.package_width,
-                                    package_height: ps.package_height
+                                    package_height: ps.package_height,
+                                    packages_per_layer: ps. packages_per_layer,
+                                    layers_per_pallet: ps.layers_per_pallet,
                                 });
                             });
                         }
                     },
                     {
-                        fieldname: 'sb',
+                        fieldname: 'sb0',
+                        fieldtype: 'Section Break'
+                    },
+                    {
+                        fieldname: 'update_packaging_spec',
+                        fieldtype: 'Check',
+                        default: true,
+                        label: __('Update the linked supplier packaging spec to the values below'),
+                        description: __('NOTE: Pallet details are not updated automatically')
+                    },
+                    {
+                        fieldname: 'sb1',
                         fieldtype: 'Section Break',
-                        description: __('WARNING: Changes made below will update the linked supplier packaging and/or pallet specifications.<br><br>')
                     },
                     {
                         fieldname: 'pallet_type',
@@ -187,6 +199,7 @@ function confirm_packspec_for_row(frm, row_no) {
                         fieldname: 'packaging_type',
                         fieldtype: 'Link',
                         options: 'Packaging Type',
+                        read_only: has_transactions,
                         label: __('Packaging type'),
                         default: batch_doc.packaging_type,
                         reqd: true,
@@ -221,6 +234,30 @@ function confirm_packspec_for_row(frm, row_no) {
                         read_only: has_transactions,
                         label: __('Package height [cm]'),
                         default: batch_doc.package_height,
+                        reqd: true,
+                    },
+                    {
+                        fieldname: 'sb2',
+                        fieldtype: 'Section Break',
+                    },
+                    {
+                        fieldname: 'packages_per_layer',
+                        fieldtype: 'Int',
+                        read_only: has_transactions,
+                        label: __('Packages per layer'),
+                        default: batch_doc.packages_per_layer,
+                        reqd: true,
+                    },
+                    {
+                        fieldname: 'cb2',
+                        fieldtype: 'Column Break',
+                    },
+                    {
+                        fieldname: 'layers_per_pallet',
+                        fieldtype: 'Int',
+                        read_only: has_transactions,
+                        label: __('Layers per pallet'),
+                        default: batch_doc.layers_per_pallet,
                         reqd: true,
                     },
                 ],
