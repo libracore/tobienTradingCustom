@@ -209,6 +209,8 @@ def _apply_packaging_spec_to_batch(batch_values, packaging_spec_name, package_we
     batch_values.package_length = pspec_doc.package_length
     batch_values.package_width = pspec_doc.package_width
     batch_values.package_height = pspec_doc.package_height
+    batch_values.packages_per_layer = pspec_doc.packages_per_layer
+    batch_values.layers_per_pallet = pspec_doc.layers_per_pallet
 
     pallet_doc = frappe.get_doc("Pallet Type", pspec_doc.pallet_type)
     batch_values.pallet_tare = pallet_doc.tare
