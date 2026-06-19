@@ -17,11 +17,20 @@ frappe.ui.form.on("Supplier Packaging Spec", {
         });
     },
 
+    pallet_type(frm) {
+        update_description(frm);
+    },
+
     package_length(frm) {
         ensure_length_width_order(frm);
+        update_description(frm);
     },
     package_width(frm) {
         ensure_length_width_order(frm);
+        update_description(frm);
+    },
+    package_height(frm) {
+        update_description(frm);
     },
     packaging_type(frm) {
         update_description(frm);
@@ -72,7 +81,6 @@ function set_optimal_pallet_details(frm) {
                 frm.set_value("packages_per_layer", pallet_details.packages_per_layer);
                 frm.set_value("layers_per_pallet", pallet_details.layers_per_pallet);
                 update_num_packages(frm);
-                update_description(frm);
             }
         });
     } else {
@@ -84,6 +92,7 @@ function set_optimal_pallet_details(frm) {
 function update_num_packages(frm) {
     frm.set_value("packages_per_pallet", frm.doc.packages_per_layer * frm.doc.layers_per_pallet).then(() => {
         update_pallet_net_weights(frm);
+        update_description(frm);
     });
 }
 
@@ -93,6 +102,7 @@ function update_description(frm) {
     let description = `${frm.doc.supplier} - ${frm.doc.pallet_type} with ${frm.doc.layers_per_pallet} layers of ${frm.doc.packaging_type} ${frm.doc.package_length}×${frm.doc.package_width}×${frm.doc.package_height} cm`;
     frm.set_value("description", description);
 }
+
 
 function update_pallet_net_weights(frm, idx=0){
     let rows = frm.doc.items;
