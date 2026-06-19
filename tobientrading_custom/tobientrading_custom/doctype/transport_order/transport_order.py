@@ -15,7 +15,7 @@ class TransportOrder(Document):
 def get_matching_batches(sales_order, sales_order_item):
     so_item_doc = frappe.get_doc("Sales Order Item", sales_order_item)
     item_doc = frappe.get_doc("Item", so_item_doc.item_code)
-    batch_info = get_batch_info(so_item_doc.item_code)
+    batch_info = get_batch_info(so_item_doc.item_code, False)
     status = 'OK'
     # Get the required qty in the Item's stock UOM
     remaining_qty = so_item_doc.qty

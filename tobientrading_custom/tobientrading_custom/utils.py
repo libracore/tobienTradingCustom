@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+import datetime
 from frappe import _
 import json
 import erpnextswiss.erpnextswiss.attach_pdf
@@ -271,7 +272,7 @@ def create_mo_batch(work_order, packaging_spec):
 
 
 @frappe.whitelist()
-def get_batch_info(item_code):
+def get_batch_info(item_code, include_expired_disabled=True):
     # NOTE: Newer Stock Ledger Entries store their batch via a "Serial and Batch
     #       Bundle" instead of the SLE's own `batch_no` column (which is then NULL)
     sql_query = """
@@ -309,8 +310,12 @@ def get_batch_info(item_code):
           ORDER BY `first_transaction_date`
         ) AS `batches`
         INNER JOIN `tabBatch` ON `batches`.`batch_no` = `tabBatch`.`name`
-        WHERE `qty` != 0;"""
-    data = frappe.db.sql(sql_query, {'item_code': item_code}, as_dict=1)
+        WHERE `qty` != 0"""
+    if include_expired_disabled:
+        sql_query += ";"
+    else:
+        sql_query += " AND (`expiry_date` IS NULL OR `expiry_date` > %(today)s) AND (`disabled` = 0);";
+    data = frappe.db.sql(sql_query, {'item_code': item_code, 'today': datetime.date.today()}, as_dict=1)
     return data
 
 
