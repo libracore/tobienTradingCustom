@@ -15,7 +15,10 @@ app_license = "MIT"
 # ------------------
 
 # include js, css files in header of desk.html
-app_include_css = "/assets/tobientrading_custom/css/tt.css"
+app_include_css = [
+    "/assets/tobientrading_custom/css/tt.css",
+    "tobientrading_custom.bundle.css"
+]
 app_include_js = [
     "/assets/tobientrading_custom/js/tobien_common.js"
 ]
