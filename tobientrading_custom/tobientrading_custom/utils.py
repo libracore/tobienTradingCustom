@@ -25,13 +25,12 @@ def apply_origins_to_variants(template_item_code, origins):
 
     return
 
-@frappe.whitelist()
-def attach_tds_pdfs(sales_order):
-    so_doc = frappe.get_doc("Sales Order", sales_order)
+
+def attach_tds_pdfs(dest_doc, event=None):
 
     crawled_items = []
     # get technical data sheets
-    for i in so_doc.items:
+    for i in dest_doc.items:
         if i.item_code in crawled_items:        # prevent attaching multiple TDS for the same item
             continue
         crawled_items.append(i.item_code)
@@ -45,15 +44,18 @@ def attach_tds_pdfs(sales_order):
                 },
                 fields=['name']
             )
-            for pdf in pdfs:
-                so_pdf = frappe.get_doc(
-                    frappe.get_doc("File", pdf['name']).as_dict()
-                )
-                so_pdf.update({
-                    'attached_to_doctype': 'Sales Order',
-                    'attached_to_name': sales_order
-                })
-                so_pdf.insert()
+            if len(pdfs) > 0:
+                for pdf in pdfs:
+                    so_pdf = frappe.get_doc(
+                        frappe.get_doc("File", pdf['name']).as_dict()
+                    )
+                    so_pdf.update({
+                        'attached_to_doctype': dest_doc.doctype,
+                        'attached_to_name': dest_doc.name
+                    })
+                    so_pdf.insert()
+            else:
+                frappe.throw(_("Error: Technical Data Sheet '{0}' has no attachments".format(tds)));
 
             frappe.db.commit()
 
@@ -69,9 +71,7 @@ def attach_pdf_hook(doc, event=None):
         "lang": getattr(doc, "language", fallback_language),
     }
     erpnextswiss.erpnextswiss.attach_pdf.execute(**args)
-    if doc.doctype == 'Sales Order':
-        attach_tds_pdfs(doc.name)
-    elif doc.doctype == 'Delivery Note' and doc.tax_category in ['Umsatzsteuer EU - IGD','Umsatzsteuer EU - IGL','Umsatzsteuer Export']:
+    if doc.doctype == 'Delivery Note' and doc.tax_category in ['Umsatzsteuer EU - IGD','Umsatzsteuer EU - IGL','Umsatzsteuer Export']:
         gb = args.copy()
         gb['print_format'] = 'Gelangensbestätigung Standard'
         gb['file_name'] = "VAT_{0}_to_sign.pdf".format(doc.name.replace(" ", "-").replace("/", "-"))

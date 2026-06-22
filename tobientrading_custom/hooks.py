@@ -118,9 +118,11 @@ doc_events = {
         "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
     },
     "Quotation": {
+        "before_submit": "tobientrading_custom.tobientrading_custom.utils.attach_tds_pdfs",
         "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
     },
     "Sales Order": {
+        "before_submit": "tobientrading_custom.tobientrading_custom.utils.attach_tds_pdfs",
         "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
     },
     "Delivery Note": {
