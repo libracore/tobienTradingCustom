@@ -15,7 +15,10 @@ app_license = "MIT"
 # ------------------
 
 # include js, css files in header of desk.html
-app_include_css = "/assets/tobientrading_custom/css/tt.css"
+app_include_css = [
+    "/assets/tobientrading_custom/css/tt.css",
+    "tobientrading_custom.bundle.css"
+]
 app_include_js = [
     "/assets/tobientrading_custom/js/tobien_common.js"
 ]
@@ -30,6 +33,7 @@ app_include_js = [
 # include js in doctype views
 doctype_js = {
     "Address" : "public/js/address.js",
+    "Batch" : "public/js/batch.js",
     "Blanket Order": "public/js/blanket_order.js",
     "Claim": "public/js/claim.js",
     "Customer": "public/js/customer.js",
@@ -48,8 +52,7 @@ doctype_js = {
     "Sales Order": "public/js/sales_order.js",
     "Supplier": "public/js/supplier.js",
     "Supplier Quotation": "public/js/supplier_quotation.js",
-    "Technical Data Sheet": "public/js/technical_data_sheet.js",
-    "Transport Order": "public/js/transport_order.js",
+    "Work Order": "public/js/work_order.js",
 }
 doctype_list_js = {
     "Certificate of Analysis" : "public/js/certificate_of_analysis_list.js"}
@@ -105,6 +108,9 @@ doctype_list_js = {
 # Hook on document methods and events
 
 doc_events = {
+    "Item": {
+        "onload": "tobientrading_custom.tobientrading_custom.doctype.supplier_packaging_spec.supplier_packaging_spec.set_supplier_package_sizes"
+    },
     "Measurement Parameter": {
         "on_update": "tobientrading_custom.tobientrading_custom.doctype.certificate_of_analysis_result.certificate_of_analysis_result.update_test_type_and_subcategory"
     },
@@ -112,9 +118,11 @@ doc_events = {
         "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
     },
     "Quotation": {
+        "before_submit": "tobientrading_custom.tobientrading_custom.utils.attach_tds_pdfs",
         "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
     },
     "Sales Order": {
+        "before_submit": "tobientrading_custom.tobientrading_custom.utils.attach_tds_pdfs",
         "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
     },
     "Delivery Note": {
@@ -194,6 +202,12 @@ override_doctype_class = {
     "Purchase Receipt":   "tobientrading_custom.overrides.third_party_address.CustomPurchaseReceipt",
     "Purchase Invoice":   "tobientrading_custom.overrides.third_party_address.CustomPurchaseInvoice",
     "Supplier Quotation": "tobientrading_custom.overrides.third_party_address.CustomSupplierQuotation",
+}
+
+jinja = {
+    'methods': [
+        "tobientrading_custom.tobientrading_custom.doctype.pallet_type.pallet_type.get_pallet_details_from_type",
+    ]
 }
 
 fixtures = [{

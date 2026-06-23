@@ -1,0 +1,173 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "IA-.YY.-.####.",
+ "creation": "2026-01-23 14:11:22.780615",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_abhf",
+  "naming_series",
+  "item_section",
+  "item",
+  "item_name",
+  "supplier",
+  "supplier_name",
+  "start_date",
+  "batch",
+  "column_break_ctvm",
+  "comment",
+  "sensoric_parameters_section",
+  "sensoric_parameters",
+  "fotos_section",
+  "image_1",
+  "column_break_tznj",
+  "image_2",
+  "column_break_rldt",
+  "image_3"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_abhf",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Naming Series"
+  },
+  {
+   "fieldname": "item_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "item.item_name",
+   "fetch_if_empty": 1,
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Supplier",
+   "options": "Supplier",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "supplier.supplier_name",
+   "fetch_if_empty": 1,
+   "fieldname": "supplier_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Supplier Name",
+   "read_only": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Start Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "batch",
+   "fieldtype": "Data",
+   "label": "Batch"
+  },
+  {
+   "fieldname": "column_break_ctvm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "comment",
+   "fieldtype": "Text Editor",
+   "label": "Comment - Interner Kommentar!"
+  },
+  {
+   "fieldname": "sensoric_parameters_section",
+   "fieldtype": "Section Break",
+   "label": "Sensoric Parameters"
+  },
+  {
+   "fieldname": "sensoric_parameters",
+   "fieldtype": "Table",
+   "label": "Sensoric Parameters",
+   "options": "Technical Data Sheet Sensoric Parameter"
+  },
+  {
+   "fieldname": "fotos_section",
+   "fieldtype": "Section Break",
+   "label": "Fotos"
+  },
+  {
+   "fieldname": "image_1",
+   "fieldtype": "Attach Image",
+   "label": "Beutel mit Produkt"
+  },
+  {
+   "fieldname": "column_break_tznj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "image_2",
+   "fieldtype": "Attach Image",
+   "label": "Produkt einzeln"
+  },
+  {
+   "fieldname": "column_break_rldt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "image_3",
+   "fieldtype": "Attach Image",
+   "label": "Produktvergleich"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-03-23 14:58:46.607639",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Item Approval Sensoric",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-02-23 21:32:04.867651",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "was",
+  "text_zgoy",
+  "print",
+  "popup",
+  "email_qs",
+  "action"
+ ],
+ "fields": [
+  {
+   "columns": 1,
+   "fieldname": "was",
+   "fieldtype": "Link",
+   "label": "Was",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "text_zgoy",
+   "fieldtype": "Text",
+   "label": "Text"
+  },
+  {
+   "default": "0",
+   "fieldname": "print",
+   "fieldtype": "Check",
+   "label": "Print"
+  },
+  {
+   "default": "0",
+   "fieldname": "popup",
+   "fieldtype": "Check",
+   "label": "PopUp"
+  },
+  {
+   "default": "0",
+   "fieldname": "email_qs",
+   "fieldtype": "Check",
+   "label": "Email QS"
+  },
+  {
+   "default": "0",
+   "fieldname": "action",
+   "fieldtype": "Check",
+   "label": "Action"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-03-23 15:00:17.934470",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Customer Comment Table",
+ "owner": "ft@tobien-trading.com",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

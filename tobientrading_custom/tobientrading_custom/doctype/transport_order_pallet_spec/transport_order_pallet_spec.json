@@ -1,0 +1,85 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-03-24 15:17:54.965920",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "num_pallets",
+  "pallet_length",
+  "pallet_width",
+  "pallet_height",
+  "column_break_vrzj",
+  "pallet_net_weight",
+  "pallet_gross_weight",
+  "items"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "num_pallets",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Number of identical pallets"
+  },
+  {
+   "columns": 1,
+   "fieldname": "pallet_length",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Pallet length [cm]"
+  },
+  {
+   "columns": 1,
+   "fieldname": "pallet_width",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Pallet width [cm]"
+  },
+  {
+   "columns": 1,
+   "fieldname": "pallet_height",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Pallet height [cm]"
+  },
+  {
+   "fieldname": "column_break_vrzj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fieldname": "pallet_gross_weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Gross weight [kg]"
+  },
+  {
+   "columns": 1,
+   "fieldname": "pallet_net_weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Net weight [kg]"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Small Text",
+   "label": "Items"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-04-01 21:21:41.777268",
+ "modified_by": "Administrator",
+ "module": "Tobientrading Custom",
+ "name": "Transport Order Pallet Spec",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
