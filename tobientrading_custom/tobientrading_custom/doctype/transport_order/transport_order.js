@@ -358,22 +358,11 @@ function update_supplier_fields(frm, po_doc) {
     } else {
         frm.set_value("supplier", po_doc.supplier);
     }
-    frm.set_value("loading_address", po_doc.loading_address || '');
-    // TODO check if fetch_loading_address_details is called by the above
-    frm.set_value("contact_person", po_doc.contact_person || '');
-    // TODO check if fetch_contact_person_details is called by the above
-    // Replacements for the former PO "fetch_from" settings. These fetched with
-    // fetch_if_empty, so we only set them when still empty: the first PO added wins
-    // and manual edits are preserved.
-    if(!frm.doc.incoterms_from_po) {
-        frm.set_value("incoterms_from_po", po_doc.incoterm || '');
-    }
-    if(!frm.doc.incoterm_place_from_po) {
-        frm.set_value("incoterm_place_from_po", po_doc.incoterm_place || '');
-    }
-    if(!frm.doc.pick_up_date) {
-        frm.set_value("pick_up_date", po_doc.schedule_date || '');
-    }
+    set_field_if_empty(frm, "loading_address", po_doc.loading_address);
+    set_field_if_empty(frm, "contact_person", po_doc.contact_person);
+    set_field_if_empty(frm, "incoterms_from_po", po_doc.incoterm);
+    set_field_if_empty(frm, "incoterm_place_from_po", po_doc.incoterm_place);
+    set_field_if_empty(frm, "pick_up_date", po_doc.schedule_date);
     return true;
 }
 
@@ -387,28 +376,13 @@ function update_customer_fields(frm, so_doc) {
     } else {
         frm.set_value("customer", so_doc.customer);
     }
-    frm.set_value("company_shipping_address", so_doc.shipping_address_name || '');
-    // TODO check if fetch_shipping_address_details is called by the above
-    frm.set_value("company_contact_person", so_doc.contact_person || '');
-    // TODO check if fetch_company_contact_person_details is called by the above
-    // Replacements for the former SO "fetch_from" settings. These fetched with
-    // fetch_if_empty, so we only set them when still empty: the first SO added wins
-    // and manual edits are preserved.
-    if(!frm.doc.incoterms_from_ord) {
-        frm.set_value("incoterms_from_ord", so_doc.incoterm || '');
-    }
-    if(!frm.doc.incoterm_place_from_ord) {
-        frm.set_value("incoterm_place_from_ord", so_doc.incoterm_place || '');
-    }
-    if(!frm.doc.delivery_date) {
-        frm.set_value("delivery_date", so_doc.delivery_date || '');
-    }
-    if(!frm.doc.customer_max_pallet_height) {
-        frm.set_value("customer_max_pallet_height", so_doc.customer_max_pallet_height || 0);
-    }
-    if(!frm.doc.customer_labelling_specs) {
-        frm.set_value("customer_labelling_specs", so_doc.customer_labelling_specs || '');
-    }
+    set_field_if_empty("company_shipping_address", so_doc.shipping_address_name);
+    set_field_if_empty("company_contact_person", so_doc.contact_person);
+    set_field_if_empty("incoterms_from_ord", so_doc.incoterm);
+    set_field_if_empty("incoterm_place_from_ord", so_doc.incoterm_place);
+    set_field_if_empty("delivery_date", so_doc.delivery_date);
+    set_field_if_empty("customer_max_pallet_height", so_doc.customer_max_pallet_height);
+    set_field_if_empty("customer_labelling_specs", so_doc.customer_labelling_specs);
 
     // Process allowed pallet types
     if(so_doc.customer_pallet_types) {
@@ -793,4 +767,14 @@ function create_delivery_note(frm) {
             }
         }
     });
+}
+
+function set_field_if_empty(frm, field, value) {
+    let fallback = '';
+    if(['Int','Float'].includes(frappe.meta.get_field(frm.doctype, field).fieldtype)) {
+        fallback = 0;
+    }
+    if(!frm[field]) {
+        frm.set_value(field, value || fallback);
+    }
 }
