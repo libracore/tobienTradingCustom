@@ -8,9 +8,8 @@
  "engine": "InnoDB",
  "field_order": [
   "allgemeine_info_section",
-  "purchase_order",
   "naming_series",
-  "sales_order",
+  "po_so_links",
   "column_break_5",
   "logistic_company",
   "transport_cost",
@@ -80,26 +79,10 @@
    "label": "Allgemeine Info"
   },
   {
-   "allow_on_submit": 1,
-   "fieldname": "purchase_order",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Purchase Order",
-   "options": "Purchase Order"
-  },
-  {
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "hidden": 1,
    "label": "Series"
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "sales_order",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Sales Order",
-   "options": "Sales Order"
   },
   {
    "fieldname": "column_break_5",
@@ -139,7 +122,6 @@
    "label": "Adresse und Anschrift"
   },
   {
-   "fetch_from": "purchase_order.loading_address",
    "fieldname": "loading_address",
    "fieldtype": "Link",
    "label": "Loading Address",
@@ -152,8 +134,6 @@
    "read_only": 1
   },
   {
-   "fetch_from": "purchase_order.contact_person",
-   "fetch_if_empty": 1,
    "fieldname": "contact_person",
    "fieldtype": "Link",
    "label": "Contact Person",
@@ -182,7 +162,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "fetch_from": "sales_order.shipping_address_name",
    "fieldname": "company_shipping_address",
    "fieldtype": "Link",
    "label": "Shipping Address",
@@ -195,8 +174,6 @@
    "read_only": 1
   },
   {
-   "fetch_from": "sales_order.contact_person",
-   "fetch_if_empty": 1,
    "fieldname": "company_contact_person",
    "fieldtype": "Link",
    "label": "Company Contact Person",
@@ -272,23 +249,17 @@
   },
   {
    "allow_on_submit": 1,
-   "fetch_from": "purchase_order.incoterm",
-   "fetch_if_empty": 1,
    "fieldname": "incoterms_from_po",
    "fieldtype": "Data",
    "label": "Incoterms from PO"
   },
   {
-   "fetch_from": "purchase_order.incoterm_place",
-   "fetch_if_empty": 1,
    "fieldname": "incoterm_place_from_po",
    "fieldtype": "Data",
    "label": "Incoterm Place from PO"
   },
   {
    "allow_on_submit": 1,
-   "fetch_from": "purchase_order.schedule_date",
-   "fetch_if_empty": 1,
    "fieldname": "pick_up_date",
    "fieldtype": "Date",
    "in_list_view": 1,
@@ -312,24 +283,18 @@
   },
   {
    "allow_on_submit": 1,
-   "fetch_from": "sales_order.incoterm",
-   "fetch_if_empty": 1,
    "fieldname": "incoterms_from_ord",
    "fieldtype": "Data",
    "label": "Incoterms from ORD"
   },
   {
    "allow_on_submit": 1,
-   "fetch_from": "sales_order.incoterm_place",
-   "fetch_if_empty": 1,
    "fieldname": "incoterm_place_from_ord",
    "fieldtype": "Data",
    "label": "Incoterm Place from ORD"
   },
   {
    "allow_on_submit": 1,
-   "fetch_from": "sales_order.delivery_date",
-   "fetch_if_empty": 1,
    "fieldname": "delivery_date",
    "fieldtype": "Date",
    "in_list_view": 1,
@@ -401,15 +366,11 @@
    "label": "Customer Requirements"
   },
   {
-   "fetch_from": "sales_order.customer_max_pallet_height",
-   "fetch_if_empty": 1,
    "fieldname": "customer_max_pallet_height",
    "fieldtype": "Int",
    "label": "Max pallet height [cm]"
   },
   {
-   "fetch_from": "sales_order.customer_labelling_specs",
-   "fetch_if_empty": 1,
    "fieldname": "customer_labelling_specs",
    "fieldtype": "Small Text",
    "label": "Labelling specs"
@@ -425,14 +386,12 @@
    "options": "Allowed Pallet Type"
   },
   {
-   "fetch_from": "purchase_order.supplier",
    "fieldname": "supplier",
    "fieldtype": "Link",
    "label": "Supplier",
    "options": "Supplier"
   },
   {
-   "fetch_from": "sales_order.customer",
    "fieldname": "customer",
    "fieldtype": "Link",
    "label": "Customer",
@@ -472,13 +431,19 @@
    "fieldname": "customer_palletize_by_batch",
    "fieldtype": "Check",
    "label": "Palletize batches individually"
+  },
+  {
+   "fieldname": "po_so_links",
+   "fieldtype": "Table",
+   "label": "Purchase & Sales Orders",
+   "options": "Dynamic Link"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-06-08 10:39:25.782249",
+ "modified": "2026-06-29 11:21:44.288617",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Transport Order",
