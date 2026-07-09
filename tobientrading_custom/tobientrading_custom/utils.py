@@ -27,8 +27,10 @@ def apply_origins_to_variants(template_item_code, origins):
     return
 
 
-def attach_tds_pdfs(dest_doc, event=None):
-
+# Attach the right PDF prints of the Technical Data Sheets of all line items to a purchasing or sales doc
+def attach_tds_pdf(dest_doc, event=None):
+    # Use the purchasing version (different print format) in POs
+    pdf_filename_template =  "{0} PO.pdf" if dest_doc.doctype == 'Purchase Order' else "{0}.pdf"
     crawled_items = []
     # get technical data sheets
     for i in dest_doc.items:
@@ -37,30 +39,55 @@ def attach_tds_pdfs(dest_doc, event=None):
         crawled_items.append(i.item_code)
         tds = get_current_tds(i.item_code)
         if tds:
-            # find all files attached to this tds
-            pdfs = frappe.get_all("File",
-                filters={
-                    'attached_to_doctype': 'Technical Data Sheet',
-                    'attached_to_name': tds
-                },
-                fields=['name']
-            )
-            if len(pdfs) > 0:
-                for pdf in pdfs:
-                    so_pdf = frappe.get_doc(
-                        frappe.get_doc("File", pdf['name']).as_dict()
-                    )
-                    so_pdf.update({
-                        'attached_to_doctype': dest_doc.doctype,
-                        'attached_to_name': dest_doc.name
-                    })
-                    so_pdf.insert()
-            else:
-                frappe.throw(_("Error: Technical Data Sheet '{0}' has no attachments".format(tds)));
+            # find matching PDF attached to this TDS
+            pdf_filename = pdf_filename_template.format(tds.replace(" ", "-").replace("/", "-"))
+            pdf_attachment = get_tds_pdf_attachment(pdf_filename, tds)
+            if not pdf_attachment:
+                tds_doc = frappe.get_doc("Technical Data Sheet", tds)
+                if dest_doc.doctype == 'Purchase Order':
+                    tds_doc.attach_po_pdf()
+                else:
+                    attach_pdf_hook(tds_doc)
+                pdf_attachment = get_tds_pdf_attachment(pdf_filename, tds)
+                if pdf_attachment:
+                    frappe.msgprint(_("Missing PDF '{0}' created for Technical Data Sheet '{1}'".format(pdf_filename, tds)), _("Note"))
+                else:
+                    frappe.throw(_("Error: Failed to create missing PDF '{0}' for Technical Data Sheet '{1}'".format(pdf_filename, tds)));
+                    continue
 
-            frappe.db.commit()
+            if pdf_attachment:
+                dest_pdf = frappe.get_doc(
+                    frappe.get_doc("File", pdf_attachment).as_dict()
+                )
+                dest_pdf.update({
+                    'attached_to_doctype': dest_doc.doctype,
+                    'attached_to_name': dest_doc.name
+                })
+                dest_pdf.insert()
 
-    return
+        else: # No TDS found
+            frappe.msgprint(_("No Technical Data Sheet found for Item '{0}'".format(i.item_code)), _("Warning"))
+
+    frappe.db.commit()
+
+
+def get_tds_pdf_attachment(pdf_filename, tds_name):
+    pdfs = frappe.get_all("File",
+        filters={
+            'attached_to_doctype': 'Technical Data Sheet',
+            'attached_to_name': tds_name,
+            'file_name': pdf_filename
+        },
+        fields=['name']
+    )
+    if len(pdfs) > 1:
+        frappe.throw(_("Error: Technical Data Sheet '{0}' has more than one matching attachment".format(tds)));
+        return None
+    elif len(pdfs) == 1:
+        return pdfs[0]['name']
+    else:
+        return None
+
 
 # Called by doc_events hook when purchasing or sales docs are submitted
 def attach_pdf_hook(doc, event=None):
@@ -68,8 +95,8 @@ def attach_pdf_hook(doc, event=None):
     args = {
         "doctype": doc.doctype,
         "name": doc.name,
-        "title": getattr(doc, "title", doc.name),
-        "lang": getattr(doc, "language", fallback_language),
+        "title": doc.get("title") or doc.name,
+        "lang": doc.get("language") or fallback_language,
     }
     erpnextswiss.erpnextswiss.attach_pdf.execute(**args)
     if doc.doctype == 'Delivery Note' and doc.tax_category in ['Umsatzsteuer EU - IGD','Umsatzsteuer EU - IGL','Umsatzsteuer Export']:
@@ -349,3 +376,29 @@ def set_batch_packaging_specs(batch, specs):
     batch_doc.update({'package_weight': specs.get('package_weight'), 'net_weight_per_pallet': net_weight_per_pallet, 'packaging_spec': specs['packaging_spec']})
     batch_doc.save()
     frappe.db.commit()
+
+
+# Currently used in TDS, potentially useful elsewhere:
+# Do not pull forward the attachments when canceling and amending a document
+def drop_copied_attachments(doc, method=None):
+    if not (doc.flags.in_insert and doc.get("amended_from")):
+        return
+
+    old_urls = {
+        f.file_url
+        for f in frappe.get_all(
+            "File",
+            filters={"attached_to_doctype": doc.doctype, "attached_to_name": doc.amended_from},
+            fields=["file_url"],
+        )
+    }
+    if not old_urls:
+        return
+
+    for f in frappe.get_all(
+        "File",
+        filters={"attached_to_doctype": doc.doctype, "attached_to_name": doc.name},
+        fields=["name", "file_url"],
+    ):
+        if f.file_url in old_urls:
+            frappe.delete_doc("File", f.name, ignore_permissions=True, delete_permanently=False)
