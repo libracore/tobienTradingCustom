@@ -9,12 +9,6 @@ frappe.ui.form.on("Opportunity", {
 
 function display_comment_box() {
     setTimeout(() => {
-        const comment_box = document.querySelector(".comment-box");
-        if (comment_box) {
-            comment_box.style.display = "block";
-        }
-
+        $("#page-Opportunity .comment-box").show();
     }, 100);
 }
-
-
