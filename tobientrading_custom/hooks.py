@@ -118,17 +118,18 @@ doc_events = {
         "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
     },
     "Quotation": {
-        "before_submit": "tobientrading_custom.tobientrading_custom.utils.attach_tds_pdfs",
+        "before_submit": "tobientrading_custom.tobientrading_custom.utils.attach_tds_pdf",
         "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
     },
     "Sales Order": {
-        "before_submit": "tobientrading_custom.tobientrading_custom.utils.attach_tds_pdfs",
+        "before_submit": "tobientrading_custom.tobientrading_custom.utils.attach_tds_pdf",
         "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
     },
     "Delivery Note": {
         "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
     },
     "Purchase Order": {
+        "before_submit": "tobientrading_custom.tobientrading_custom.utils.attach_tds_pdf",
         "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
     },
     "Purchase Receipt": {
@@ -147,7 +148,8 @@ doc_events = {
         "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
     },
     "Technical Data Sheet": {
-        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook",
+        "on_update": "tobientrading_custom.tobientrading_custom.utils.drop_copied_attachments"
     }
 }
 
