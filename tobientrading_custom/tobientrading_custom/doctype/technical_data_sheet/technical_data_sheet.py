@@ -5,18 +5,13 @@ import frappe
 from frappe.model.document import Document
 
 class TechnicalDataSheet(Document):
-    def on_submit(self):
-        self.update_items()
-        return
+    pass
 
-    def update_items(self):
-        # update all items that were linked to the previous version with the current version
-        if self.amended_from:
-            items = frappe.get_all("Item", filters={'technical_data_sheet': self.amended_from}, fields=['name'])
-
-            for i in items:
-                frappe.db.set_value("Item", i['name'], 'technical_data_sheet', self.name)
-
-            frappe.db.commit()
-
-        return
+def get_current_tds(item_code):
+    matching_tds = frappe.get_all("Technical Data Sheet", filters = {'item_code': item_code, 'docstatus': 1})
+    if len(matching_tds) > 1:
+        frappe.throw("Error: Several active TDS exist for Item '{0}'".format(item_code))
+    elif len(matching_tds) == 0:
+        return None
+    else:
+        return matching_tds[0].name

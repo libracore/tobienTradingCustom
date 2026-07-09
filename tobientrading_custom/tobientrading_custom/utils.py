@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 import datetime
 from frappe import _
+from tobientrading_custom.tobientrading_custom.doctype.technical_data_sheet.technical_data_sheet import get_current_tds
 import json
 import erpnextswiss.erpnextswiss.attach_pdf
 
@@ -34,7 +35,7 @@ def attach_tds_pdfs(dest_doc, event=None):
         if i.item_code in crawled_items:        # prevent attaching multiple TDS for the same item
             continue
         crawled_items.append(i.item_code)
-        tds = frappe.get_value("Item", i.item_code, "technical_data_sheet")
+        tds = get_current_tds(i.item_code)
         if tds:
             # find all files attached to this tds
             pdfs = frappe.get_all("File",
