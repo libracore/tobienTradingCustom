@@ -266,7 +266,7 @@ function fetch_items_from_doc(frm, dt, dn, dynamic_link_doc) {
             // Batch assignment:
             // PO - If there is a batch matching the PO No. or referenced in the PO, overwrite the item's batch with that.
             //      Otherwise show a warning and leave the batch unchanged.
-            // SO - If the item has no batch assigned yet, assign one based on FIFO principle
+            // SO - If the item has no batch assigned yet, assign one (or several) based on FIFO principle
             if(dt == 'Purchase Order') {
                 if(item.batch_no && my_item.batch != item.batch_no) {
                     promises.push(frappe.model.set_value(my_item.doctype, my_item.name, "batch", item.batch_no));
@@ -310,9 +310,6 @@ function fetch_items_from_doc(frm, dt, dn, dynamic_link_doc) {
                         if(batches.length == 0) {
                             frappe.show_alert({message: __("Row #{0}: No matching batches in stock", [my_item.idx]), indicator: 'red'}, 30);
                         } else {
-                            if(r.message.status != 'OK') {
-                                frappe.show_alert({message: __("Row #{0}: "+r.message.status, [my_item.idx]), indicator: 'orange'}, 30);
-                            }
                             my_item.quantity = batches[0].qty;
                             my_item.uom = batches[0].uom; // TODO - adapt rate to new UOM here if needed
                             my_item.amount = my_item.rate * batches[0].qty;
@@ -324,6 +321,19 @@ function fetch_items_from_doc(frm, dt, dn, dynamic_link_doc) {
                                 extra_item.amount = my_item.rate * batches[i].qty;
                                 extra_item.batch = batches[i].batch_no;
                                 calculate_item_dimensions(frm, extra_item.doctype, extra_item.name);
+                            }
+                            if(r.message.status == 'insufficient_stock') {
+                                let missing_qty = ref_qty;
+                                batches.map(b => missing_qty -= b.qty);
+                                frappe.show_alert({message: __("Row #{0}: The available stock does not cover the full order quantity ({1} {2} missing)", [my_item.idx, missing_qty, my_item.uom]), indicator: 'orange'}, 30);
+                                // Add an item row with the remaining qty but without Batch
+                                let extra_item = get_new_child_table_item(frm, my_item, true);
+                                extra_item.quantity = missing_qty;
+                                extra_item.uom = my_item.uom;
+                                extra_item.amount = my_item.rate * missing_qty;
+                                extra_item.batch = '';
+                                calculate_item_dimensions(frm, extra_item.doctype, extra_item.name);
+
                             }
                         }
                     }

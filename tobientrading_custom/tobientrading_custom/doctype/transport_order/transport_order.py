@@ -38,7 +38,7 @@ def get_matching_batches(sales_order, sales_order_item):
         if remaining_qty == 0:
             break
     if remaining_qty > 0:
-        status = "The available stock does not cover the full order amount ({0} {1} missing)".format(remaining_qty, item_doc.stock_uom)
+        status = 'insufficient_stock'
     return {'status': status, 'batches': batches}
 
 @frappe.whitelist()
