@@ -4,24 +4,26 @@
 frappe.ui.form.on('Transport Order', {
 
     setup(frm) {
-        frm.set_query("link_doctype", "po_so_links", function () {
-            return {
-                filters: {
-                    name: ['in', ['Purchase Order','Sales Order']]
-                },
-            };
-        });
-        frm.set_query("link_name", "po_so_links", function(doc, cdt, cdn) {
-            let row = locals[cdt][cdn];
-            if(row.link_doctype == "Purchase Order") {
-                return { filters: { docstatus: 1, per_received: ["<", "100"], status: 'To receive and bill' } };
-            } else if(row.link_doctype == "Sales Order") {
-                return { filters: { docstatus: 1, per_delivered: ["<", "100"], status: 'To deliver and bill' } };
-            }
-        });
+        if(frm.doc.docstatus == 0)  {
+            frm.set_query("link_doctype", "po_so_links", function () {
+                return {
+                    filters: {
+                        name: ['in', ['Purchase Order','Sales Order']]
+                    },
+                };
+            });
+            frm.set_query("link_name", "po_so_links", function(doc, cdt, cdn) {
+                let row = locals[cdt][cdn];
+                if(row.link_doctype == "Purchase Order") {
+                    return { filters: { docstatus: 1, per_received: ["<", "100"], status: 'To receive and bill' } };
+                } else if(row.link_doctype == "Sales Order") {
+                    return { filters: { docstatus: 1, per_delivered: ["<", "100"], status: 'To deliver and bill' } };
+                }
+            });
+        }
     },
     refresh(frm) {
-        if(frm.doc.docstatus == 1 && frm.doc.po_so_links.some(l => l.link_doctype == "Sales Order")) {
+        if(frm.doc.docstatus == 1 && frm.doc.po_so_links && frm.doc.po_so_links.some(l => l.link_doctype == "Sales Order")) {
             frm.add_custom_button(__("Lieferschein erstellen"), () => { create_delivery_note(frm); });
         }
     },
@@ -296,48 +298,51 @@ function fetch_items_from_doc(frm, dt, dn, dynamic_link_doc) {
             } else {
                 // No Batch given: Assign batches by FIFO principle, split quantity over several batches if needed
                 // (Except if PO given - in that case we only want to ship batches from that PO)
-                frappe.call({
-                    method: 'tobientrading_custom.tobientrading_custom.doctype.transport_order.transport_order.get_matching_batches',
-                    args: {
-                        sales_order: dn,
-                        sales_order_item: item.name,
-                    },
-                    callback: function(r) {
-                        if(!r.message || !r.message.batches){
-                            return;
-                        }
-                        let batches = r.message.batches;
-                        if(batches.length == 0) {
-                            frappe.show_alert({message: __("Row #{0}: No matching batches in stock", [my_item.idx]), indicator: 'red'}, 30);
-                        } else {
-                            my_item.quantity = batches[0].qty;
-                            my_item.uom = batches[0].uom; // TODO - adapt rate to new UOM here if needed
-                            my_item.amount = my_item.rate * batches[0].qty;
-                            promises.push(frappe.model.set_value(my_item.doctype, my_item.name, "batch", batches[0].batch_no));
-                            for(var i=1; i<batches.length; i++) {
-                                let extra_item = get_new_child_table_item(frm, my_item, true);
-                                extra_item.quantity = batches[i].qty;
-                                extra_item.uom = batches[i].uom;
-                                extra_item.amount = my_item.rate * batches[i].qty;
-                                extra_item.batch = batches[i].batch_no;
-                                calculate_item_dimensions(frm, extra_item.doctype, extra_item.name);
+                let batches_returned = new Promise((resolve,reject) => {
+                    frappe.call({
+                        method: 'tobientrading_custom.tobientrading_custom.doctype.transport_order.transport_order.get_matching_batches',
+                        args: {
+                            sales_order: dn,
+                            sales_order_item: item.name,
+                        },
+                        callback: function(r) {
+                            if(!r.message || !r.message.batches){
+                                return;
                             }
-                            if(r.message.status == 'insufficient_stock') {
-                                let missing_qty = ref_qty;
-                                batches.map(b => missing_qty -= b.qty);
-                                frappe.show_alert({message: __("Row #{0}: The available stock does not cover the full order quantity ({1} {2} missing)", [my_item.idx, missing_qty, my_item.uom]), indicator: 'orange'}, 30);
-                                // Add an item row with the remaining qty but without Batch
-                                let extra_item = get_new_child_table_item(frm, my_item, true);
-                                extra_item.quantity = missing_qty;
-                                extra_item.uom = my_item.uom;
-                                extra_item.amount = my_item.rate * missing_qty;
-                                extra_item.batch = '';
-                                calculate_item_dimensions(frm, extra_item.doctype, extra_item.name);
-
+                            let batches = r.message.batches;
+                            if(batches.length == 0) {
+                                frappe.show_alert({message: __("Row #{0}: No matching batches in stock", [my_item.idx]), indicator: 'red'}, 30);
+                            } else {
+                                my_item.quantity = batches[0].qty;
+                                my_item.uom = batches[0].uom; // TODO - adapt rate to new UOM here if needed
+                                my_item.amount = my_item.rate * batches[0].qty;
+                                promises.push(frappe.model.set_value(my_item.doctype, my_item.name, "batch", batches[0].batch_no));
+                                for(var i=1; i<batches.length; i++) {
+                                    let extra_item = get_new_child_table_item(frm, my_item, true);
+                                    extra_item.quantity = batches[i].qty;
+                                    extra_item.uom = batches[i].uom;
+                                    extra_item.amount = my_item.rate * batches[i].qty;
+                                    extra_item.batch = batches[i].batch_no;
+                                    calculate_item_dimensions(frm, extra_item.doctype, extra_item.name);
+                                }
+                                if(r.message.status == 'insufficient_stock') {
+                                    let missing_qty = ref_qty;
+                                    batches.map(b => missing_qty -= b.qty);
+                                    frappe.show_alert({message: __("Row #{0}: The available stock does not cover the full order quantity ({1} {2} missing)", [my_item.idx, missing_qty, my_item.uom]), indicator: 'orange'}, 30);
+                                    // Add an item row with the remaining qty but without Batch
+                                    let extra_item = get_new_child_table_item(frm, my_item, true);
+                                    extra_item.quantity = missing_qty;
+                                    extra_item.uom = my_item.uom;
+                                    extra_item.amount = my_item.rate * missing_qty;
+                                    extra_item.batch = '';
+                                    calculate_item_dimensions(frm, extra_item.doctype, extra_item.name);
+                                }
+                                resolve();
                             }
                         }
-                    }
+                    });
                 });
+                promises.push(batches_returned);
             }
         }
 
@@ -386,13 +391,13 @@ function update_customer_fields(frm, so_doc) {
     } else {
         frm.set_value("customer", so_doc.customer);
     }
-    set_field_if_empty("company_shipping_address", so_doc.shipping_address_name);
-    set_field_if_empty("company_contact_person", so_doc.contact_person);
-    set_field_if_empty("incoterms_from_ord", so_doc.incoterm);
-    set_field_if_empty("incoterm_place_from_ord", so_doc.incoterm_place);
-    set_field_if_empty("delivery_date", so_doc.delivery_date);
-    set_field_if_empty("customer_max_pallet_height", so_doc.customer_max_pallet_height);
-    set_field_if_empty("customer_labelling_specs", so_doc.customer_labelling_specs);
+    set_field_if_empty(frm, "company_shipping_address", so_doc.shipping_address_name);
+    set_field_if_empty(frm, "company_contact_person", so_doc.contact_person);
+    set_field_if_empty(frm, "incoterms_from_ord", so_doc.incoterm);
+    set_field_if_empty(frm, "incoterm_place_from_ord", so_doc.incoterm_place);
+    set_field_if_empty(frm, "delivery_date", so_doc.delivery_date);
+    set_field_if_empty(frm, "customer_max_pallet_height", so_doc.customer_max_pallet_height);
+    set_field_if_empty(frm, "customer_labelling_specs", so_doc.customer_labelling_specs);
 
     // Process allowed pallet types
     if(so_doc.customer_pallet_types) {
@@ -484,7 +489,7 @@ function calculate_item_dimensions(frm, cdt, cdn, override_pallet_type=false) {
 // Check if calculate_item_dimensions() is done for all Items, and only then call generate_pallets_list().
 // This function is called every time calculate_item_dimensions() terminates or fails for some Item
 function generate_pallets_list_when_ready(frm) {
-    if(frm.doc.items.every(i => i.dimensions_calculated)) {
+    if(frm.doc.items.every(i => i.dimensions_calculated !== false)) {
         generate_pallets_list(frm);
     }
 }
@@ -781,7 +786,7 @@ function create_delivery_note(frm) {
 
 function set_field_if_empty(frm, field, value) {
     let fallback = '';
-    if(['Int','Float'].includes(frappe.meta.get_field(frm.doctype, field).fieldtype)) {
+    if(['Int','Float'].includes((frappe.meta.get_field(frm.doctype, field) || []).fieldtype)) {
         fallback = 0;
     }
     if(!frm[field]) {
