@@ -23,6 +23,8 @@ frappe.ui.form.on('Transport Order', {
         }
     },
     refresh(frm) {
+        // Drop the cached Batch packaging specs, they may have been edited in the meantime
+        frm.batch_specs = {};
         if(frm.doc.docstatus == 1 && frm.doc.po_so_links && frm.doc.po_so_links.some(l => l.link_doctype == "Sales Order")) {
             frm.add_custom_button(__("Lieferschein erstellen"), () => { create_delivery_note(frm); });
         }
@@ -496,137 +498,271 @@ function generate_pallets_list_when_ready(frm) {
 
 
 function generate_pallets_list(frm) {
+    // The batch specs may have to be fetched from the server first, so this runs asynchronously
+    return fetch_batch_specs(frm).then(batch_specs => build_pallets_list(frm, batch_specs));
+}
+
+
+// Fetch (and cache on the form) the packaging specs of every Batch used in the items table.
+// Consolidating the rest pallets needs the package dimensions - only packages of identical
+// specs may be stacked into common layers - as well as each batch's max pallet height.
+function fetch_batch_specs(frm) {
+    frm.batch_specs = frm.batch_specs || {};
+    let missing = Array.from(new Set(frm.doc.items.filter(i => i.batch && !frm.batch_specs[i.batch]).map(i => i.batch)));
+    if(missing.length == 0) {
+        return Promise.resolve(frm.batch_specs);
+    }
+    return new Promise(resolve => {
+        frappe.call({
+            method: 'tobientrading_custom.tobientrading_custom.doctype.supplier_packaging_spec.supplier_packaging_spec.get_batch_packaging_specs',
+            args: {
+                batches: missing
+            },
+            callback(r) {
+                Object.assign(frm.batch_specs, r.message || {});
+                resolve(frm.batch_specs);
+            }
+        });
+    });
+}
+
+
+function build_pallets_list(frm, batch_specs) {
     frm.set_value("pallets", []);
+
+    // Full pallets: one entry per distinct pallet specification
+    for (var item of frm.doc.items) {
+        if(item.num_full_pallets > 0) {
+            add_pallets(frm, {
+                pallet_length: item.pallet_length,
+                pallet_width: item.pallet_width,
+                pallet_height: item.full_pallet_height,
+                pallet_net_weight: item.full_pallet_net_weight,
+                pallet_gross_weight: item.full_pallet_gross_weight,
+                item_names: [ item.item_name ]
+            }, item.num_full_pallets);
+        }
+    }
+
+    // Rest pallets: group the items by pallet specs, as only pallets of the same type can be combined
     let used_items = [];
-    let total_full_pallets = 0;
-    // For each unused Item row, find other unused rows with exactly the same full pallet specs and create a common entry in the pallets list
     for (var item of frm.doc.items) {
-        if(item.num_full_pallets > 0 && !used_items.includes(item.idx)) {
-            let new_pallet_type = frm.add_child("pallets");
-            new_pallet_type.pallet_length = item.pallet_length;
-            new_pallet_type.pallet_width = item.pallet_width;
-            new_pallet_type.pallet_height = item.full_pallet_height;
-            new_pallet_type.pallet_net_weight = item.full_pallet_net_weight;
-            new_pallet_type.pallet_gross_weight = item.full_pallet_gross_weight;
-            used_items.push(item.idx);
-            let same_pallets = frm.doc.items.filter(i =>
-                i.num_full_pallets > 0 &&
-                !used_items.includes(i.idx) &&
-                i.pallet_length == item.pallet_length &&
-                i.pallet_width == item.pallet_width &&
-                i.pallet_base_height == item.pallet_base_height &&
-                i.pallet_tare == item.pallet_tare &&
-                i.full_pallet_height == item.full_pallet_height &&
-                i.full_pallet_net_weight == item.full_pallet_net_weight &&
-                i.full_pallet_gross_weight == item.full_pallet_gross_weight
-            );
-            new_pallet_type.num_pallets = item.num_full_pallets || 0;
-            let item_names = new Set([ item.item_name ]); // List of unique item names
-            for (var sp of same_pallets) {
-                used_items.push(sp.idx);
-                new_pallet_type.num_pallets += sp.num_full_pallets;
-                item_names.add(sp.item_name);
-            }
-            new_pallet_type.items = Array.from(item_names).join(", ")
-            total_full_pallets += new_pallet_type.num_pallets;
+        if(!item.has_rest_pallet || used_items.includes(item.idx)) {
+            continue;
         }
+        let compatible_rest_items = frm.doc.items.filter(i =>
+            i.has_rest_pallet &&
+            !used_items.includes(i.idx) &&
+            i.pallet_length == item.pallet_length &&
+            i.pallet_width == item.pallet_width &&
+            i.pallet_base_height == item.pallet_base_height &&
+            i.pallet_tare == item.pallet_tare
+        );
+        compatible_rest_items.forEach(i => used_items.push(i.idx));
+        add_rest_pallets(frm, compatible_rest_items, batch_specs);
     }
 
-    // For each unused rest pallet, find other unused rest pallets with compatible pallet specs
-    // Then determine the optimal configuration for these pallets
-    used_items = [];
-    let total_rest_pallets = 0;
-    for (var item of frm.doc.items) {
-        if(item.has_rest_pallet && !used_items.includes(item.idx)) {
-            used_items.push(item.idx);
-            height_limit = Math.min(frm.doc.customer_max_pallet_height, item.pallet_max_height);
-            let compatible_rest_items = frm.doc.items.filter(i =>
-                i.has_rest_pallet &&
-                !used_items.includes(i.idx) &&
-                i.pallet_length == item.pallet_length &&
-                i.pallet_width == item.pallet_width &&
-                i.pallet_base_height == item.pallet_base_height &&
-                i.pallet_tare == item.pallet_tare
-            );
-            for (var i of compatible_rest_items) {
-                used_items.push(i.idx);
-                height_limit = Math.min(height_limit, i.pallet_max_height);
-            }
-            compatible_rest_items.push(item);
-            rest_item_heights = compatible_rest_items.map(i => i.rest_pallet_height - i.pallet_base_height);
-
-            // Pack rest items onto pallets
-
-            let rest_pallet_packing;
-            if(!frm.doc.customer_palletize_by_batch) {
-                // Put different items/batches together
-                // TODO: For now we just do a 1D optimization of layer heights onto pallets.
-                //       We could use a 3D packing library such as https://github.com/olragon/binpackingjs instead.
-                rest_pallet_packing = pack_into_bins(rest_item_heights, compatible_rest_items.length, height_limit - item.pallet_base_height);
-                if(!rest_pallet_packing.feasible) {
-                    frappe.msgprint(__("Error: No packing found for rest pallets"));
-                    continue;
-                }
-            } else {
-                // Palletize batches individually => Use a trivial solution (one bin per item)
-                rest_pallet_packing = {
-                    bins: Object.keys(compatible_rest_items)
-                }
-            }
-
-            // Calculate specs of each rest pallet
-            for (var pallet of rest_pallet_packing.bins) {
-                if(pallet.length > 0) {
-                    let net_weight = 0;
-                    let gross_weight = item.pallet_tare;
-                    let height = item.pallet_base_height;
-                    let item_names = new Set();
-                    // Sum up specs of height/weights of rest items assigned to this pallet
-                    for (var item_idx of pallet) {
-                        let pallet_item = compatible_rest_items[item_idx];
-                        net_weight += pallet_item.rest_pallet_net_weight;
-                        gross_weight += pallet_item.rest_pallet_gross_weight - pallet_item.pallet_tare;
-                        item_names.add(pallet_item.item_name);
-                        height += rest_item_heights[item_idx];
-                    }
-                    // Check if the resulting pallet is identical to a pallet type we already have
-                    existing_pallet = frm.doc.pallets.find(p =>
-                        p.pallet_length == item.pallet_length &&
-                        p.pallet_width == item.pallet_width &&
-                        p.pallet_height == height &&
-                        p.net_weight == net_weight &&
-                        p.gross_weight == gross_weight
-                    );
-                    // If so, increment the number of this type of pallet
-                    if(existing_pallet) {
-                        existing_pallet.num_pallets += 1;
-                        // If some Items are not present in the items text, append them to it
-                        // TODO/NOTE: We could store the list of Items as JSON to cover edge cases where one Item's name is contained in the other,
-                        //            but let's neglect this possibility in favor of a simple, human-readable, comma-separated list
-                        for (var i of item_names) {
-                            if(!existing_pallet.items.includes(i)) {
-                                existing_pallet.items += ", "+i;
-                            }
-                        }
-                    // Otherwise create a new pallet type
-                    } else {
-                        let new_pallet = frm.add_child("pallets");
-                        new_pallet.num_pallets = 1;
-                        new_pallet.pallet_length = item.pallet_length;
-                        new_pallet.pallet_width = item.pallet_width;
-                        new_pallet.pallet_height = height;
-                        new_pallet.pallet_net_weight = net_weight;
-                        new_pallet.pallet_gross_weight = gross_weight;
-                        new_pallet.items = Array.from(item_names).join(", ");
-                    }
-                    total_rest_pallets += 1;
-                }
-            }
-        }
-    }
-    //frappe.show_alert({message: __("Created a pallet list with a total of {0} full pallets and {1} merged rest pallets", [total_full_pallets, total_rest_pallets]), indicator: 'blue'}, 30);
     frm.refresh_field("pallets");
     update_total_weights(frm);
+}
+
+
+// Consolidate the rest pallets of a group of items sharing the same pallet specs:
+// re-stack the packages that may share a layer, then pack whatever is left onto as few pallets as possible
+function add_rest_pallets(frm, rest_items, batch_specs) {
+    let pallet = rest_items[0]; // Pallet specs are identical for the whole group
+    let height_limit = get_max_pallet_height(frm, rest_items, batch_specs);
+    if(!height_limit) {
+        frappe.show_alert({message: __("No maximum pallet height is defined - rest pallets are not stacked together."), indicator: 'orange'}, 30);
+    }
+    // Height available for the goods, i.e. without the pallet itself
+    let goods_height_limit = height_limit ? height_limit - pallet.pallet_base_height : 0;
+    if(height_limit && goods_height_limit <= 0) {
+        frappe.msgprint(__("The base pallet height of item '{0}' is higher than the maximum pallet height of {1} cm.", [pallet.item_name, height_limit]));
+        return;
+    }
+
+    // Merge the packages that may be stacked into common layers, then fill up whole pallets with them.
+    // What remains of every merged entry is a block of layers to be distributed over the rest pallets.
+    let blocks = merge_rest_items(frm, rest_items, batch_specs)
+        .map(entry => split_off_full_pallets(frm, entry, goods_height_limit, pallet))
+        .filter(entry => entry.height > 0);
+
+    let rest_pallet_packing;
+    if(frm.doc.customer_palletize_by_batch || !goods_height_limit) {
+        // Palletize batches individually => Use a trivial solution (one bin per merged entry)
+        rest_pallet_packing = { bins: blocks.map((b, i) => [i]) };
+    } else {
+        // Put different items/batches together
+        // TODO: For now we just do a 1D optimization of layer heights onto pallets.
+        //       We could use a 3D packing library such as https://github.com/olragon/binpackingjs instead.
+        rest_pallet_packing = pack_into_bins(blocks.map(b => b.height), blocks.length, goods_height_limit);
+        if(!rest_pallet_packing.feasible) {
+            frappe.msgprint(__("Error: No packing found for rest pallets"));
+            return;
+        }
+    }
+
+    // Calculate specs of each rest pallet
+    for (var bin of rest_pallet_packing.bins) {
+        if(bin.length == 0) {
+            continue;
+        }
+        let height = pallet.pallet_base_height;
+        let net_weight = 0;
+        let gross_weight = pallet.pallet_tare;
+        let item_names = [];
+        // Sum up heights/weights of the blocks assigned to this pallet
+        for (var block_idx of bin) {
+            let block = blocks[block_idx];
+            height += block.height;
+            net_weight += block.net_weight;
+            gross_weight += block.gross_weight;
+            block.item_names.forEach(n => { if(!item_names.includes(n)) { item_names.push(n); } });
+        }
+        add_pallets(frm, {
+            pallet_length: pallet.pallet_length,
+            pallet_width: pallet.pallet_width,
+            pallet_height: height,
+            pallet_net_weight: net_weight,
+            pallet_gross_weight: gross_weight,
+            item_names: item_names
+        }, 1);
+    }
+}
+
+
+// Lowest of all maximum pallet heights that apply to a group of items: the customer's
+// requirement and the limit defined in each item's Batch. Returns 0 if none is defined.
+function get_max_pallet_height(frm, items, batch_specs) {
+    let limits = [];
+    if(frm.doc.customer_max_pallet_height > 0) {
+        limits.push(frm.doc.customer_max_pallet_height);
+    }
+    for (var item of items) {
+        let spec = batch_specs[item.batch];
+        if(spec && spec.pallet_max_height > 0) {
+            limits.push(spec.pallet_max_height);
+        }
+    }
+    return limits.length > 0 ? Math.min(...limits) : 0;
+}
+
+
+// Pool the packages of those rest pallets that may be stacked into common layers, instead of
+// treating each rest pallet as a solid block with a partly filled layer on top. Packages can
+// share a layer if they are of the same Batch, or - unless the customer requires batches to be
+// palletized individually - if their package specs are identical.
+// Returns one entry per group of pooled packages.
+function merge_rest_items(frm, rest_items, batch_specs) {
+    let entries = new Map();
+    for (var item of rest_items) {
+        let spec = batch_specs[item.batch];
+        if(!spec || !spec.package_weight || !spec.package_height || !spec.packages_per_layer) {
+            frappe.show_alert({message: __("Row #{0}: Batch {1} has incomplete packaging details, its rest pallet cannot be optimized.", [item.idx, item.batch || '-']), indicator: 'orange'}, 30);
+            spec = null;
+        }
+        let key;
+        if(!spec) {
+            key = "row:" + item.idx; // Unknown package specs: keep this rest pallet as it is
+        } else if(frm.doc.customer_palletize_by_batch) {
+            key = "batch:" + item.batch;
+        } else {
+            key = ["spec", spec.package_length, spec.package_width, spec.package_height, spec.package_tare, spec.package_weight, spec.packages_per_layer].join(":");
+        }
+        let entry = entries.get(key);
+        if(!entry) {
+            entry = { spec: spec, packages: 0, net_weight: 0, gross_weight: 0, height: 0, item_names: [] };
+            entries.set(key, entry);
+        }
+        entry.packages += get_rest_packages(item, spec);
+        entry.net_weight += item.rest_pallet_net_weight;
+        // Gross weight of the goods only, i.e. without the pallet itself
+        entry.gross_weight += item.rest_pallet_gross_weight - item.pallet_tare;
+        if(!spec) {
+            entry.height = item.rest_pallet_height - item.pallet_base_height;
+        }
+        if(!entry.item_names.includes(item.item_name)) {
+            entry.item_names.push(item.item_name);
+        }
+    }
+    return Array.from(entries.values());
+}
+
+
+// Number of packages on an item's rest pallet, derived from its net weight
+// (the number of packages is ceil(quantity / package weight), cf. get_pallet_details_for_batch())
+function get_rest_packages(item, spec) {
+    if(!spec || !spec.package_weight) {
+        return 0;
+    }
+    return Math.ceil(item.rest_pallet_net_weight / spec.package_weight - 1e-9);
+}
+
+
+// Stack the pooled packages of a merged entry into layers: create as many full pallets as the
+// height limit allows and return the entry with the remaining, partly filled block of layers
+function split_off_full_pallets(frm, entry, goods_height_limit, pallet) {
+    if(!entry.spec) {
+        return entry; // Unknown package specs: the block height is taken from the item as calculated by the server
+    }
+    let layers_per_pallet = goods_height_limit ? Math.floor(goods_height_limit / entry.spec.package_height) : 0;
+    let packages_per_pallet = layers_per_pallet * entry.spec.packages_per_layer;
+    let num_full_pallets = packages_per_pallet ? Math.floor(entry.packages / packages_per_pallet) : 0;
+    if(num_full_pallets > 0) {
+        // The pooled packages fill up whole pallets - these are added to the list right away.
+        // The weights are distributed evenly over the packages rather than assuming the nominal
+        // package weight, because the last package of every item row may be only partly filled.
+        let full_net_weight = packages_per_pallet * entry.net_weight / entry.packages;
+        let full_gross_weight = packages_per_pallet * entry.gross_weight / entry.packages;
+        add_pallets(frm, {
+            pallet_length: pallet.pallet_length,
+            pallet_width: pallet.pallet_width,
+            pallet_height: pallet.pallet_base_height + layers_per_pallet * entry.spec.package_height,
+            pallet_net_weight: full_net_weight,
+            pallet_gross_weight: full_gross_weight + pallet.pallet_tare,
+            item_names: entry.item_names
+        }, num_full_pallets);
+        entry.packages -= num_full_pallets * packages_per_pallet;
+        entry.net_weight -= num_full_pallets * full_net_weight;
+        entry.gross_weight -= num_full_pallets * full_gross_weight;
+    }
+    entry.height = Math.ceil(entry.packages / entry.spec.packages_per_layer) * entry.spec.package_height;
+    return entry;
+}
+
+
+// Add pallets to the consolidated list. If a pallet of identical specs is already listed,
+// the number of that type of pallet is incremented instead.
+function add_pallets(frm, specs, num_pallets) {
+    let existing_pallet = frm.doc.pallets.find(p =>
+        p.pallet_length == specs.pallet_length &&
+        p.pallet_width == specs.pallet_width &&
+        p.pallet_height == specs.pallet_height &&
+        Math.abs(p.pallet_net_weight - specs.pallet_net_weight) < 0.001 &&
+        Math.abs(p.pallet_gross_weight - specs.pallet_gross_weight) < 0.001
+    );
+    if(existing_pallet) {
+        existing_pallet.num_pallets += num_pallets;
+        // If some Items are not present in the items text, append them to it
+        let listed_items = existing_pallet.items.split(", ");
+        for (var item_name of specs.item_names) {
+            if(!listed_items.includes(item_name)) {
+                existing_pallet.items += ", " + item_name;
+                listed_items.push(item_name);
+            }
+        }
+        return existing_pallet;
+    }
+    let new_pallet = frm.add_child("pallets");
+    new_pallet.num_pallets = num_pallets;
+    new_pallet.pallet_length = specs.pallet_length;
+    new_pallet.pallet_width = specs.pallet_width;
+    new_pallet.pallet_height = specs.pallet_height;
+    new_pallet.pallet_net_weight = specs.pallet_net_weight;
+    new_pallet.pallet_gross_weight = specs.pallet_gross_weight;
+    new_pallet.items = specs.item_names.join(", ");
+    return new_pallet;
 }
 
 
