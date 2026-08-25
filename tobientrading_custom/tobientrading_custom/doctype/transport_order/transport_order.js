@@ -278,7 +278,11 @@ function fetch_items_from_doc(frm, dt, dn, dynamic_link_doc) {
                     calculate_item_dimensions(frm, my_item.doctype, my_item.name);
                 } else {
                     // If no Batch is given in the reference doc, check if a matching batch by the name of the PO (-Item) exists
-                    let find_matching_batch = frappe.db.get_value("Batch", {name: ['IN',[ref_doc.name,ref_doc.name+'-'+item.idx]], item: my_item.item_code}, "name");
+                    let base_name = ref_doc.name.substr(0,ref_doc.name.search(/\-[0-9]+$/));
+                    if(base_name.length < 8) {
+                        base_name = ref_doc.name;
+                    }
+                    let find_matching_batch = frappe.db.get_value("Batch", {name: ['IN',[base_name,base_name+'-'+item.idx,ref_doc.name,ref_doc.name+'-'+item.idx]], item: my_item.item_code}, "name");
                     promises.push(find_matching_batch);
                     find_matching_batch.then(r => {
                         if(r.message && r.message.name) {
