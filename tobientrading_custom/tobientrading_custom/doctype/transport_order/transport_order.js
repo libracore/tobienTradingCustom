@@ -38,6 +38,34 @@ frappe.ui.form.on('Transport Order', {
             fetch_loading_address_details(frm);
         }
     },
+    supplier(frm) {
+        if(frm.doc.supplier) {
+            frm.set_query("loading_address", () => {
+                return {
+                    filters: [ ['Dynamic Link', 'link_doctype', '=', 'Supplier'], ['Dynamic Link', 'link_name', '=', frm.doc.supplier] ]
+                }
+            });
+            frm.set_query("contact_person", () => {
+                return {
+                    filters: [ ['Dynamic Link', 'link_doctype', '=', 'Supplier'], ['Dynamic Link', 'link_name', '=', frm.doc.supplier] ]
+                }
+            });
+        }
+    },
+    customer(frm) {
+        if(frm.doc.customer) {
+            frm.set_query("company_shipping_address", () => {
+                return {
+                    filters: [ ['Dynamic Link', 'link_doctype', '=', 'Customer'], ['Dynamic Link', 'link_name', '=', frm.doc.customer] ]
+                }
+            });
+            frm.set_query("company_contact_person", () => {
+                return {
+                    filters: [ ['Dynamic Link', 'link_doctype', '=', 'Customer'], ['Dynamic Link', 'link_name', '=', frm.doc.customer] ]
+                }
+            });
+        }
+    },
     company_shipping_address(frm) {
         if(frm.doc.company_shipping_address) {
             fetch_shipping_address_details(frm);
