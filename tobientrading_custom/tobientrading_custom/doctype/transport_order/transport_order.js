@@ -244,6 +244,13 @@ function fetch_items_from_doc(frm, dt, dn, dynamic_link_doc) {
             // Find the current PO/SO item in the TO item list or add a new row if not present yet
             let ref_qty = item.qty - (item.received_qty || 0) - (item.delivered_qty || 0);
             let existing_items = frm.doc.items.filter(i => i.item_code == item.item_code && i.quantity == ref_qty && !updated_items.includes(i.name));
+            // When fetching from a PO, only update items that came from a SO, and vice versa
+            // (SO: also update any item that references the current SO item)
+            if(dt == "Purchase Order") {
+                existing_items = existing_items.filter(i => i.sales_order_item);
+            } else {
+                existing_items = existing_items.filter(i => !i.sales_order_item || i.sales_order_item == item.name);
+            }
             let my_item = null;
             if(existing_items.length > 0) {
                 // Item already in table: Just set a reference to Sales Order Item
