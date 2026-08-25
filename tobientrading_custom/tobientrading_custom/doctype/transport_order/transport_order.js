@@ -4,32 +4,66 @@
 frappe.ui.form.on('Transport Order', {
 
     setup(frm) {
-        frm.set_query("purchase_order", function() {
-            return {
-                filters: [
-                    ["Purchase Order","status", "in", ["To Receive and Bill", "To Bill"]]
-                ]
-            };
-        });
-        frm.set_query("sales_order", function() {
-            return {
-                filters: [
-                    ["Sales Order","status", "in", ["To Deliver and Bill", "To Bill"]]
-                ]
-            };
-        });
+        if(frm.doc.docstatus == 0)  {
+            frm.set_query("link_doctype", "po_so_links", function () {
+                return {
+                    filters: {
+                        name: ['in', ['Purchase Order','Sales Order']]
+                    },
+                };
+            });
+            frm.set_query("link_name", "po_so_links", function(doc, cdt, cdn) {
+                let row = locals[cdt][cdn];
+                if(row.link_doctype == "Purchase Order") {
+                    return { filters: { docstatus: 1, per_received: ["<", "100"], status: 'To receive and bill' } };
+                } else if(row.link_doctype == "Sales Order") {
+                    return { filters: { docstatus: 1, per_delivered: ["<", "100"], status: 'To deliver and bill' } };
+                }
+            });
+        }
     },
     refresh(frm) {
-        if(frm.doc.docstatus == 1 && frm.doc.sales_order) {
+        // Drop the cached Batch packaging specs, they may have been edited in the meantime
+        frm.batch_specs = {};
+        if(frm.doc.docstatus == 1 && frm.doc.po_so_links && frm.doc.po_so_links.some(l => l.link_doctype == "Sales Order")) {
             frm.add_custom_button(__("Lieferschein erstellen"), () => { create_delivery_note(frm); });
         }
     },
     validate(frm) {
         check_allowed_pallet_types(frm);
+        check_unique_customer_supplier(frm);
     },
     loading_address(frm) {
         if(frm.doc.loading_address) {
             fetch_loading_address_details(frm);
+        }
+    },
+    supplier(frm) {
+        if(frm.doc.supplier) {
+            frm.set_query("loading_address", () => {
+                return {
+                    filters: [ ['Dynamic Link', 'link_doctype', '=', 'Supplier'], ['Dynamic Link', 'link_name', '=', frm.doc.supplier] ]
+                }
+            });
+            frm.set_query("contact_person", () => {
+                return {
+                    filters: [ ['Dynamic Link', 'link_doctype', '=', 'Supplier'], ['Dynamic Link', 'link_name', '=', frm.doc.supplier] ]
+                }
+            });
+        }
+    },
+    customer(frm) {
+        if(frm.doc.customer) {
+            frm.set_query("company_shipping_address", () => {
+                return {
+                    filters: [ ['Dynamic Link', 'link_doctype', '=', 'Customer'], ['Dynamic Link', 'link_name', '=', frm.doc.customer] ]
+                }
+            });
+            frm.set_query("company_contact_person", () => {
+                return {
+                    filters: [ ['Dynamic Link', 'link_doctype', '=', 'Customer'], ['Dynamic Link', 'link_name', '=', frm.doc.customer] ]
+                }
+            });
         }
     },
     company_shipping_address(frm) {
@@ -47,16 +81,6 @@ frappe.ui.form.on('Transport Order', {
             fetch_company_contact_person_details(frm);
         }
     },
-    purchase_order(frm) {
-        if(frm.doc.purchase_order) {
-            fetch_items_from_doc(frm, "Purchase Order", frm.doc.purchase_order);
-        }
-    },
-    sales_order(frm) {
-        if(frm.doc.sales_order) {
-            fetch_items_from_doc(frm, "Sales Order", frm.doc.sales_order);
-        }
-    },
     goods_button(frm) {
         goods_desc = `Total net weight: ${frm.doc.total_net_weight.toFixed(2)} kg
 Total gross weight: ${frm.doc.total_gross_weight.toFixed(2)} kg`;
@@ -71,7 +95,7 @@ Gross weight per pallet: ${(pal.pallet_gross_weight || 0)} kg`;
         frm.set_value("goods", goods_desc);
     },
     customer_max_pallet_height(frm) {
-        if(!frm.fetching_items && frm.doc.sales_order == frm.fields_dict.sales_order.input.value) {
+        if(!frm.fetching_items) {
             for(i of frm.doc.items) {
                 // Recalculate for ALL items, as we cannot know which ones were previously and which ones are now affected by the max height
                 calculate_item_dimensions(frm, i.doctype, i.name);
@@ -83,8 +107,19 @@ Gross weight per pallet: ${(pal.pallet_gross_weight || 0)} kg`;
         generate_pallets_list(frm);
     },
     customer_pallet_types(frm) {
-        if(!frm.fetching_items && frm.doc.sales_order == frm.fields_dict.sales_order.input.value) {
+        if(!frm.fetching_items) {
             check_allowed_pallet_types(frm);
+        }
+    }
+});
+
+
+frappe.ui.form.on('Dynamic Link', {
+    link_name(frm, cdt, cdn) {
+        from_dt = locals[cdt][cdn].link_doctype;
+        from_dn = locals[cdt][cdn].link_name;
+        if(from_dt && from_dn) {
+            fetch_items_from_doc(frm, from_dt, from_dn, cdn);
         }
     }
 });
@@ -213,99 +248,98 @@ function fetch_shipping_address_details(frm) {
 }
 
 
-function fetch_items_from_doc(frm, dt, dn) {
+function fetch_items_from_doc(frm, dt, dn, dynamic_link_doc) {
     frm.fetching_items = true;
     let promises = [];
     let fetch_ref_doc = frappe.db.get_doc(dt, dn);
     promises.push(fetch_ref_doc);
     fetch_ref_doc.then(ref_doc => {
-        // Sales Order: Fetch allowed pallet types as well (the other customer specs are fetched automatically by "fetch_from")
-        if(dt == "Sales Order" && ref_doc.customer_pallet_types) {
-            let clear_pallet_types = frm.fields_dict.customer_pallet_types.set_value([]);
-            promises.push(clear_pallet_types);
-            clear_pallet_types.then(() => {
-                ref_doc.customer_pallet_types.forEach(pt => {
-                    new_cpt = frm.add_child("customer_pallet_types");
-                    new_cpt.pallet_type = pt.pallet_type;
-                });
-                frm.refresh_field("customer_pallet_types");
-            });
-        }
-        // palletize_by_batch field: Fetch manually to avoid overwriting on every save
-        if(dt == "Sales Order" && ref_doc.palletize_by_batch) {
-            frm.set_value("customer_palletize_by_batch", ref_doc.palletize_by_batch);
-        }
+        // Set title of Dynamic Link to party of linked doc
+        let party = (dt == "Sales Order" ? ref_doc.customer_name : ref_doc.supplier_name);
+        frappe.model.set_value("Dynamic Link", dynamic_link_doc, "link_title", party);
 
-        // PO: Clear item table and add items from reference doc. Populate Batch by looking for a batch no matching the PO.
-        // SO: Fetch items from reference doc and add any items that aren't there yet.
-        //     For existing items (identified by item code and qty) set the reference to SO Item only.
-        if(dt == "Purchase Order" || !frm.doc.purchase_order) {
-            frm.set_value("items",[]);
+        if(dt == "Sales Order") {
+            update_customer_fields(frm, ref_doc);
+        } else {
+            update_supplier_fields(frm, ref_doc);
         }
 
         let added_cnt = 0;
         let ignored_cnt = 0;
-        if(dt == "Purchase Order") {
-            for(var item of ref_doc.items) {
-                let new_item = get_new_child_table_item(frm, item);
-
-                if(new_item){
-                    added_cnt++;
-                    if(new_item.batch) {
-                        // Trigger recalculation of item dimensions if batch already given
-                        calculate_item_dimensions(frm, new_item.doctype, new_item.name);
-                    } else {
-                        // If no Batch is given in the reference doc, check if a matching batch by the name of the PO (-Item) exists
-                        let find_matching_batch = frappe.db.get_value("Batch", {name: ['IN',[ref_doc.name,ref_doc.name+'-'+item.idx]], item: new_item.item_code}, "name");
-                        promises.push(find_matching_batch);
-                        find_matching_batch.then(r => {
-                            if(r.message && r.message.name) {
-                                new_item.batch = r.message.name;
-                                calculate_item_dimensions(frm, new_item.doctype, new_item.name);
-                                frappe.show_alert({message: __("Row #{0}: Batch not linked in PO. Matching batch '{1}' found.", [new_item.idx, r.message.name]), indicator: 'blue'}, 30);
-                            }
-                            else {
-                                frappe.show_alert({message: __("Row #{0}: Batch not linked in PO and no matching Batch found. Please set Batch in PO to proceed.", [new_item.idx]), indicator: 'red'}, 30);
-                            }
-                        });
-                    }
-                } else {
-                    ignored_cnt++;
-                }
+        let updated_cnt = 0;
+        let updated_items = [];
+        for(var item of ref_doc.items) {
+            // Find the current PO/SO item in the TO item list or add a new row if not present yet
+            let ref_qty = item.qty - (item.received_qty || 0) - (item.delivered_qty || 0);
+            let existing_items = frm.doc.items.filter(i => i.item_code == item.item_code && i.quantity == ref_qty && !updated_items.includes(i.name));
+            // When fetching from a PO, only update items that came from a SO, and vice versa
+            // (SO: also update any item that references the current SO item)
+            if(dt == "Purchase Order") {
+                existing_items = existing_items.filter(i => i.sales_order_item);
+            } else {
+                existing_items = existing_items.filter(i => !i.sales_order_item || i.sales_order_item == item.name);
             }
-            frappe.show_alert({message: __("Purchase order processed. {0} Items were added and {1} ignored (goods already received)", [added_cnt, ignored_cnt]), indicator: 'blue'}, 30);
-
-
-        } else { // dt == "Sales Order"
-            let updated_cnt = 0;
-            for(var item of ref_doc.items) {
-                let existing_items = frm.doc.items.filter(i => i.item_code == item.item_code && i.quantity == i.quantity);
-                let my_item = null;
-                if(existing_items.length > 0) {
-                    // Item already in table: Just set a reference to Sales Order Item
-                    my_item = existing_items[0];
-                    updated_cnt++;
+            let my_item = null;
+            if(existing_items.length > 0) {
+                // Item already in table: Just set a reference to Sales Order Item
+                my_item = existing_items[0];
+                updated_cnt++;
+                // If the reference doc contains the same item several times, we want to add it several times,
+                // therefore we consider each pre-existing item only once
+                updated_items.push(my_item.name);
+                // Update SO-Item reference if applicable
+                if(dt == "Sales Order") {
                     promises.push(frappe.model.set_value(my_item.doctype, my_item.name, "sales_order_item", item.name));
-                } else if(!frm.doc.purchase_order) {
-                    // Item not there yet and no PO given: Create new row
-                    my_item = get_new_child_table_item(frm, item);
-                    if(my_item) {
-                        added_cnt++;
-                    } else {
-                        ignored_cnt++;
-                        continue;
-                    }
+                }
+            } else {
+                // Item not there yet: Create new row
+                my_item = get_new_child_table_item(frm, item);
+                if(my_item) {
+                    added_cnt++;
                 } else {
                     ignored_cnt++;
                     continue;
                 }
+            }
 
-                if(my_item.batch) {
-                    // Trigger recalculation of item dimensions if batch already given
+            // Batch assignment:
+            // PO - If there is a batch matching the PO No. or referenced in the PO, overwrite the item's batch with that.
+            //      Otherwise show a warning and leave the batch unchanged.
+            // SO - If the item has no batch assigned yet, assign one (or several) based on FIFO principle
+            if(dt == 'Purchase Order') {
+                if(item.batch_no && my_item.batch != item.batch_no) {
+                    promises.push(frappe.model.set_value(my_item.doctype, my_item.name, "batch", item.batch_no));
+                    frappe.show_alert({message: __("Row #{0}: Batch No. updated according to {1}", [my_item.idx, ref_doc.name]), indicator: 'blue'}, 30);
                     calculate_item_dimensions(frm, my_item.doctype, my_item.name);
-                } else if(!frm.doc.purchase_order) {
-                    // No Batch given: Assign batches by FIFO principle, split quantity over several batches if needed
-                    // (Except if PO given - in that case we only want to ship batches from that PO)
+                } else {
+                    // If no Batch is given in the reference doc, check if a matching batch by the name of the PO (-Item) exists
+                    let base_name = ref_doc.name.substr(0,ref_doc.name.search(/\-[0-9]+$/));
+                    if(base_name.length < 8) {
+                        base_name = ref_doc.name;
+                    }
+                    let find_matching_batch = frappe.db.get_value("Batch", {name: ['IN',[base_name,base_name+'-'+item.idx,ref_doc.name,ref_doc.name+'-'+item.idx]], item: my_item.item_code}, "name");
+                    promises.push(find_matching_batch);
+                    find_matching_batch.then(r => {
+                        if(r.message && r.message.name) {
+                            promises.push(frappe.model.set_value(my_item.doctype, my_item.name, "batch", r.message.name));
+                            calculate_item_dimensions(frm, my_item.doctype, my_item.name);
+                            frappe.show_alert({message: __("Row #{0}: Batch not linked in PO. Matching batch '{1}' found.", [my_item.idx, r.message.name]), indicator: 'blue'}, 30);
+                        }
+                        else {
+                            frappe.show_alert({message: __("Row #{0}: Batch not linked in PO and no matching Batch found.", [my_item.idx]), indicator: 'orange'}, 30);
+                        }
+                    });
+                }
+            }
+
+            // Sales Order
+            else if(my_item.batch) {
+                // Trigger recalculation of item dimensions if batch already given
+                calculate_item_dimensions(frm, my_item.doctype, my_item.name);
+            } else {
+                // No Batch given: Assign batches by FIFO principle, split quantity over several batches if needed
+                // (Except if PO given - in that case we only want to ship batches from that PO)
+                let batches_returned = new Promise((resolve,reject) => {
                     frappe.call({
                         method: 'tobientrading_custom.tobientrading_custom.doctype.transport_order.transport_order.get_matching_batches',
                         args: {
@@ -320,9 +354,6 @@ function fetch_items_from_doc(frm, dt, dn) {
                             if(batches.length == 0) {
                                 frappe.show_alert({message: __("Row #{0}: No matching batches in stock", [my_item.idx]), indicator: 'red'}, 30);
                             } else {
-                                if(r.message.status != 'OK') {
-                                    frappe.show_alert({message: __("Row #{0}: "+r.message.status, [my_item.idx]), indicator: 'orange'}, 30);
-                                }
                                 my_item.quantity = batches[0].qty;
                                 my_item.uom = batches[0].uom; // TODO - adapt rate to new UOM here if needed
                                 my_item.amount = my_item.rate * batches[0].qty;
@@ -335,13 +366,28 @@ function fetch_items_from_doc(frm, dt, dn) {
                                     extra_item.batch = batches[i].batch_no;
                                     calculate_item_dimensions(frm, extra_item.doctype, extra_item.name);
                                 }
+                                if(r.message.status == 'insufficient_stock') {
+                                    let missing_qty = ref_qty;
+                                    batches.map(b => missing_qty -= b.qty);
+                                    frappe.show_alert({message: __("Row #{0}: The available stock does not cover the full order quantity ({1} {2} missing)", [my_item.idx, missing_qty, my_item.uom]), indicator: 'orange'}, 30);
+                                    // Add an item row with the remaining qty but without Batch
+                                    let extra_item = get_new_child_table_item(frm, my_item, true);
+                                    extra_item.quantity = missing_qty;
+                                    extra_item.uom = my_item.uom;
+                                    extra_item.amount = my_item.rate * missing_qty;
+                                    extra_item.batch = '';
+                                    calculate_item_dimensions(frm, extra_item.doctype, extra_item.name);
+                                }
+                                resolve();
                             }
                         }
                     });
-                }
+                });
+                promises.push(batches_returned);
             }
-            frappe.show_alert({message: __("Sales order processed. {0} Items were added, {1} updated and {2} ignored (already shipped or not present in PO)", [added_cnt, updated_cnt, ignored_cnt]), indicator: 'blue'}, 30);
         }
+
+        frappe.show_alert({message: __("{0} processed. {1} Items were added, {2} updated and {3} ignored (already delivered)", [dt, added_cnt, updated_cnt, ignored_cnt]), indicator: 'blue'}, 30);
 
         Promise.all(promises).finally(() => {
             frm.refresh_field("items");
@@ -350,13 +396,80 @@ function fetch_items_from_doc(frm, dt, dn) {
         // NOTE:
         // Even though we use frappe.model.set_value() to set Batch references here, Frappe doesn't fetch linked fields automatically. It would be possible to trigger this as follows:
         //   frm.refresh_field("items");
-        //   frm.fields_dict.items.grid.grid_rows[0].open_row_at_index(new_item.idx);
-        //   frm.fields_dict.items.grid.open_grid_row.fields_dict.batch.validate_and_set_in_model(new_item.batch);
+        //   frm.fields_dict.items.grid.grid_rows[0].open_row_at_index(my_item.idx);
+        //   frm.fields_dict.items.grid.open_grid_row.fields_dict.batch.validate_and_set_in_model(my_item.batch);
         // However, then we don't have an event handler to know when it's completed.
         // As a simple solution, we make our get_pallet_details_for_batch() function return the required batch specs along with the rest, and set them manually.
         // Perhaps it would have been easier to implement all of the calculation logic on the server side...
     });
 }
+
+
+// Set supplier fields to values from a PO (as a replacement for "fetch_from" settings, as we are allowing several POs)
+function update_supplier_fields(frm, po_doc) {
+    if(frm.doc.supplier) {
+        if(frm.doc.supplier != po_doc.supplier) {
+            return false;
+        }
+    } else {
+        frm.set_value("supplier", po_doc.supplier);
+    }
+    set_field_if_empty(frm, "loading_address", po_doc.loading_address);
+    set_field_if_empty(frm, "contact_person", po_doc.contact_person);
+    set_field_if_empty(frm, "incoterms_from_po", po_doc.incoterm);
+    set_field_if_empty(frm, "incoterm_place_from_po", po_doc.incoterm_place);
+    set_field_if_empty(frm, "pick_up_date", po_doc.schedule_date);
+    return true;
+}
+
+
+// Set customer fields to values from a SO (as a replacement for "fetch_from" settings, as we are allowing several SOs)
+function update_customer_fields(frm, so_doc) {
+    if(frm.doc.customer) {
+        if(frm.doc.customer != so_doc.customer) {
+            return false;
+        }
+    } else {
+        frm.set_value("customer", so_doc.customer);
+    }
+    set_field_if_empty(frm, "company_shipping_address", so_doc.shipping_address_name);
+    set_field_if_empty(frm, "company_contact_person", so_doc.contact_person);
+    set_field_if_empty(frm, "incoterms_from_ord", so_doc.incoterm);
+    set_field_if_empty(frm, "incoterm_place_from_ord", so_doc.incoterm_place);
+    set_field_if_empty(frm, "delivery_date", so_doc.delivery_date);
+    set_field_if_empty(frm, "customer_max_pallet_height", so_doc.customer_max_pallet_height);
+    set_field_if_empty(frm, "customer_labelling_specs", so_doc.customer_labelling_specs);
+
+    // Process allowed pallet types
+    if(so_doc.customer_pallet_types) {
+        let new_pallet_types = so_doc.customer_pallet_types.map(t => t.pallet_type);
+        // Pallet types already restricted: Match with restriction of this SO
+        if(frm.doc.customer_pallet_types.length > 0) {
+            for(pt of frm.doc.customer_pallet_types) {
+                if(!new_pallet_types.includes(pt.pallet_type)) {
+                    frappe.model.clear_doc(pt.doctype, pt.name);
+                }
+            }
+            if(frm.doc.customer_pallet_types.length == 0) {
+                frappe.show_alert({message: __("No allowed pallet types left after adding this Sales Order! Please check customer requirements."), indicator: 'red'}, 30);
+            }
+        }
+        // No restriction yet: Fetch list
+        else {
+            new_pallet_types.forEach(pt => {
+                new_cpt = frm.add_child("customer_pallet_types");
+                new_cpt.pallet_type = pt;
+            });
+        }
+        frm.refresh_field("customer_pallet_types");
+    }
+    if(so_doc.palletize_by_batch) {
+        frm.set_value("customer_palletize_by_batch", so_doc.palletize_by_batch);
+    }
+
+    return true;
+}
+
 
 // Update pallet details in line items when either the item/batch/qty or customer specs are changed
 function calculate_item_dimensions(frm, cdt, cdn, override_pallet_type=false) {
@@ -417,144 +530,278 @@ function calculate_item_dimensions(frm, cdt, cdn, override_pallet_type=false) {
 // Check if calculate_item_dimensions() is done for all Items, and only then call generate_pallets_list().
 // This function is called every time calculate_item_dimensions() terminates or fails for some Item
 function generate_pallets_list_when_ready(frm) {
-    if(frm.doc.items.every(i => i.dimensions_calculated)) {
+    if(frm.doc.items.every(i => i.dimensions_calculated !== false)) {
         generate_pallets_list(frm);
     }
 }
 
 
 function generate_pallets_list(frm) {
+    // The batch specs may have to be fetched from the server first, so this runs asynchronously
+    return fetch_batch_specs(frm).then(batch_specs => build_pallets_list(frm, batch_specs));
+}
+
+
+// Fetch (and cache on the form) the packaging specs of every Batch used in the items table.
+// Consolidating the rest pallets needs the package dimensions - only packages of identical
+// specs may be stacked into common layers - as well as each batch's max pallet height.
+function fetch_batch_specs(frm) {
+    frm.batch_specs = frm.batch_specs || {};
+    let missing = Array.from(new Set(frm.doc.items.filter(i => i.batch && !frm.batch_specs[i.batch]).map(i => i.batch)));
+    if(missing.length == 0) {
+        return Promise.resolve(frm.batch_specs);
+    }
+    return new Promise(resolve => {
+        frappe.call({
+            method: 'tobientrading_custom.tobientrading_custom.doctype.supplier_packaging_spec.supplier_packaging_spec.get_batch_packaging_specs',
+            args: {
+                batches: missing
+            },
+            callback(r) {
+                Object.assign(frm.batch_specs, r.message || {});
+                resolve(frm.batch_specs);
+            }
+        });
+    });
+}
+
+
+function build_pallets_list(frm, batch_specs) {
     frm.set_value("pallets", []);
+
+    // Full pallets: one entry per distinct pallet specification
+    for (var item of frm.doc.items) {
+        if(item.num_full_pallets > 0) {
+            add_pallets(frm, {
+                pallet_length: item.pallet_length,
+                pallet_width: item.pallet_width,
+                pallet_height: item.full_pallet_height,
+                pallet_net_weight: item.full_pallet_net_weight,
+                pallet_gross_weight: item.full_pallet_gross_weight,
+                item_names: [ item.item_name ]
+            }, item.num_full_pallets);
+        }
+    }
+
+    // Rest pallets: group the items by pallet specs, as only pallets of the same type can be combined
     let used_items = [];
-    let total_full_pallets = 0;
-    // For each unused Item row, find other unused rows with exactly the same full pallet specs and create a common entry in the pallets list
     for (var item of frm.doc.items) {
-        if(item.num_full_pallets > 0 && !used_items.includes(item.idx)) {
-            let new_pallet_type = frm.add_child("pallets");
-            new_pallet_type.pallet_length = item.pallet_length;
-            new_pallet_type.pallet_width = item.pallet_width;
-            new_pallet_type.pallet_height = item.full_pallet_height;
-            new_pallet_type.pallet_net_weight = item.full_pallet_net_weight;
-            new_pallet_type.pallet_gross_weight = item.full_pallet_gross_weight;
-            used_items.push(item.idx);
-            let same_pallets = frm.doc.items.filter(i =>
-                i.num_full_pallets > 0 &&
-                !used_items.includes(i.idx) &&
-                i.pallet_length == item.pallet_length &&
-                i.pallet_width == item.pallet_width &&
-                i.pallet_base_height == item.pallet_base_height &&
-                i.pallet_tare == item.pallet_tare &&
-                i.full_pallet_height == item.full_pallet_height &&
-                i.full_pallet_net_weight == item.full_pallet_net_weight &&
-                i.full_pallet_gross_weight == item.full_pallet_gross_weight
-            );
-            new_pallet_type.num_pallets = item.num_full_pallets || 0;
-            let item_names = new Set([ item.item_name ]); // List of unique item names
-            for (var sp of same_pallets) {
-                used_items.push(sp.idx);
-                new_pallet_type.num_pallets += sp.num_full_pallets;
-                item_names.add(sp.item_name);
-            }
-            new_pallet_type.items = Array.from(item_names).join(", ")
-            total_full_pallets += new_pallet_type.num_pallets;
+        if(!item.has_rest_pallet || used_items.includes(item.idx)) {
+            continue;
         }
+        let compatible_rest_items = frm.doc.items.filter(i =>
+            i.has_rest_pallet &&
+            !used_items.includes(i.idx) &&
+            i.pallet_length == item.pallet_length &&
+            i.pallet_width == item.pallet_width &&
+            i.pallet_base_height == item.pallet_base_height &&
+            i.pallet_tare == item.pallet_tare
+        );
+        compatible_rest_items.forEach(i => used_items.push(i.idx));
+        add_rest_pallets(frm, compatible_rest_items, batch_specs);
     }
 
-    // For each unused rest pallet, find other unused rest pallets with compatible pallet specs
-    // Then determine the optimal configuration for these pallets
-    used_items = [];
-    let total_rest_pallets = 0;
-    for (var item of frm.doc.items) {
-        if(item.has_rest_pallet && !used_items.includes(item.idx)) {
-            used_items.push(item.idx);
-            height_limit = Math.min(frm.doc.customer_max_pallet_height, item.pallet_max_height);
-            let compatible_rest_items = frm.doc.items.filter(i =>
-                i.has_rest_pallet &&
-                !used_items.includes(i.idx) &&
-                i.pallet_length == item.pallet_length &&
-                i.pallet_width == item.pallet_width &&
-                i.pallet_base_height == item.pallet_base_height &&
-                i.pallet_tare == item.pallet_tare
-            );
-            for (var i of compatible_rest_items) {
-                used_items.push(i.idx);
-                height_limit = Math.min(height_limit, i.pallet_max_height);
-            }
-            compatible_rest_items.push(item);
-            rest_item_heights = compatible_rest_items.map(i => i.rest_pallet_height - i.pallet_base_height);
-
-            // Pack rest items onto pallets
-
-            let rest_pallet_packing;
-            if(!frm.doc.customer_palletize_by_batch) {
-                // Put different items/batches together
-                // TODO: For now we just do a 1D optimization of layer heights onto pallets.
-                //       We could use a 3D packing library such as https://github.com/olragon/binpackingjs instead.
-                rest_pallet_packing = pack_into_bins(rest_item_heights, compatible_rest_items.length, height_limit - item.pallet_base_height);
-                if(!rest_pallet_packing.feasible) {
-                    frappe.msgprint(__("Error: No packing found for rest pallets"));
-                    continue;
-                }
-            } else {
-                // Palletize batches individually => Use a trivial solution (one bin per item)
-                rest_pallet_packing = {
-                    bins: Object.keys(compatible_rest_items)
-                }
-            }
-
-            // Calculate specs of each rest pallet
-            for (var pallet of rest_pallet_packing.bins) {
-                if(pallet.length > 0) {
-                    let net_weight = 0;
-                    let gross_weight = item.pallet_tare;
-                    let height = item.pallet_base_height;
-                    let item_names = new Set();
-                    // Sum up specs of height/weights of rest items assigned to this pallet
-                    for (var item_idx of pallet) {
-                        let pallet_item = compatible_rest_items[item_idx];
-                        net_weight += pallet_item.rest_pallet_net_weight;
-                        gross_weight += pallet_item.rest_pallet_gross_weight - pallet_item.pallet_tare;
-                        item_names.add(pallet_item.item_name);
-                        height += rest_item_heights[item_idx];
-                    }
-                    // Check if the resulting pallet is identical to a pallet type we already have
-                    existing_pallet = frm.doc.pallets.find(p =>
-                        p.pallet_length == item.pallet_length &&
-                        p.pallet_width == item.pallet_width &&
-                        p.pallet_height == height &&
-                        p.net_weight == net_weight &&
-                        p.gross_weight == gross_weight
-                    );
-                    // If so, increment the number of this type of pallet
-                    if(existing_pallet) {
-                        existing_pallet.num_pallets += 1;
-                        // If some Items are not present in the items text, append them to it
-                        // TODO/NOTE: We could store the list of Items as JSON to cover edge cases where one Item's name is contained in the other,
-                        //            but let's neglect this possibility in favor of a simple, human-readable, comma-separated list
-                        for (var i of item_names) {
-                            if(!existing_pallet.items.includes(i)) {
-                                existing_pallet.items += ", "+i;
-                            }
-                        }
-                    // Otherwise create a new pallet type
-                    } else {
-                        let new_pallet = frm.add_child("pallets");
-                        new_pallet.num_pallets = 1;
-                        new_pallet.pallet_length = item.pallet_length;
-                        new_pallet.pallet_width = item.pallet_width;
-                        new_pallet.pallet_height = height;
-                        new_pallet.pallet_net_weight = net_weight;
-                        new_pallet.pallet_gross_weight = gross_weight;
-                        new_pallet.items = Array.from(item_names).join(", ");
-                    }
-                    total_rest_pallets += 1;
-                }
-            }
-        }
-    }
-    //frappe.show_alert({message: __("Created a pallet list with a total of {0} full pallets and {1} merged rest pallets", [total_full_pallets, total_rest_pallets]), indicator: 'blue'}, 30);
     frm.refresh_field("pallets");
     update_total_weights(frm);
+}
+
+
+// Consolidate the rest pallets of a group of items sharing the same pallet specs:
+// re-stack the packages that may share a layer, then pack whatever is left onto as few pallets as possible
+function add_rest_pallets(frm, rest_items, batch_specs) {
+    let pallet = rest_items[0]; // Pallet specs are identical for the whole group
+    let height_limit = get_max_pallet_height(frm, rest_items, batch_specs);
+    if(!height_limit) {
+        frappe.show_alert({message: __("No maximum pallet height is defined - rest pallets are not stacked together."), indicator: 'orange'}, 30);
+    }
+    // Height available for the goods, i.e. without the pallet itself
+    let goods_height_limit = height_limit ? height_limit - pallet.pallet_base_height : 0;
+    if(height_limit && goods_height_limit <= 0) {
+        frappe.msgprint(__("The base pallet height of item '{0}' is higher than the maximum pallet height of {1} cm.", [pallet.item_name, height_limit]));
+        return;
+    }
+
+    // Merge the packages that may be stacked into common layers, then fill up whole pallets with them.
+    // What remains of every merged entry is a block of layers to be distributed over the rest pallets.
+    let blocks = merge_rest_items(frm, rest_items, batch_specs)
+        .map(entry => split_off_full_pallets(frm, entry, goods_height_limit, pallet))
+        .filter(entry => entry.height > 0);
+
+    let rest_pallet_packing;
+    if(frm.doc.customer_palletize_by_batch || !goods_height_limit) {
+        // Palletize batches individually => Use a trivial solution (one bin per merged entry)
+        rest_pallet_packing = { bins: blocks.map((b, i) => [i]) };
+    } else {
+        // Put different items/batches together
+        // TODO: For now we just do a 1D optimization of layer heights onto pallets.
+        //       We could use a 3D packing library such as https://github.com/olragon/binpackingjs instead.
+        rest_pallet_packing = pack_into_bins(blocks.map(b => b.height), blocks.length, goods_height_limit);
+        if(!rest_pallet_packing.feasible) {
+            frappe.msgprint(__("Error: No packing found for rest pallets"));
+            return;
+        }
+    }
+
+    // Calculate specs of each rest pallet
+    for (var bin of rest_pallet_packing.bins) {
+        if(bin.length == 0) {
+            continue;
+        }
+        let height = pallet.pallet_base_height;
+        let net_weight = 0;
+        let gross_weight = pallet.pallet_tare;
+        let item_names = [];
+        // Sum up heights/weights of the blocks assigned to this pallet
+        for (var block_idx of bin) {
+            let block = blocks[block_idx];
+            height += block.height;
+            net_weight += block.net_weight;
+            gross_weight += block.gross_weight;
+            block.item_names.forEach(n => { if(!item_names.includes(n)) { item_names.push(n); } });
+        }
+        add_pallets(frm, {
+            pallet_length: pallet.pallet_length,
+            pallet_width: pallet.pallet_width,
+            pallet_height: height,
+            pallet_net_weight: net_weight,
+            pallet_gross_weight: gross_weight,
+            item_names: item_names
+        }, 1);
+    }
+}
+
+
+// Lowest of all maximum pallet heights that apply to a group of items: the customer's
+// requirement and the limit defined in each item's Batch. Returns 0 if none is defined.
+function get_max_pallet_height(frm, items, batch_specs) {
+    let limits = [];
+    if(frm.doc.customer_max_pallet_height > 0) {
+        limits.push(frm.doc.customer_max_pallet_height);
+    }
+    for (var item of items) {
+        let spec = batch_specs[item.batch];
+        if(spec && spec.pallet_max_height > 0) {
+            limits.push(spec.pallet_max_height);
+        }
+    }
+    return limits.length > 0 ? Math.min(...limits) : 0;
+}
+
+
+// Pool the packages of those rest pallets that may be stacked into common layers, instead of
+// treating each rest pallet as a solid block with a partly filled layer on top. Packages can
+// share a layer if they are of the same Batch, or - unless the customer requires batches to be
+// palletized individually - if their package specs are identical.
+// Returns one entry per group of pooled packages.
+function merge_rest_items(frm, rest_items, batch_specs) {
+    let entries = new Map();
+    for (var item of rest_items) {
+        let spec = batch_specs[item.batch];
+        if(!spec || !spec.package_weight || !spec.package_height || !spec.packages_per_layer) {
+            frappe.show_alert({message: __("Row #{0}: Batch {1} has incomplete packaging details, its rest pallet cannot be optimized.", [item.idx, item.batch || '-']), indicator: 'orange'}, 30);
+            spec = null;
+        }
+        let key;
+        if(!spec) {
+            key = "row:" + item.idx; // Unknown package specs: keep this rest pallet as it is
+        } else if(frm.doc.customer_palletize_by_batch) {
+            key = "batch:" + item.batch;
+        } else {
+            key = ["spec", spec.package_length, spec.package_width, spec.package_height, spec.package_tare, spec.package_weight, spec.packages_per_layer].join(":");
+        }
+        let entry = entries.get(key);
+        if(!entry) {
+            entry = { spec: spec, packages: 0, net_weight: 0, gross_weight: 0, height: 0, item_names: [] };
+            entries.set(key, entry);
+        }
+        entry.packages += get_rest_packages(item, spec);
+        entry.net_weight += item.rest_pallet_net_weight;
+        // Gross weight of the goods only, i.e. without the pallet itself
+        entry.gross_weight += item.rest_pallet_gross_weight - item.pallet_tare;
+        if(!spec) {
+            entry.height = item.rest_pallet_height - item.pallet_base_height;
+        }
+        if(!entry.item_names.includes(item.item_name)) {
+            entry.item_names.push(item.item_name);
+        }
+    }
+    return Array.from(entries.values());
+}
+
+
+// Number of packages on an item's rest pallet, derived from its net weight
+// (the number of packages is ceil(quantity / package weight), cf. get_pallet_details_for_batch())
+function get_rest_packages(item, spec) {
+    if(!spec || !spec.package_weight) {
+        return 0;
+    }
+    return Math.ceil(item.rest_pallet_net_weight / spec.package_weight - 1e-9);
+}
+
+
+// Stack the pooled packages of a merged entry into layers: create as many full pallets as the
+// height limit allows and return the entry with the remaining, partly filled block of layers
+function split_off_full_pallets(frm, entry, goods_height_limit, pallet) {
+    if(!entry.spec) {
+        return entry; // Unknown package specs: the block height is taken from the item as calculated by the server
+    }
+    let layers_per_pallet = goods_height_limit ? Math.floor(goods_height_limit / entry.spec.package_height) : 0;
+    let packages_per_pallet = layers_per_pallet * entry.spec.packages_per_layer;
+    let num_full_pallets = packages_per_pallet ? Math.floor(entry.packages / packages_per_pallet) : 0;
+    if(num_full_pallets > 0) {
+        // The pooled packages fill up whole pallets - these are added to the list right away.
+        // The weights are distributed evenly over the packages rather than assuming the nominal
+        // package weight, because the last package of every item row may be only partly filled.
+        let full_net_weight = packages_per_pallet * entry.net_weight / entry.packages;
+        let full_gross_weight = packages_per_pallet * entry.gross_weight / entry.packages;
+        add_pallets(frm, {
+            pallet_length: pallet.pallet_length,
+            pallet_width: pallet.pallet_width,
+            pallet_height: pallet.pallet_base_height + layers_per_pallet * entry.spec.package_height,
+            pallet_net_weight: full_net_weight,
+            pallet_gross_weight: full_gross_weight + pallet.pallet_tare,
+            item_names: entry.item_names
+        }, num_full_pallets);
+        entry.packages -= num_full_pallets * packages_per_pallet;
+        entry.net_weight -= num_full_pallets * full_net_weight;
+        entry.gross_weight -= num_full_pallets * full_gross_weight;
+    }
+    entry.height = Math.ceil(entry.packages / entry.spec.packages_per_layer) * entry.spec.package_height;
+    return entry;
+}
+
+
+// Add pallets to the consolidated list. If a pallet of identical specs is already listed,
+// the number of that type of pallet is incremented instead.
+function add_pallets(frm, specs, num_pallets) {
+    let existing_pallet = frm.doc.pallets.find(p =>
+        p.pallet_length == specs.pallet_length &&
+        p.pallet_width == specs.pallet_width &&
+        p.pallet_height == specs.pallet_height &&
+        Math.abs(p.pallet_net_weight - specs.pallet_net_weight) < 0.001 &&
+        Math.abs(p.pallet_gross_weight - specs.pallet_gross_weight) < 0.001
+    );
+    if(existing_pallet) {
+        existing_pallet.num_pallets += num_pallets;
+        // If some Items are not present in the items text, append them to it
+        let listed_items = existing_pallet.items.split(", ");
+        for (var item_name of specs.item_names) {
+            if(!listed_items.includes(item_name)) {
+                existing_pallet.items += ", " + item_name;
+                listed_items.push(item_name);
+            }
+        }
+        return existing_pallet;
+    }
+    let new_pallet = frm.add_child("pallets");
+    new_pallet.num_pallets = num_pallets;
+    new_pallet.pallet_length = specs.pallet_length;
+    new_pallet.pallet_width = specs.pallet_width;
+    new_pallet.pallet_height = specs.pallet_height;
+    new_pallet.pallet_net_weight = specs.pallet_net_weight;
+    new_pallet.pallet_gross_weight = specs.pallet_gross_weight;
+    new_pallet.items = specs.item_names.join(", ");
+    return new_pallet;
 }
 
 
@@ -685,6 +932,16 @@ function check_allowed_pallet_types(frm, idx=0) {
 }
 
 
+function check_unique_customer_supplier(frm) {
+    let num_unique_customer_names = new Set(cur_frm.doc.po_so_links.filter(d => d.link_doctype == 'Sales Order').map(l => l.link_title)).size;
+    let num_unique_supplier_names = new Set(cur_frm.doc.po_so_links.filter(d => d.link_doctype == 'Purchase Order').map(l => l.link_title)).size;
+    if(num_unique_customer_names > 1 || num_unique_supplier_names > 1) {
+        frappe.msgprint(__("The linked POs and SOs are from several suppliers or customers - this is not allowed."), __("Validation"));
+        frappe.validated = false;
+    }
+}
+
+
 function create_delivery_note(frm) {
     frappe.call({
         method: 'tobientrading_custom.tobientrading_custom.doctype.transport_order.transport_order.create_delivery_note',
@@ -700,4 +957,14 @@ function create_delivery_note(frm) {
             }
         }
     });
+}
+
+function set_field_if_empty(frm, field, value) {
+    let fallback = '';
+    if(['Int','Float'].includes((frappe.meta.get_field(frm.doctype, field) || []).fieldtype)) {
+        fallback = 0;
+    }
+    if(!frm[field]) {
+        frm.set_value(field, value || fallback);
+    }
 }

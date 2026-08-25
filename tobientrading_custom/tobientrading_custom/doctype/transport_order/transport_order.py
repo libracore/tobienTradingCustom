@@ -38,7 +38,7 @@ def get_matching_batches(sales_order, sales_order_item):
         if remaining_qty == 0:
             break
     if remaining_qty > 0:
-        status = "The available stock does not cover the full order amount ({0} {1} missing)".format(remaining_qty, item_doc.stock_uom)
+        status = 'insufficient_stock'
     return {'status': status, 'batches': batches}
 
 @frappe.whitelist()
@@ -49,17 +49,25 @@ def create_delivery_note(transport_order):
     to_doc = frappe.get_doc("Transport Order", transport_order)
     if to_doc.docstatus != 1:
         frappe.throw(_("The Transport Order must be submitted before creating a Delivery Note."))
-    if not to_doc.sales_order:
+
+    # A Transport Order may reference several Sales Orders (all for the same customer)
+    # through the po_so_links table.
+    sales_orders = [l.link_name for l in to_doc.po_so_links if l.link_doctype == "Sales Order"]
+    if not sales_orders:
         frappe.throw(_("This Transport Order is not linked to a Sales Order."))
 
-    # Build the Delivery Note header from the Sales Order, but skip the item mapping:
-    # we supply our own line items from the Transport Order instead.
-    dn = make_delivery_note(to_doc.sales_order, kwargs={"skip_item_mapping": True})
+    # Build the Delivery Note header from the first Sales Order, but skip the item
+    # mapping: we supply our own line items from the Transport Order instead.
+    dn = make_delivery_note(sales_orders[0], kwargs={"skip_item_mapping": True})
 
-    # Look up the Sales Order items so we can copy item-level details (warehouse, cost
-    # center, project) and keep the reference to the originating Sales Order Item intact.
-    so_doc = frappe.get_doc("Sales Order", to_doc.sales_order)
-    so_items = {row.name: row for row in so_doc.items}
+    # Look up the items of every linked Sales Order so we can copy item-level details
+    # (warehouse, cost center, project) and keep the reference to the originating Sales
+    # Order Item - and thus its Sales Order - intact.
+    so_items = {}
+    for so_name in sales_orders:
+        so_doc = frappe.get_doc("Sales Order", so_name)
+        for row in so_doc.items:
+            so_items[row.name] = row
 
     for item in to_doc.items:
         dn_item = dn.append("items", {})
@@ -75,7 +83,7 @@ def create_delivery_note(transport_order):
         # Keep the link to the Sales Order Item where available so delivered qty is tracked
         so_item = so_items.get(item.sales_order_item)
         if so_item:
-            dn_item.against_sales_order = so_doc.name
+            dn_item.against_sales_order = so_item.parent
             dn_item.so_detail = so_item.name
             dn_item.warehouse = so_item.warehouse
             dn_item.cost_center = so_item.cost_center

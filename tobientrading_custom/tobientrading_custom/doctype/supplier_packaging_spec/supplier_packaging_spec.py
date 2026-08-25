@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+import json
 from frappe.model.document import Document
 from frappe.model.rename_doc import rename_doc
 from math import floor, ceil
@@ -134,6 +135,31 @@ def get_pallet_details_for_batch(batch, qty, customer_max_pallet_height=0, custo
     details.shipment_gross_weight = details.num_full_pallets * details.full_pallet_gross_weight + details.has_rest_pallet * details.rest_pallet_gross_weight
 
     return details
+
+
+@frappe.whitelist()
+def get_batch_packaging_specs(batches):
+    """Return the package and pallet specs of several Batches at once, keyed by batch name.
+
+    Used by the Transport Order client script: to consolidate the rest (partly filled)
+    pallets it needs to know which packages have identical dimensions - only those may be
+    stacked into common layers - as well as the max pallet height defined for each batch.
+    """
+    if isinstance(batches, str):
+        batches = json.loads(batches)
+    batches = [b for b in (batches or []) if b]
+    if not batches:
+        return {}
+    specs = frappe.get_all(
+        "Batch",
+        filters={"name": ["in", batches]},
+        fields=[
+            "name", "item", "package_length", "package_width", "package_height",
+            "package_tare", "package_weight", "packages_per_layer", "layers_per_pallet",
+            "pallet_max_height"
+        ]
+    )
+    return {spec.name: spec for spec in specs}
 
 
 def get_optimal_packages_per_layer(pallet_length, pallet_width, package_length, package_width):
