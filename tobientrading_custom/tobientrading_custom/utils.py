@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 import datetime
 from frappe import _
+from frappe.utils import getdate
 from tobientrading_custom.tobientrading_custom.doctype.technical_data_sheet.technical_data_sheet import get_current_tds
 import json
 import erpnextswiss.erpnextswiss.attach_pdf
@@ -402,3 +403,20 @@ def drop_copied_attachments(doc, method=None):
     ):
         if f.file_url in old_urls:
             frappe.delete_doc("File", f.name, ignore_permissions=True, delete_permanently=False)
+
+
+# The distinct "YYYY-MM" of the given delivery dates, ascending, as a
+# comma-separated string
+def get_delivery_months(delivery_dates):
+    months = {getdate(d).strftime("%Y-%m") for d in delivery_dates if d}
+
+    return ", ".join(sorted(months))
+
+
+# Keep Sales Invoice.custom_delivery_months in sync with the items' delivery
+# dates (they stay editable after submit)
+def set_delivery_months(doc, event=None):
+    delivery_months = get_delivery_months([i.get("delivery_date") for i in doc.items])
+
+    if doc.get("custom_delivery_months") != delivery_months:
+        doc.db_set("custom_delivery_months", delivery_months)

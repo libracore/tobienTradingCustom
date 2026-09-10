@@ -10,3 +10,4 @@ tobientrading_custom.patches.v0_4_0.delete_duplicated_client_scripts
 tobientrading_custom.patches.v0_4_0.delete_deprecated_tds_doctypes
 tobientrading_custom.patches.v0_5_0.import_print_formats
 tobientrading_custom.patches.v0_6_0.migrate_transport_order_po_so_links
+tobientrading_custom.patches.v0_6_1.set_delivery_months

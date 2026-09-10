@@ -115,7 +115,11 @@ doc_events = {
         "on_update": "tobientrading_custom.tobientrading_custom.doctype.certificate_of_analysis_result.certificate_of_analysis_result.update_test_type_and_subcategory"
     },
     "Sales Invoice": {
-        "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+        "on_submit": [
+            "tobientrading_custom.tobientrading_custom.utils.set_delivery_months",
+            "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
+        ],
+        "on_update_after_submit": "tobientrading_custom.tobientrading_custom.utils.set_delivery_months"
     },
     "Quotation": {
         "before_submit": "tobientrading_custom.tobientrading_custom.utils.attach_tds_pdf",
