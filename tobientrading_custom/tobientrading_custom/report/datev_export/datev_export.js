@@ -59,37 +59,24 @@ frappe.query_reports["DATEV Export"] = {
 };
 
 function xml_export(filters) {
-    frappe.call({
-        'method': "tobientrading_custom.tobientrading_custom.report.datev_export.datev_export.async_xml_export",
-        'args': {
-            'filters': filters
-        },
-        'callback': function(r) {
-            frappe.show_alert( __("Running...") );
-        }
-    });
+    queue_export("async_xml_export", filters);
 }
 
 function pdf_export(filters) {
-    frappe.call({
-        'method': "tobientrading_custom.tobientrading_custom.report.datev_export.datev_export.async_pdf_export",
-        'args': {
-            'filters': filters
-        },
-        'callback': function(r) {
-            frappe.show_alert( __("Running...") );
-        }
-    });
+    queue_export("async_pdf_export", filters);
 }
 
 function package_export(filters) {
+    queue_export("async_package_export", filters);
+}
+
+// the export runs in the background, the server confirms and emails a download link (zip) when it is ready
+function queue_export(method, filters) {
     frappe.call({
-        'method': "tobientrading_custom.tobientrading_custom.report.datev_export.datev_export.async_package_export",
+        'method': "tobientrading_custom.tobientrading_custom.report.datev_export.datev_export." + method,
         'args': {
             'filters': filters
         },
-        'callback': function(r) {
-            frappe.show_alert( __("Running...") );
-        }
+        'freeze': true
     });
 }

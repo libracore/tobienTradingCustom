@@ -3,9 +3,13 @@
 
 from __future__ import unicode_literals
 import os
+import shutil
+import hashlib
+import tempfile
 from datetime import datetime
 import frappe
 from frappe import _
+from frappe.utils.background_jobs import is_job_enqueued
 import json
 from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
 #from microsynth.microsynth.invoicing import get_microsynth_zugferd_xml as create_zugferd_xml
@@ -21,8 +25,8 @@ DATEV_CHARACTER_PATTERNS = {
     'p10036': "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$%*+- ",
 }
 
-EXPORT_PATH = '/tmp/datev_export'
-PDF_PRINT_FORMAT = 'Ausgangsrechnung Standard'
+EXPORT_FOLDER = 'DATEV Export'                  # File Manager folder below Home, holds the zip files
+EXPORT_RETENTION_DAYS = 30                      # zip files older than this are deleted on each new export
 
 
 def strip_str_to_allowed_chars(s, min_length, max_length, allowed_chars):
@@ -143,24 +147,16 @@ def get_data(filters, short=False):
 
 @frappe.whitelist()
 def async_pdf_export(filters):
-    if type(filters) == str:
-        filters = json.loads(filters)
-    frappe.enqueue(method=pdf_export, queue='long', timeout=600, is_async=True, filters=filters)
+    enqueue_export("PDF", filters)
 
 
-def pdf_export(filters):
+def pdf_export(filters, path):
     """
+    Write the attached pdf of each document into path
     run
-    bench execute microsynth.microsynth.report.datev_export.datev_export.pdf_export --kwargs "{'filters': {'version':'AT', 'company': 'Microsynth Austria GmbH', 'from_date':'2026-02-01', 'to_date':'2026-02-02', 'transactions': 'Debtors' }}"
+    bench execute tobientrading_custom.tobientrading_custom.report.datev_export.datev_export.pdf_export --kwargs "{'filters': {'version':'AT', 'company': 'Tobien Trading GmbH', 'from_date':'2026-02-01', 'to_date':'2026-02-02', 'transactions': 'Debtors' }, 'path': '/tmp/datev_test'}"
     """
     data = get_data(filters)
-    #settings = frappe.get_doc("Microsynth Settings", "Microsynth Settings")
-    # Create subfolder PDF_Export_[datetime.now]/[filters.company]/[filters.transactions] and store pdfs there
-    base_path = EXPORT_PATH
-    now_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    path = "{0}/{1}_{2}_{3}".format(base_path, now_str, filters.get("company"), filters.get("transactions"))
-    if not os.path.exists(path):
-        os.mkdir(path)
 
     for d in data:
         # performance improvement 2026-02-17: use attached pdf instead of creating a new one
@@ -172,8 +168,7 @@ def pdf_export(filters):
         if d.get("document_type") == "Sales Invoice":
             create_pdf(path=path,
                 dt=d.get("document_type"),
-                dn=d.get("document"),
-                print_format=PDF_PRINT_FORMAT
+                dn=d.get("document")
             )
         elif d.get("document_type") == "Purchase Invoice":
             download_pdf(path=path,
@@ -185,22 +180,16 @@ def pdf_export(filters):
 
 @frappe.whitelist()
 def async_xml_export(filters):
-    if type(filters) == str:
-        filters = json.loads(filters)
-
-    frappe.enqueue(method=xml_export, queue='long', timeout=600, is_async=True, filters=filters)
+    enqueue_export("XML", filters)
 
 
-def xml_export(filters):
+def xml_export(filters, path):
     """
+    Write a ZUGFeRD xml of each sales invoice into path
     run
-    $ bench execute microsynth.microsynth.report.datev_export.datev_export.xml_export --kwargs "{'filters': {'version':'AT', 'company': 'Microsynth Seqlab GmbH', 'from_date':'2023-01-01', 'to_date':'2023-04-14' }}"
+    $ bench execute tobientrading_custom.tobientrading_custom.report.datev_export.datev_export.xml_export --kwargs "{'filters': {'version':'AT', 'company': 'Tobien Trading GmbH', 'from_date':'2023-01-01', 'to_date':'2023-04-14', 'transactions': 'Debtors' }, 'path': '/tmp/datev_test'}"
     """
     data = get_data(filters)
-    #settings = frappe.get_doc("Microsynth Settings", "Microsynth Settings")
-    path = EXPORT_PATH + "/" + datetime.now().strftime("%Y-%m-%d__%H-%M")
-    if not os.path.exists(path):
-        os.mkdir(path)
 
     for d in data:
         if d.get("document_type") == "Sales Invoice":
@@ -267,17 +256,142 @@ def xml_normalize(s, length):
 
 @frappe.whitelist()
 def async_package_export(filters):
+    enqueue_export("Package", filters)
+
+
+def enqueue_export(export_type, filters):
+    """
+    Queue an export (like Frappe's "Download Files Backup"): the user is emailed a download link when the zip is ready
+    """
     if type(filters) == str:
         filters = json.loads(filters)
 
-    frappe.enqueue(method=package_export, queue='long', timeout=600, is_async=True, filters=filters)
+    user = frappe.session.user
+    user_email = frappe.get_cached_value("User", user, "email")
+    if not user_email:
+        frappe.throw(_("Your user has no email address, so the download link cannot be sent."))
+
+    # do not queue the same export twice while it is still pending or running
+    filter_hash = hashlib.sha256(json.dumps(filters, sort_keys=True, default=str).encode()).hexdigest()
+    job_id = "datev_export::{0}::{1}::{2}".format(export_type, user, filter_hash)
+    if is_job_enqueued(job_id):
+        frappe.msgprint(_("This export is already running. You will receive an email on {0} with the download link.").format(user_email))
+        return
+
+    frappe.enqueue(
+        method=export_and_notify_user,
+        queue='long',
+        timeout=600,
+        job_id=job_id,
+        deduplicate=True,
+        export_type=export_type,
+        filters=filters,
+        user_email=user_email
+    )
+    frappe.msgprint(_("The export is being generated in the background. You will receive an email on {0} with the download link once it is ready.").format(user_email))
 
 
-def create_pdf(path, dt, dn, print_format):
+def export_and_notify_user(export_type, filters, user_email):
+    """
+    Background job: create the export files, zip them, store the zip as private file and email the download link
+    run
+    $ bench --site site1.local execute tobientrading_custom.tobientrading_custom.report.datev_export.datev_export.export_and_notify_user --kwargs "{'export_type': 'Package', 'filters': {'version':'AT', 'company': 'Tobien Trading GmbH', 'from_date':'2023-01-01', 'to_date':'2023-04-14', 'transactions': 'Debtors' }, 'user_email': 'someone@example.com'}"
+    """
+    delete_old_exports()
+
+    try:
+        with tempfile.TemporaryDirectory(prefix="datev_export_") as tmp_dir:
+            path = os.path.join(tmp_dir, "export")
+            os.mkdir(path)
+            export_function = {'XML': xml_export, 'PDF': pdf_export, 'Package': package_export}[export_type]
+            export_function(filters=filters, path=path)
+            document_count = len(os.listdir(path))
+
+            archive = shutil.make_archive(os.path.join(tmp_dir, "archive"), 'zip', root_dir=path)
+            with open(archive, mode='rb') as file:
+                content = file.read()
+
+        file_doc = frappe.get_doc({
+            'doctype': "File",
+            'file_name': get_export_file_name(export_type, filters),
+            'folder': get_export_folder(),
+            'is_private': 1,
+            'content': content
+        })
+        file_doc.save(ignore_permissions=True)
+        frappe.db.commit()
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "DATEV Export failed")
+        frappe.sendmail(
+            recipients=[user_email],
+            subject=_("DATEV Export failed"),
+            message=_("The DATEV {0} export ({1}, {2}, {3} - {4}) could not be created. Please contact your administrator.").format(
+                export_type, filters.get("company"), _(filters.get("transactions")), filters.get("from_date"), filters.get("to_date")),
+            now=True
+        )
+        raise
+
+    file_url = frappe.utils.get_url(file_doc.file_url)
+    frappe.sendmail(
+        recipients=[user_email],
+        subject=_("DATEV Export is ready"),
+        message=_(
+            "The DATEV {0} export ({1}, {2}, {3} - {4}) with {5} files is ready.<br><br>"
+            "Click here to download (login required):<br>"
+            "<a href='{6}'>{6}</a><br><br>"
+            "The file will be deleted after {7} days."
+        ).format(export_type, filters.get("company"), _(filters.get("transactions")), filters.get("from_date"),
+            filters.get("to_date"), document_count, file_url, EXPORT_RETENTION_DAYS),
+        now=True
+    )
+
+
+def get_export_file_name(export_type, filters):
+    parts = ["DATEV", export_type, filters.get("company"), filters.get("transactions"),
+        filters.get("from_date"), filters.get("to_date")]
+    return "{0}.zip".format(re.sub(r"[^A-Za-z0-9-]+", "_", "_".join(str(p or "") for p in parts)))
+
+
+def get_export_folder():
+    folder = "Home/{0}".format(EXPORT_FOLDER)
+    if not frappe.db.exists("File", {'name': folder, 'is_folder': 1}):
+        frappe.get_doc({
+            'doctype': "File",
+            'file_name': EXPORT_FOLDER,
+            'is_folder': 1,
+            'folder': "Home",
+            'is_private': 1
+        }).insert(ignore_permissions=True, ignore_if_duplicate=True)
+    return folder
+
+
+def delete_old_exports():
+    """
+    Delete export zip files older than EXPORT_RETENTION_DAYS (Frappe's file backups are only pruned by count, see backups.delete_downloadable_backups)
+    """
+    cutoff = frappe.utils.add_days(frappe.utils.now_datetime(), -EXPORT_RETENTION_DAYS)
+    old_files = frappe.get_all("File",
+        filters={
+            'folder': "Home/{0}".format(EXPORT_FOLDER),
+            'is_folder': 0,
+            'creation': ["<", cutoff]
+        },
+        pluck='name'
+    )
+    for file_name in old_files:
+        try:
+            frappe.delete_doc("File", file_name, ignore_permissions=True)
+        except Exception:
+            frappe.log_error(frappe.get_traceback(), "DATEV Export: failed to delete old export {0}".format(file_name))
+    frappe.db.commit()
+
+
+def create_pdf(path, dt, dn, print_format=None):
+    # use the default print format of the doctype (as the print view does) unless one is given
     content_pdf = frappe.get_print(
         dt,
         dn,
-        print_format=print_format,
+        print_format=print_format or frappe.get_meta(dt).default_print_format or "Standard",
         as_pdf=True)
     file_name = "{0}.pdf".format(dn)
     content_file_name = "{0}/{1}".format(path, file_name)
@@ -391,19 +505,15 @@ def create_datev_summary_xml(path, document):
     return file_name
 
 
-def package_export(filters):
+def package_export(filters, path):
     """
-    Export the complete sales invoice package with pdf, xml and document overview
+    Export the complete sales invoice package with pdf, xml and document overview into path
     run
-    $ bench execute tobientrading_custom.tobientrading_custom.report.datev_export.datev_export.package_export --kwargs "{'filters': {'version':'AT', 'company': 'Microsynth Seqlab GmbH', 'from_date':'2023-01-01', 'to_date':'2023-04-14' }}"
+    $ bench execute tobientrading_custom.tobientrading_custom.report.datev_export.datev_export.package_export --kwargs "{'filters': {'version':'AT', 'company': 'Tobien Trading GmbH', 'from_date':'2023-01-01', 'to_date':'2023-04-14', 'transactions': 'Debtors' }, 'path': '/tmp/datev_test'}"
     """
     data = get_data(filters)
-    #settings = frappe.get_doc("Microsynth Settings", "Microsynth Settings")
 
     date = datetime.now()
-    path = "{0}/{1}_{2}".format(EXPORT_PATH, date.strftime("%Y-%m-%d_%H-%M"), filters.get("transactions"))
-    if not os.path.exists(path):
-        os.mkdir(path)
 
     document = {
         'date': date,
@@ -415,8 +525,7 @@ def package_export(filters):
             # create pdf
             pdf_file = create_pdf(path=path,
                 dt=d.get("document_type"),
-                dn=d.get("document"),
-                print_format=PDF_PRINT_FORMAT
+                dn=d.get("document")
             )
             xml_file = create_datev_xml(path=path,
                 dt=d.get("document_type"),
