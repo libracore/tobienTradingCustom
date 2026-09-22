@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<invoice generator_info="libracore AG" generating_system="libracore business software" description="DATEV Import invoices" version="6.0" xml_data="Kopie nur zur Verbuchung berechtigt nicht zum Vorsteuerabzug" xsi:schemaLocation="http://xml.datev.de/bedi/tps/invoice/v060 Belegverwaltung_online_invoice_v060.xsd" xmlns="http://xml.datev.de/bedi/tps/invoice/v060" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<invoice_info invoice_date="{{ doc.posting_date }}" invoice_type="Rechnung" delivery_date="{{ doc.posting_date }}" invoice_id="
+    {%- if doc.doctype == "Purchase Invoice" %}
+        {{- doc.bill_no or doc.name }}
+    {%- else %}
+        {{- doc.name }}
+    {%- endif %}" />
+{%- set first_item = doc.get("items")[0] %}
+{%- if first_item.get('income_account') %}
+<accounting_info booking_text="Erlöse" account_no="{{ first_item.get('income_account').split(" - ")[0] }}" />
+{%- else %}
+<accounting_info booking_text="Aufwand" account_no="{{ first_item.get('expense_account').split(" - ")[0] }}" />
+{%- endif %}
+<invoice_party>
+    <address street="{{ xml_normalize((doc.address_line1 or "-"), 41) }}" name="{{ doc.party_name }}" zip="{{ doc.pincode }}" city="{{ doc.city }}" party_id="{{ doc.party_number or doc.customer or doc.supplier }}" />
+    <booking_info_bp bp_account_no="{{ doc.party_number or "99999" }}"/>
+</invoice_party>
+{%- set company = frappe.get_doc("Company", doc.company) %}
+<supplier_party
+    {%- if doc.doctype == "Purchase Invoice" %}
+        {%- if doc.tax_id %} vat_id="{{ doc.tax_id }}"{% endif %}
+    {%- else %}
+        {%- if company.tax_id %} vat_id="{{- (company.tax_id).replace(' ', '') }}"{% endif %}
+    {%- endif -%}
+    >
+    {%- if doc.doctype == "Sales Invoice" %}
+        {%- set company_address = frappe.get_doc("Address", doc.company_address) %}
+        <address street="{{ xml_normalize(company_address.address_line1 or "", 33) }}" zip="{{ company_address.pincode }}" city="{{ company_address.city }}" name="{{ doc.company }}"></address>
+        {%- set account = frappe.get_doc("Account", doc.debit_to) %}
+        <account bank_name="{{ account.bank_name or "?" }}"
+             {%- if account.iban %} iban="{{ (account.iban).replace(' ', '') }}"{% endif %}
+             {%- if account.bic %} swiftcode="{{ (account.bic).replace(' ', '') }}"{% endif -%}
+        ></account>
+    {%- else %}
+        {%- set company_address = frappe.get_doc("Address", doc.shipping_address) %}
+        <address street="{{ xml_normalize((doc.address_line1 or "-"), 41) }}" zip="{{ doc.pincode }}" city="{{ doc.city }}" name="{{ doc.party_name }}"></address>
+        {%- set account = frappe.get_doc("Account", doc.credit_to) %}
+        <account bank_name="{{ account.bank_name or "?" }}"
+             {%- if account.iban %} iban="{{ (account.iban).replace(' ', '') }}"{% endif %}
+             {%- if account.bic %} swiftcode="{{ (account.bic).replace(' ', '') }}"{% endif -%}
+        ></account>
+    {%- endif %}
+</supplier_party>
+<payment_conditions currency="{{ doc.currency }}" due_date="{{ doc.due_date }}" payment_conditions_text="{{ doc.payment_terms_template or '-' }}"></payment_conditions>
+{%- if doc.taxes and doc.taxes|len > 0 %}
+    {%- set tax_rate = doc.taxes[0].rate -%}
+{%- else %}
+    {%- set tax_rate = 0 -%}
+{%- endif %}
+{%- for item in doc.get('items') %}
+{%- if item.amount != 0 %}
+<invoice_item_list description_short="{{ item.item_name }}" quantity="{{ "{:.2f}".format(item.qty) }}">
+    <price_line_amount tax="{{ "{:.2f}".format(tax_rate) }}" net_price_line_amount="{{ "{:.2f}".format(item.net_amount) }}" currency="{{ doc.currency }}" />
+    {%- set account_info = (item.income_account or item.expense_account).split(" - ") %}
+    <accounting_info account_no="{{ account_info[0] }}" booking_text="{{ account_info[1] }}" />
+</invoice_item_list>
+{%- endif %}
+{%- endfor %}
+<total_amount total_gross_amount_excluding_third-party_collection="{{ "{:.2f}".format(doc.grand_total) }}" net_total_amount="{{ "{:.2f}".format(doc.net_total) }}" currency="{{ doc.currency }}">
+{%- if not doc.taxes or doc.taxes|len == 0 %}
+    <tax_line tax="0.00" currency="{{ doc.currency }}" />
+{%- else %}
+    {%- for t in doc.taxes %}
+        <tax_line tax="{{ "{:.2f}".format(t.rate) }}" net_price_line_amount="{{ "{:.2f}".format(doc.net_total) }}" gross_price_line_amount="{{ "{:.2f}".format(doc.grand_total) }}" {% if t.rate != 0 and doc.net_total != 0 %} tax_amount="{{ "{:.2f}".format(t.tax_amount) }}"{% endif %} currency="{{ doc.currency }}" />
+    {%- endfor %}
+{%- endif %}
+</total_amount>
+</invoice>
