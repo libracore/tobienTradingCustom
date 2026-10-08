@@ -9,6 +9,7 @@ frappe.ui.form.on('Sales Order', {
         if (!frm.doc.__islocal) {
             cur_frm.set_df_property('company', 'read_only', 1);
         }
+        add_create_transport_order_button(frm, 'per_delivered');  // common function
     },
 	items_add: function(frm, cdt, cdn) {
 		set_blanket_rate(frm, cdt, cdn);

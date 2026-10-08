@@ -59,6 +59,7 @@ def create_delivery_note(transport_order):
     # Build the Delivery Note header from the first Sales Order, but skip the item
     # mapping: we supply our own line items from the Transport Order instead.
     dn = make_delivery_note(sales_orders[0], kwargs={"skip_item_mapping": True})
+    dn.transport_order = to_doc.name
 
     # Look up the items of every linked Sales Order so we can copy item-level details
     # (warehouse, cost center, project) and keep the reference to the originating Sales
