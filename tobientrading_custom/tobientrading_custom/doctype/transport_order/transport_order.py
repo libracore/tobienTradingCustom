@@ -91,6 +91,8 @@ def create_delivery_note(transport_order):
             dn_item.project = so_item.project
             dn_item.weight_per_unit = so_item.weight_per_unit
             dn_item.weight_uom = so_item.weight_uom
+            # If possible, use the SO Item's rate as the TO's rate may be a purchase price
+            dn_item.rate = so_item.rate
             # Preserve the description and the tax treatment agreed in the Sales Order,
             # rather than letting get_item_details re-derive them from the Item master.
             dn_item.description = so_item.description
