@@ -442,8 +442,14 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
- "links": [],
- "modified": "2026-06-29 11:21:44.288617",
+ "links": [
+  {
+   "group": "Delivery",
+   "link_doctype": "Delivery Note",
+   "link_fieldname": "transport_order"
+  }
+ ],
+ "modified": "2026-10-08 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Tobientrading Custom",
  "name": "Transport Order",

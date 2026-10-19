@@ -193,9 +193,9 @@ doc_events = {
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
-# override_doctype_dashboards = {
-# 	"Task": "tobientrading_custom.task.get_dashboard_data"
-# }
+override_doctype_dashboards = {
+    "Delivery Note": "tobientrading_custom.tobientrading_custom.utils.get_delivery_note_dashboard_data"
+}
 
 # Allow third-party (Streckengeschaeft) loading/shipping addresses without
 # enabling drop-ship. See overrides/third_party_address.py.

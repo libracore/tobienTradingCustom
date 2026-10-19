@@ -31,6 +31,7 @@ frappe.ui.form.on('Purchase Order', {
         if (!frm.doc.__islocal) {
             cur_frm.set_df_property('company', 'read_only', 1);
         }
+        add_create_transport_order_button(frm, 'per_received');  // common function
 
         frm.set_query('shipping_address', function(doc) {
             return {

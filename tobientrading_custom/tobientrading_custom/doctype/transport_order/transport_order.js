@@ -29,6 +29,14 @@ frappe.ui.form.on('Transport Order', {
             frm.add_custom_button(__("Lieferschein erstellen"), () => { create_delivery_note(frm); });
         }
     },
+    onload_post_render(frm) {
+        // Links preset by "Create > Transport Order" in SO/PO
+        if(frm.is_new() && !(frm.doc.items || []).length) {
+            for(let link of frm.doc.po_so_links || []) {
+                fetch_items_from_doc(frm, link.link_doctype, link.link_name, link.name);
+            }
+        }
+    },
     validate(frm) {
         check_allowed_pallet_types(frm);
         check_unique_customer_supplier(frm);

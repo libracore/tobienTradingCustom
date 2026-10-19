@@ -1,0 +1,25 @@
+/* #73: Highlight the current day in colour (not only bold) in all calendars */
+
+/* Date picker of Date / Datetime fields */
+.datepicker--cell.-current-:not(.-selected-):not(.-in-range-) {
+	color: var(--orange-600);
+	background: var(--orange-100);
+	box-shadow: inset 0 0 0 1px var(--orange-500);
+	border-radius: var(--border-radius-tiny);
+	font-weight: var(--weight-bold);
+}
+/* Today is also selected / in a selected range: keep that styling, but draw the orange border on top */
+.datepicker--cell.-current-.-selected-,
+.datepicker--cell.-current-.-in-range- {
+	box-shadow: inset 0 0 0 2px var(--orange-500);
+	border-radius: var(--border-radius-tiny);
+}
+
+/* Calendar view (FullCalendar) */
+.fc-unthemed .fc-today {
+	background-color: var(--orange-100) !important;
+
+	.fc-day-number {
+		background-color: var(--orange-500);
+	}
+}

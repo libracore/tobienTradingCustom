@@ -100,11 +100,30 @@ def attach_pdf_hook(doc, event=None):
         "lang": doc.get("language") or fallback_language,
     }
     erpnextswiss.erpnextswiss.attach_pdf.execute(**args)
+    if doc.doctype == 'Delivery Note' and doc.get('transport_order'):
+        # Attach the PDF just created to the Transport Order as well
+        pdf = frappe.get_last_doc("File", filters={"attached_to_doctype": doc.doctype, "attached_to_name": doc.name})
+        to_folder = erpnextswiss.erpnextswiss.attach_pdf.create_folder(_("Transport Order"), "Home")
+        frappe.get_doc({
+            "doctype": "File",
+            "file_url": pdf.file_url,
+            "file_name": pdf.file_name,
+            "is_private": pdf.is_private,
+            "folder": erpnextswiss.erpnextswiss.attach_pdf.create_folder(doc.transport_order, to_folder),
+            "attached_to_doctype": "Transport Order",
+            "attached_to_name": doc.transport_order
+        }).insert(ignore_permissions=True)
     if doc.doctype == 'Delivery Note' and doc.tax_category in ['Umsatzsteuer EU - IGD','Umsatzsteuer EU - IGL','Umsatzsteuer Export']:
         gb = args.copy()
         gb['print_format'] = 'Gelangensbestätigung Standard'
         gb['file_name'] = "VAT_{0}_to_sign.pdf".format(doc.name.replace(" ", "-").replace("/", "-"))
         erpnextswiss.erpnextswiss.attach_pdf.execute(**gb)
+
+# Called by override_doctype_dashboards hook
+def get_delivery_note_dashboard_data(data):
+    data["internal_links"]["Transport Order"] = "transport_order"
+    data["transactions"].append({"label": _("Transport"), "items": ["Transport Order"]})
+    return data
 
 @frappe.whitelist()
 def get_emergency_contact(dt, dn):

@@ -4,6 +4,12 @@
 
 frappe.ui.form.on('Delivery Note', {
 
+    setup: function(frm) {
+        frm.set_query('transport_order', function() {
+            return { filters: { docstatus: 1 } };
+        });
+    },
+
     refresh: function(frm) {
         prepare_naming_series(frm);  // common function
 

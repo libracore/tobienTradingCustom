@@ -43,6 +43,19 @@ function prepare_naming_series(frm) {
     }
 }
 
+// Sales/Purchase Order: Create > Transport Order (items are fetched by the Transport Order form)
+function add_create_transport_order_button(frm, per_done_field) {
+    if (frm.doc.docstatus === 1 && frm.doc[per_done_field] < 100 && !["Closed", "On Hold"].includes(frm.doc.status)) {
+        frm.add_custom_button(__("Transport Order"), function() {
+            frappe.new_doc("Transport Order", null, function(to_doc) {
+                let link = frappe.model.add_child(to_doc, "po_so_links");
+                link.link_doctype = frm.doctype;
+                link.link_name = frm.doc.name;
+            });
+        }, __("Create"));
+    }
+}
+
 $(document).ready(function() {
 
     // Fix attachment behavior in email popup:
