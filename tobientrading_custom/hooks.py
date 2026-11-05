@@ -151,6 +151,9 @@ doc_events = {
     "Request for Quotation": {
         "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook"
     },
+    "VAT Declaration": {
+        "on_submit": "tobientrading_custom.tobientrading_custom.vat_declaration_report.attach_vat_declaration_report"
+    },
     "Technical Data Sheet": {
         "on_submit": "tobientrading_custom.tobientrading_custom.utils.attach_pdf_hook",
         "on_update": "tobientrading_custom.tobientrading_custom.utils.drop_copied_attachments"
